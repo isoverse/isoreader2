@@ -2,7 +2,7 @@ Package: isoreader2
 Title: Read Stable Isotope Data Files
 Version: 0.0.0.9000
 Authors@R: 
-    c
+    c(
         person(
         given = "Sebastian", family = "Kopf", 
         email = "sebastian.kopf@colorado.edu", 
@@ -14,3 +14,14 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+URL: https://isoreader2.isoverse.org/, https://github.com/isoverse/isoreader2
+BugReports: https://github.com/isoverse/isoreader2/issues
+Depends:
+    R (>= 4.5.0)
+Imports:
+    rlang (>= 1.1.0),
+    cli (>= 3.6.0),
+    tibble
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
