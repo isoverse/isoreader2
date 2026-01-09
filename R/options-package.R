@@ -45,5 +45,11 @@ isor_get_option <- function(x) {
 #' @usage NULL
 #' @section Options for the isoreader2 package:
 get_pkg_options <- function() {
-  list()
+  list(
+    #' - `dev_mode`: developer mode provides more verbose output
+    dev_mode = define_pkg_option(
+      default = FALSE,
+      check_fn = is_scalar_logical
+    )
+  )
 }

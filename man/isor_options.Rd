@@ -39,6 +39,9 @@ with a regular expression pattern.
 }}
 \section{Options for the isoreader2 package}{
 
+\itemize{
+\item \code{dev_mode}: development mode provides more verbose output
+}
 }
 
 \examples{
