@@ -52,6 +52,16 @@ read_CBlockData <- function(bfile) {
 }
 
 
+read_schema_version <- function(bfile, class_name, max_supported = NULL, stop_on_newer = FALSE) {
+  v <- bfile |> read_binary_data("int")
+  if (!is.null(max_supported) && !is.na(v) && v > max_supported) {
+    msg <- paste0(class_name, " version ", v, " is newer than supported (", max_supported, "). Parser may be incomplete.")
+    if (isTRUE(stop_on_newer)) stop(msg, call. = FALSE) else bfile |> register_cnd(cli_warn(msg), pos = bfile$pos)
+  }
+  v
+}
+
+
 # read CBasicInterface object
 read_CBasicInterface <- function(bfile) {
   data <- list(
@@ -60,66 +70,25 @@ read_CBasicInterface <- function(bfile) {
   return(tibble::as_tibble(data))
 }
 
-# read CFinniganInterface object (complete)
 read_CFinniganInterface <- function(bfile) {
-  # parent
-  data <- list(
-    pCBasicInterface = bfile |> read_CBasicInterface() |> list()
-  )
+  data <- list(pCBasicInterface = bfile |> read_CBasicInterface() |> list())
 
-  # CFinniganInterface schema version (const on write, local on read)
-  data$version <- bfile |> read_binary_data("int")
+  data$version <- read_schema_version(bfile, "CFinniganInterface", max_supported = 6)
 
-  # sanity check (current writers use 6)
-  if (!is.na(data$version) && data$version > 6) {
-    bfile |>
-      register_cnd(
-        cli_warn(
-          "CFinniganInterface version {data$version} is newer than expected (6). Parser may be incomplete."
-        ),
-        pos = bfile$pos
-      )
-  }
-
-  # field #1 (always present) +0x9C, DDX_Text control 0x403
   data <- bfile |> read_binary_data_list(data = data, c("param_0x9c" = "int"))
 
-  # version >= 3 fields
-  if (!is.na(data$version) && data$version >= 3) {
-    data <- bfile |>
-      read_binary_data_list(
-        data = data,
-        c(
-          "param_0xa0" = "int", # +0xA0, DDX_Text control 0x408
-          "opt_0xa4" = "int" # +0xA4, DDX_Check control 0x409 (stored as int32)
-        )
-      )
-  }
+  if (!is.na(data$version) && data$version >= 3)
+    data <- bfile |> read_binary_data_list(data = data, c("param_0xa0" = "int", "chk_409_option1" = "int"))
 
-  # version >= 5 fields
-  if (!is.na(data$version) && data$version >= 5) {
-    data <- bfile |>
-      read_binary_data_list(
-        data = data,
-        c(
-          "opt_0xa8" = "int" # +0xA8, DDX_Check control 0x40A
-        )
-      )
-  }
+  if (!is.na(data$version) && data$version >= 5)
+    data <- bfile |> read_binary_data_list(data = data, c("chk_40a_master" = "int"))
 
-  # version >= 6 fields
-  if (!is.na(data$version) && data$version >= 6) {
-    data <- bfile |>
-      read_binary_data_list(
-        data = data,
-        c(
-          "opt_0xac" = "int" # +0xAC, DDX_Check control 0x40B
-        )
-      )
-  }
+  if (!is.na(data$version) && data$version >= 6)
+    data <- bfile |> read_binary_data_list(data = data, c("chk_40b_dependent" = "int"))
 
-  return(dplyr::as_tibble(data))
+  dplyr::as_tibble(data)
 }
+
 
 
 # scan class readers =========
