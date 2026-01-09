@@ -51,6 +51,77 @@ read_CBlockData <- function(bfile) {
   return(tibble::as_tibble(data))
 }
 
+
+# read CBasicInterface object
+read_CBasicInterface <- function(bfile) {
+  data <- list(
+    pCData = bfile |> read_CData() |> list()
+  )
+  return(tibble::as_tibble(data))
+}
+
+# read CFinniganInterface object (complete)
+read_CFinniganInterface <- function(bfile) {
+  # parent
+  data <- list(
+    pCBasicInterface = bfile |> read_CBasicInterface() |> list()
+  )
+
+  # CFinniganInterface schema version (const on write, local on read)
+  data$version <- bfile |> read_binary_data("int")
+
+  # sanity check (current writers use 6)
+  if (!is.na(data$version) && data$version > 6) {
+    bfile |>
+      register_cnd(
+        cli_warn(
+          "CFinniganInterface version {data$version} is newer than expected (6). Parser may be incomplete."
+        ),
+        pos = bfile$pos
+      )
+  }
+
+  # field #1 (always present) +0x9C, DDX_Text control 0x403
+  data <- bfile |> read_binary_data_list(data = data, c("param_0x9c" = "int"))
+
+  # version >= 3 fields
+  if (!is.na(data$version) && data$version >= 3) {
+    data <- bfile |>
+      read_binary_data_list(
+        data = data,
+        c(
+          "param_0xa0" = "int", # +0xA0, DDX_Text control 0x408
+          "opt_0xa4" = "int" # +0xA4, DDX_Check control 0x409 (stored as int32)
+        )
+      )
+  }
+
+  # version >= 5 fields
+  if (!is.na(data$version) && data$version >= 5) {
+    data <- bfile |>
+      read_binary_data_list(
+        data = data,
+        c(
+          "opt_0xa8" = "int" # +0xA8, DDX_Check control 0x40A
+        )
+      )
+  }
+
+  # version >= 6 fields
+  if (!is.na(data$version) && data$version >= 6) {
+    data <- bfile |>
+      read_binary_data_list(
+        data = data,
+        c(
+          "opt_0xac" = "int" # +0xAC, DDX_Check control 0x40B
+        )
+      )
+  }
+
+  return(dplyr::as_tibble(data))
+}
+
+
 # scan class readers =========
 
 # read CScanStorage object
