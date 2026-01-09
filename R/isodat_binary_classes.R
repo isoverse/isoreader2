@@ -9,7 +9,7 @@ read_CData <- function(bfile) {
         "version" = "int", # const
         "APP_ID" = "uint16", # +0x04 (enum APP_ID returned by CData::GetOwner, often set to 0x2f = 47 in constructors)
         "?" = "string", # +0x34 # file name?
-        "?" = "string" # +0x38 # file header?
+        "file_name" = "string" # +0x38
       )
     )
 
@@ -96,7 +96,7 @@ read_CScanStorage <- function(bfile) {
     read_binary_data_list(
       data = data,
       c(
-        "?" = "string", # +0xf4
+        "comment" = "string", # +0xf4
         "n_points" = "int", # +0x168,
         "n_traces" = "int" # +0x16c
       )
