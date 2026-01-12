@@ -148,6 +148,77 @@ read_CScanStorage <- function(bfile) {
 }
 
 
+# read CVisualisationData object
+# read CVisualisationData object (covers full CSV including child objects)
+read_CVisualisationData <- function(bfile) {
+  # parent
+  data <- list(pCBlockData = bfile |> read_CBlockData() |> list())
+
+  # CBlockData child objects (count stored in CBlockData)
+  n <- data$pCBlockData[[1]]$n_objects
+
+  # ReadObject(..., &CData::classCData) -> CData-derived objects
+  if (!is.na(n) && n > 0) {
+    kids <- vector("list", n)
+    for (i in seq_len(n)) {
+      kids[[i]] <- bfile |> read_object("CData", read_CData)
+    }
+    data$child_objects <- list(kids)
+  } else {
+    data$child_objects <- list(list())
+  }
+
+  # CVisualisationData schema version (writes 8)
+  data$version <- read_schema_version(
+    bfile,
+    "CVisualisationData",
+    max_supported = 8
+  )
+  v <- data$version
+
+  # fixed byte block (16 bytes)
+  data$bytes_16 <- list(replicate(16, bfile |> read_binary_data("uint8")))
+
+  # array of uint32 (10 items): block A
+  data$blockA_u32_10 <- list(replicate(10, bfile |> read_binary_data("int")))
+
+  # array of uint32 (10 items): block B
+  data$blockB_u32_10 <- list(replicate(10, bfile |> read_binary_data("int")))
+
+  # 3 strings (version >= 2)
+  if (!is.na(v) && v >= 2) {
+    data <- bfile |>
+      read_binary_data_list(
+        data = data,
+        c("str_1" = "string", "str_2" = "string", "str_3" = "string")
+      )
+  }
+
+  # gated options (keep in this order)
+  if (!is.na(v) && v >= 3) {
+    data <- bfile |> read_binary_data_list(data = data, c("opt_A_u32" = "int"))
+  }
+  if (!is.na(v) && v >= 4) {
+    data <- bfile |> read_binary_data_list(data = data, c("opt_B_u32" = "int"))
+  }
+  if (!is.na(v) && v >= 5) {
+    data <- bfile |>
+      read_binary_data_list(data = data, c("preset_name" = "string"))
+  }
+  if (!is.na(v) && v >= 6) {
+    data <- bfile |> read_binary_data_list(data = data, c("opt_C_u32" = "int"))
+  }
+  if (!is.na(v) && v >= 7) {
+    data <- bfile |> read_binary_data_list(data = data, c("opt_D_u32" = "int"))
+  }
+  if (!is.na(v) && v >= 8) {
+    data <- bfile |> read_binary_data_list(data = data, c("opt_E_u32" = "int"))
+  }
+
+  dplyr::as_tibble(data)
+}
+
+
 # molecule class readers =========
 read_CMolecule <- function(bfile) {
   data <- list(pCData = bfile |> read_CData() |> list())
@@ -158,9 +229,3 @@ read_CMolecule <- function(bfile) {
 
   dplyr::as_tibble(data)
 }
-
-<<<<<<< Updated upstream
-#hello
-=======
-## hello 2
->>>>>>> Stashed changes
