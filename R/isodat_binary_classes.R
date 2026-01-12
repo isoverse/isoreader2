@@ -1,5 +1,30 @@
 # general class readers ======
 
+
+read_CData_derived_object <- function(bfile) {
+  info <- bfile |> read_CRuntimeClass(class = NULL)  # read actual class header
+  if (nrow(info) == 0L) return(tibble::tibble())
+
+  cls <- info$class[[1]]
+  fn <- paste0("read_", cls)
+
+  if (!exists(fn, mode = "function", inherits = TRUE)) {
+    bfile |>
+      register_cnd(
+        cli_abort("no reader implemented for CData-derived class {.field {cls}}"),
+        pos = bfile$pos
+      )
+    return(info)
+  }
+
+  obj <- get(fn, mode = "function", inherits = TRUE)(bfile)
+
+  info |>
+    dplyr::select(-dplyr::any_of(names(obj))) |>
+    dplyr::bind_cols(obj)
+}
+
+
 # read CData object (complete)
 read_CData <- function(bfile) {
   # fields
@@ -91,6 +116,141 @@ read_CFinniganInterface <- function(bfile) {
   dplyr::as_tibble(data)
 }
 
+read_CGpibInterface <- function(bfile) {
+  data <- list(
+    pCBasicInterface = bfile |> read_CBasicInterface() |> list()
+  )
+
+  # CGpibInterface schema version (writes 3)
+  data$gpib_version <- read_schema_version(
+    bfile,
+    "CGpibInterface",
+    max_supported = 3
+  )
+
+  # config bytes
+  data <- bfile |>
+    read_binary_data_list(
+      data = data,
+      c(
+        "gpib_cfg_byte1" = "uint8", # +0x9c
+        "gpib_cfg_byte2" = "uint8" # +0x9d
+      )
+    )
+
+  # added in schema version 3
+  if (!is.na(data$gpib_version) && data$gpib_version >= 3) {
+    data <- bfile |>
+      read_binary_data_list(
+        data = data,
+        c("gpib_cfg_byte3" = "uint8") # +0x9e
+      )
+  }
+
+  tibble::as_tibble(data)
+}
+
+# read CBasicScan object
+read_CBasicScan <- function(bfile) {
+  # parent
+  data <- list(pCData = bfile |> read_CData() |> list())
+
+  # CBasicScan schema version (writes 4)
+  data$version <- read_schema_version(
+    bfile,
+    "CBasicScan",
+    max_supported = 4
+  )
+  v <- data$version
+
+  # local: read polymorphic MFC object (reads runtime class header, dispatches to read_<Class>)
+  read_mfc_any <- function(bfile) {
+    info <- bfile |> read_CRuntimeClass(class = NULL)
+    if (nrow(info) == 0L) return(tibble::tibble())
+
+    cls <- info$class[[1]]
+    fn <- paste0("read_", cls)
+
+    if (!exists(fn, mode = "function", inherits = TRUE)) {
+      bfile |>
+        register_cnd(
+          cli_abort("no reader implemented for runtime class {.field {cls}}"),
+          pos = bfile$pos
+        )
+      return(info)
+    }
+
+    obj <- get(fn, mode = "function", inherits = TRUE)(bfile)
+
+    info |>
+      dplyr::select(-dplyr::any_of(names(obj))) |>
+      dplyr::bind_cols(obj)
+  }
+
+  # objects: X scan part, Y scan part, block data container
+  data$pXScanPart <- (bfile |> read_mfc_any()) |> list()
+  data$pYScanPart <- (bfile |> read_mfc_any()) |> list()
+  data$pBlockData <- (bfile |> read_mfc_any()) |> list()
+
+  # fields after objects
+  data <- bfile |>
+    read_binary_data_list(
+      data = data,
+      c(
+        "APP_ID_32" = "int",      # uint32 in C++
+        "flags_0xA0" = "int"      # uint32 in C++
+      )
+    )
+
+  # gated field (version >= 4)
+  if (!is.na(v) && v >= 4) {
+    data <- bfile |>
+      read_binary_data_list(data = data, c("mode_0x94" = "int")) # uint32 in C++
+  }
+
+  dplyr::as_tibble(data)
+}
+
+
+# read CGasConfiguration object
+read_CGasConfiguration <- function(bfile) {
+  # parent
+  data <- list(pCBlockData = bfile |> read_CBlockData() |> list())
+
+  # CBlockData child objects (count stored in CBlockData)
+  n <- data$pCBlockData[[1]]$n_objects
+
+  # ReadObject(..., &CData::classCData) -> CData-derived objects
+  if (!is.na(n) && n > 0) {
+    kids <- vector("list", n)
+    for (i in seq_len(n)) {
+      kids[[i]] <- bfile |> read_CData_derived_object()
+    }
+    data$child_objects <- list(kids)
+  } else {
+    data$child_objects <- list(list())
+  }
+
+  # CGasConfiguration schema version (writes 3)
+  data$version <- read_schema_version(
+    bfile,
+    "CGasConfiguration",
+    max_supported = 3
+  )
+  v <- data$version
+
+  # modified timestamp (only present for version >= 3)
+  if (!is.na(v) && v >= 3) {
+    data <- bfile |>
+      read_binary_data_list(data = data, c("modified_time" = "int"))
+  }
+
+  dplyr::as_tibble(data)
+}
+
+
+
+
 
 # scan class readers =========
 
@@ -148,7 +308,6 @@ read_CScanStorage <- function(bfile) {
 }
 
 
-<<<<<<< HEAD
 # read CVisualisationData object
 # read CVisualisationData object (covers full CSV including child objects)
 read_CVisualisationData <- function(bfile) {
@@ -162,7 +321,7 @@ read_CVisualisationData <- function(bfile) {
   if (!is.na(n) && n > 0) {
     kids <- vector("list", n)
     for (i in seq_len(n)) {
-      kids[[i]] <- bfile |> read_object("CData", read_CData)
+      kids[[i]] <- bfile |> read_CData_derived_object()
     }
     data$child_objects <- list(kids)
   } else {
@@ -217,7 +376,7 @@ read_CVisualisationData <- function(bfile) {
   }
 
   dplyr::as_tibble(data)
-=======
+}
 #===========================================================
 # CGpibInterface
 # Parent: CBasicInterface (which reads CData)
@@ -227,42 +386,6 @@ read_CVisualisationData <- function(bfile) {
 #   cfg_byte2 (uint8)
 #   cfg_byte3 (uint8) only if gpib_version >= 3
 #===========================================================
-
-read_CGpibInterface <- function(bfile) {
-  data <- list(
-    pCBasicInterface = bfile |> read_CBasicInterface() |> list()
-  )
-
-  # CGpibInterface schema version (writes 3)
-  data$gpib_version <- read_schema_version(
-    bfile,
-    "CGpibInterface",
-    max_supported = 3
-  )
-
-  # config bytes
-  data <- bfile |>
-    read_binary_data_list(
-      data = data,
-      c(
-        "gpib_cfg_byte1" = "uint8", # +0x9c
-        "gpib_cfg_byte2" = "uint8" # +0x9d
-      )
-    )
-
-  # added in schema version 3
-  if (!is.na(data$gpib_version) && data$gpib_version >= 3) {
-    data <- bfile |>
-      read_binary_data_list(
-        data = data,
-        c("gpib_cfg_byte3" = "uint8") # +0x9e
-      )
-  }
-
-  tibble::as_tibble(data)
->>>>>>> added CHardwarePart and CChannelHardwarePart
-}
-
 
 # molecule class readers =========
 read_CMolecule <- function(bfile) {
@@ -274,8 +397,6 @@ read_CMolecule <- function(bfile) {
 
   dplyr::as_tibble(data)
 }
-<<<<<<< HEAD
-=======
 
 
 # optional fallbacks (only used if your package does not already define these)
@@ -450,4 +571,3 @@ read_CChannelHardwarePart <- function(bfile) {
 
   dplyr::as_tibble(data)
 }
->>>>>>> added CHardwarePart and CChannelHardwarePart

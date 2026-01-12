@@ -467,7 +467,7 @@ read_all_CRuntimeClasses <- function(bfile) {
 }
 
 # read the runtime class name
-read_CRuntimeClass <- function(bfile, class, advance = TRUE) {
+read_CRuntimeClass <- function(bfile, class = NULL, advance = TRUE) {
   # safety check
   if (bfile$has_blocking_cnds) {
     return(dplyr::tibble())
@@ -479,14 +479,17 @@ read_CRuntimeClass <- function(bfile, class, advance = TRUE) {
   if (identical(start, as.raw(c(0xff, 0xff)))) {
     # is an actual CRuntimeClass definition --> pull it from the objects
     data <- bfile$objects |> dplyr::filter(.data$start == !!start_pos)
-    if (nrow(data) == 0L || !identical(data$class, class)) {
-      # missing or wrong class
+    if (
+      !is.null(class) && (nrow(data) == 0L || !identical(data$class, class))
+    ) {
+      found <- if (nrow(data) == 0L) "none" else cli::col_red(data$class[[1]])
       bfile |>
         register_cnd(cli_abort(
-          "expected object of type {.field {class}} but found {if(nrow(data) == 0L) 'none' else cli::col_red(datas$class[1])}"
+          "expected object of type {.field {class}} but found {found}"
         ))
       return(dplyr::tibble())
     }
+
     # jump to the end
     bfile$pos <- data$end + 1L
   } else {
@@ -559,14 +562,17 @@ read_CRuntimeClass_reference <- function(bfile) {
 # @param name description
 read_schema_version <- function(bfile, class_name, max_supported = NULL) {
   v <- bfile |> read_binary_data("int")
+
   if (!is.null(max_supported) && !is.na(v) && v > max_supported) {
     bfile |>
       register_cnd(
-        cli_warn(
-          "{cli::col_blue(class_name)} version ({v}) is newer than supported ({max_supported})"
+        cli::cli_warn(
+          "{cli::col_blue(class_name)} version ({v}) is newer than supported ({max_supported})",
+          .envir = environment()
         ),
         pos = bfile$pos
       )
   }
-  return(v)
+
+  v
 }
