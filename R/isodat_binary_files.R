@@ -485,7 +485,7 @@ read_CRuntimeClass <- function(bfile, class = NULL, advance = TRUE) {
       found <- if (nrow(data) == 0L) "none" else cli::col_red(data$class[[1]])
       bfile |>
         register_cnd(cli_abort(
-          "expected object of type {.field {class}} but found {found}"
+          "expected object of type {.field {class}} but found {if(nrow(data) == 0L) 'none' else cli::col_red(data$class[1])}"
         ))
       return(dplyr::tibble())
     }
