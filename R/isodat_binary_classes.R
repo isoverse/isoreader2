@@ -159,4 +159,8 @@ read_CMolecule <- function(bfile) {
   dplyr::as_tibble(data)
 }
 
+<<<<<<< Updated upstream
 #hello
+=======
+## hello 2
+>>>>>>> Stashed changes
