@@ -554,3 +554,19 @@ read_CRuntimeClass_reference <- function(bfile) {
   # return the ref_idx
   return(ref_idx)
 }
+
+# @param bfile binary file environemt
+# @param name description
+read_schema_version <- function(bfile, class_name, max_supported = NULL) {
+  v <- bfile |> read_binary_data("int")
+  if (!is.null(max_supported) && !is.na(v) && v > max_supported) {
+    bfile |>
+      register_cnd(
+        cli_warn(
+          "{cli::col_blue(class_name)} version ({v}) is newer than supported ({max_supported})"
+        ),
+        pos = bfile$pos
+      )
+  }
+  return(v)
+}

@@ -9,7 +9,7 @@ read_CData <- function(bfile) {
         "version" = "int", # const
         "APP_ID" = "uint16", # +0x04 (enum APP_ID returned by CData::GetOwner, often set to 0x2f = 47 in constructors)
         "?" = "string", # +0x34 # file name?
-        "file_name" = "string" # +0x38
+        "value" = "string" # +0x38
       )
     )
 
@@ -51,17 +51,6 @@ read_CBlockData <- function(bfile) {
   return(tibble::as_tibble(data))
 }
 
-
-read_schema_version <- function(bfile, class_name, max_supported = NULL, stop_on_newer = FALSE) {
-  v <- bfile |> read_binary_data("int")
-  if (!is.null(max_supported) && !is.na(v) && v > max_supported) {
-    msg <- paste0(class_name, " version ", v, " is newer than supported (", max_supported, "). Parser may be incomplete.")
-    if (isTRUE(stop_on_newer)) stop(msg, call. = FALSE) else bfile |> register_cnd(cli_warn(msg), pos = bfile$pos)
-  }
-  v
-}
-
-
 # read CBasicInterface object
 read_CBasicInterface <- function(bfile) {
   data <- list(
@@ -73,22 +62,34 @@ read_CBasicInterface <- function(bfile) {
 read_CFinniganInterface <- function(bfile) {
   data <- list(pCBasicInterface = bfile |> read_CBasicInterface() |> list())
 
-  data$version <- read_schema_version(bfile, "CFinniganInterface", max_supported = 6)
+  data$version <- read_schema_version(
+    bfile,
+    "CFinniganInterface",
+    max_supported = 6
+  )
 
   data <- bfile |> read_binary_data_list(data = data, c("param_0x9c" = "int"))
 
-  if (!is.na(data$version) && data$version >= 3)
-    data <- bfile |> read_binary_data_list(data = data, c("param_0xa0" = "int", "chk_409_option1" = "int"))
+  if (!is.na(data$version) && data$version >= 3) {
+    data <- bfile |>
+      read_binary_data_list(
+        data = data,
+        c("param_0xa0" = "int", "chk_409_option1" = "int")
+      )
+  }
 
-  if (!is.na(data$version) && data$version >= 5)
-    data <- bfile |> read_binary_data_list(data = data, c("chk_40a_master" = "int"))
+  if (!is.na(data$version) && data$version >= 5) {
+    data <- bfile |>
+      read_binary_data_list(data = data, c("chk_40a_master" = "int"))
+  }
 
-  if (!is.na(data$version) && data$version >= 6)
-    data <- bfile |> read_binary_data_list(data = data, c("chk_40b_dependent" = "int"))
+  if (!is.na(data$version) && data$version >= 6) {
+    data <- bfile |>
+      read_binary_data_list(data = data, c("chk_40b_dependent" = "int"))
+  }
 
   dplyr::as_tibble(data)
 }
-
 
 
 # scan class readers =========
@@ -144,4 +145,16 @@ read_CScanStorage <- function(bfile) {
   # expect next object to be CBinary
   bfile |> read_CRuntimeClass("CBinary", advance = FALSE)
   return(dplyr::as_tibble(data))
+}
+
+
+# molecule class readers =========
+read_CMolecule <- function(bfile) {
+  data <- list(pCData = bfile |> read_CData() |> list())
+
+  data$version <- read_schema_version(bfile, "CMolecule", max_supported = 0)
+
+  data <- bfile |> read_binary_data_list(data = data, c("formula" = "string"))
+
+  dplyr::as_tibble(data)
 }
