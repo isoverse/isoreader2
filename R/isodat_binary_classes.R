@@ -148,6 +148,7 @@ read_CScanStorage <- function(bfile) {
 }
 
 
+<<<<<<< HEAD
 # read CVisualisationData object
 # read CVisualisationData object (covers full CSV including child objects)
 read_CVisualisationData <- function(bfile) {
@@ -216,6 +217,50 @@ read_CVisualisationData <- function(bfile) {
   }
 
   dplyr::as_tibble(data)
+=======
+#===========================================================
+# CGpibInterface
+# Parent: CBasicInterface (which reads CData)
+# After parent fields:
+#   gpib_version (int, const 3 on write)
+#   cfg_byte1 (uint8)
+#   cfg_byte2 (uint8)
+#   cfg_byte3 (uint8) only if gpib_version >= 3
+#===========================================================
+
+read_CGpibInterface <- function(bfile) {
+  data <- list(
+    pCBasicInterface = bfile |> read_CBasicInterface() |> list()
+  )
+
+  # CGpibInterface schema version (writes 3)
+  data$gpib_version <- read_schema_version(
+    bfile,
+    "CGpibInterface",
+    max_supported = 3
+  )
+
+  # config bytes
+  data <- bfile |>
+    read_binary_data_list(
+      data = data,
+      c(
+        "gpib_cfg_byte1" = "uint8", # +0x9c
+        "gpib_cfg_byte2" = "uint8" # +0x9d
+      )
+    )
+
+  # added in schema version 3
+  if (!is.na(data$gpib_version) && data$gpib_version >= 3) {
+    data <- bfile |>
+      read_binary_data_list(
+        data = data,
+        c("gpib_cfg_byte3" = "uint8") # +0x9e
+      )
+  }
+
+  tibble::as_tibble(data)
+>>>>>>> added CHardwarePart and CChannelHardwarePart
 }
 
 
@@ -229,3 +274,180 @@ read_CMolecule <- function(bfile) {
 
   dplyr::as_tibble(data)
 }
+<<<<<<< HEAD
+=======
+
+
+# optional fallbacks (only used if your package does not already define these)
+if (!exists("cli_warn", mode = "function")) {
+  cli_warn <- function(text) {
+    rlang::warning_cnd(message = cli::format_inline(text))
+  }
+}
+if (!exists("cli_abort", mode = "function")) {
+  cli_abort <- function(text) {
+    rlang::error_cnd(message = cli::format_inline(text))
+  }
+}
+
+#===========================================================
+# CHardwarePart (parent reader)
+#===========================================================
+read_CHardwarePart <- function(bfile) {
+  # parent + version
+  data <- list(
+    pCBasicInterface = bfile |> read_CBasicInterface() |> list(),
+    version = bfile |> read_schema_version("CHardwarePart", max_supported = 10)
+  )
+  hv <- data$version
+
+  # member object (likely derived from CBasicInterface)
+  data$device_interface <- bfile |>
+    read_object("CBasicInterface", read_CBasicInterface) |>
+    list()
+
+  # hasGasConfPart flag + expected object
+  hasGasConfPart <- bfile |> read_binary_data("int")
+  data$hasGasConfPart <- hasGasConfPart
+  if (!is.na(hasGasConfPart) && hasGasConfPart > 0) {
+    if (!exists("read_CGasConfPart", mode = "function", inherits = TRUE)) {
+      bfile |>
+        register_cnd(
+          cli_abort(
+            "non-zero {.field hasGasConfPart} but read_CGasConfPart() is not implemented yet"
+          ),
+          pos = bfile$pos
+        )
+      return(dplyr::as_tibble(data))
+    }
+    data$gas_conf_part <- bfile |>
+      read_object("CGasConfPart", read_CGasConfPart) |>
+      list()
+  }
+
+  # hasMethodPart flag + expected object
+  hasMethodPart <- bfile |> read_binary_data("int")
+  data$hasMethodPart <- hasMethodPart
+  if (!is.na(hasMethodPart) && hasMethodPart > 0) {
+    if (!exists("read_CMethodPart", mode = "function", inherits = TRUE)) {
+      bfile |>
+        register_cnd(
+          cli_abort(
+            "non-zero {.field hasMethodPart} but read_CMethodPart() is not implemented yet"
+          ),
+          pos = bfile$pos
+        )
+      return(dplyr::as_tibble(data))
+    }
+    data$method_part <- bfile |>
+      read_object("CMethodPart", read_CMethodPart) |>
+      list()
+  }
+
+  # hasExtraData flag + expected base (CData)
+  hasExtraData <- bfile |> read_binary_data("int")
+  data$hasExtraData <- hasExtraData
+  if (!is.na(hasExtraData) && hasExtraData > 0) {
+    data$extra_data <- bfile |>
+      read_object("CData", read_CData) |>
+      list()
+  }
+
+  # checkboxes (version >= 3)
+  if (!is.na(hv) && hv >= 3) {
+    data <- bfile |>
+      read_binary_data_list(
+        data = data,
+        c(
+          "chk_404" = "int",
+          "chk_405" = "int",
+          "chk_406" = "int",
+          "chk_407" = "int"
+        )
+      )
+  }
+
+  # visualisation section (version >= 7)
+  if (!is.na(hv) && hv >= 7) {
+    if (
+      !exists("read_CVisualisationData", mode = "function", inherits = TRUE)
+    ) {
+      bfile |>
+        register_cnd(
+          cli_abort(
+            "version >= 7 but read_CVisualisationData() is not implemented yet"
+          ),
+          pos = bfile$pos
+        )
+      return(dplyr::as_tibble(data))
+    }
+    data$visualisation_data <- bfile |>
+      read_object("CVisualisationData", read_CVisualisationData) |>
+      list()
+
+    # 8 bytes (uint64 or double). Keep uint64 for now.
+    data$edit_mode_visualisation_value <- bfile |> read_binary_data("double")
+
+    data <- bfile |>
+      read_binary_data_list(
+        data = data,
+        c("multi_select_visualisation" = "int")
+      )
+  }
+
+  # CStringArray blocks (version >= 9)
+  if (!is.na(hv) && hv >= 9) {
+    data$set_hwparts_count <- bfile |> read_binary_data("int")
+    data$set_hwparts_strings <- list(lapply(
+      seq_len(max(0, data$set_hwparts_count)),
+      function(i) bfile |> read_binary_data("string")
+    ))
+
+    data$get_hwparts_count <- bfile |> read_binary_data("int")
+    data$get_hwparts_strings <- list(lapply(
+      seq_len(max(0, data$get_hwparts_count)),
+      function(i) bfile |> read_binary_data("string")
+    ))
+  }
+
+  # text field (version >= 10)
+  if (!is.na(hv) && hv >= 10) {
+    data$hardware_text <- bfile |> read_binary_data("string")
+  }
+
+  dplyr::as_tibble(data)
+}
+
+
+#===========================================================
+# CChannelHardwarePart
+# Parent: CHardwarePart -> CBasicInterface -> CData
+# After CHardwarePart:
+#   channel_version (int, writes 2)
+#   channel_param_1 (int)
+#   channel_param_2 (int)
+#===========================================================
+
+read_CChannelHardwarePart <- function(bfile) {
+  data <- list(
+    pCHardwarePart = bfile |> read_CHardwarePart() |> list()
+  )
+
+  data$channel_version <- read_schema_version(
+    bfile,
+    "CChannelHardwarePart",
+    max_supported = 2
+  )
+
+  data <- bfile |>
+    read_binary_data_list(
+      data = data,
+      c(
+        "channel_param_1" = "int",
+        "channel_param_2" = "int"
+      )
+    )
+
+  dplyr::as_tibble(data)
+}
+>>>>>>> added CHardwarePart and CChannelHardwarePart
