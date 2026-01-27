@@ -14,12 +14,7 @@ load_binary_file <- function(filepath) {
   )
 
   # read into an environment so it's mutable
-  bfile <- env(
-    prev_pos = 1L,
-    pos = 1L,
-    cnds = try_catch_cnds(TRUE)$conditions,
-    has_blocking_cnds = FALSE
-  )
+  bfile <- env(prev_pos = 1L, pos = 1L)
 
   # read
   size <- file.info(filepath)$size
@@ -29,13 +24,10 @@ load_binary_file <- function(filepath) {
   close(con)
 
   # analyze macrostructure
-  bfile$objects <- NULL
   bfile$objects <- bfile |> read_all_CRuntimeClasses()
-  bfile$prev_pos <- 1L
-  bfile$current_object <- NULL
-  bfile$object_version <- NULL
 
-  return(bfile)
+  # reset and return
+  return(bfile |> reset_bfile())
 }
 
 # skip position
@@ -44,10 +36,62 @@ skip_bytes <- function(bfile, n) {
   return(invisible(bfile))
 }
 
+# reset binary file index and positions
+reset_bfile <- function(bfile) {
+  # keep track of runtime class and object indices
+  bfile$index <- tibble(
+    class_idx = integer(),
+    obj_idx = integer(),
+    start = integer(),
+    container_idx = integer(),
+    class = character(),
+    version = integer()
+  )
+  bfile$cnds <- try_catch_cnds(TRUE)$conditions
+  bfile$has_blocking_cnds <- FALSE
+  bfile |> reset_pos()
+}
+
 # reset the bfile position
 reset_pos <- function(bfile) {
   bfile$pos <- 1L
+  bfile$prev_pos <- 1L
+  bfile$current_obj_idx <- NA_integer_
   return(invisible(bfile))
+}
+
+# update index with new class/object
+# returns the new index entry
+update_index <- function(
+  bfile,
+  class,
+  start,
+  version,
+  class_idx = NULL,
+  container_idx = bfile$current_obj_idx
+) {
+  if (is.null(class_idx)) {
+    # new class idx AND new object idx
+    class_idx <- if (nrow(bfile$index) == 0L) {
+      1L
+    } else {
+      tail(bfile$index$obj_idx, 1) + 1L
+    }
+    obj_idx <- class_idx + 1L
+  } else {
+    # just new object idx
+    obj_idx <- tail(bfile$index$obj_idx, 1) + 1L
+  }
+  index_entry <- tibble(
+    class_idx = as.integer(!!class_idx),
+    obj_idx = !!obj_idx,
+    start = as.integer(!!start),
+    container_idx = as.integer(!!container_idx),
+    class = !!class,
+    version = as.integer(!!version)
+  )
+  bfile$index <- dplyr::bind_rows(bfile$index, index_entry)
+  return(index_entry)
 }
 
 # check stream buffer
@@ -82,8 +126,7 @@ move_to_object <- function(
   reset_blocking_cnds = TRUE
 ) {
   # reset bfile object info
-  bfile$current_object <- NULL
-  bfile$object_version <- NULL
+  bfile$current_obj_idx <- NA_integer_
 
   # find class
   object <- bfile$objects |>
@@ -92,8 +135,6 @@ move_to_object <- function(
   # did we find any?
   if (nrow(object) > 0L) {
     # yes, move there
-    bfile$current_object <- object$class[1]
-    bfile$object_version <- object$version[1]
     bfile$pos <- object$start[1]
     if (reset_blocking_cnds) {
       # reset
@@ -109,24 +150,44 @@ move_to_object <- function(
         pos = bfile$pos
       )
   }
+
+  # general warning
+  cli_warn(
+    "moving to an object usually means that the class/object index is not accurate, proceed with caution (this is usually only used for testing/dev purposes)"
+  )
+
   # read the class
   return(invisible(bfile))
 }
 
-# read object
-read_object <- function(bfile, class, func, ...) {
-  object_info <- bfile |> read_CRuntimeClass(class)
-  object_read <- bfile |> func(...)
-  # return (everything from object_info that's not in object_read + all of object_read)
-  # note: if version is re-read, should there be a check here that they are the same?
-  object_info |>
-    dplyr::select(-dplyr::any_of(names(object_read))) |>
-    dplyr::bind_cols(object_read)
+# uses move_to_object and then the func to read it
+move_to_and_read_object <- function(
+  bfile,
+  class,
+  func,
+  ...,
+  reset_pos = FALSE
+) {
+  if (reset_pos) {
+    bfile |> reset_pos()
+  }
+  bfile |> move_to_object(class) |> read_object(class, {{ func }}, ...)
 }
 
-# uses move_to_object and then the func to read it
-move_to_and_read_object <- function(bfile, class, func, ...) {
-  bfile |> move_to_object(class) |> read_object(class, func, ...)
+# error handling ========
+
+# recursively get the location of an object in the index hierarchy
+get_object_path <- function(bfile, obj_idx = bfile$current_obj_idx) {
+  if (is.na(obj_idx)) {
+    return("")
+  }
+  index <- dplyr::filter(bfile$index, .data$obj_idx == !!obj_idx)
+  path <- sprintf("{cli::col_blue(\"%s\")} (v%d)", index$class, index$version)
+  containers <- get_object_path(bfile, index$container_idx)
+  if (nchar(containers) > 0) {
+    path <- sprintf("%s {cli::symbol$arrow_right} %s", containers, path)
+  }
+  return(path)
 }
 
 # register a cnd with the bfile
@@ -145,10 +206,8 @@ register_cnd <- function(bfile, exp, pos = bfile$prev_pos) {
           ~ {
             .x$message <-
               paste0(
-                if (!is.null(bfile$current_object)) {
-                  format_inline(
-                    "for {cli::col_blue(bfile$current_object)} (v{bfile$object_version}): "
-                  )
+                if (!is.na(bfile$current_obj_idx)) {
+                  sprintf("for %s: ", get_object_path(bfile)) |> format_inline()
                 } else {
                   ""
                 },
@@ -158,7 +217,7 @@ register_cnd <- function(bfile, exp, pos = bfile$prev_pos) {
             .x
           }
         ),
-      message = .data$condition |> purrr::map_chr(conditionMessage)
+      message = .data$condition |> purrr::map_chr(condition_cnd_message)
     )
   bfile$cnds <- dplyr::bind_rows(bfile$cnds, new_cnds)
   return(invisible(bfile))
@@ -394,24 +453,54 @@ read_binary_data_array <- function(bfile, types, n) {
   return(data)
 }
 
-# # read object from current position
-# # FIXME: maybe this is obsolete? (i.e. class object readers should maybe be called directly instead?)
-# read_binary_object <- function(bfile, object) {
-#   stopifnot(!missing(object) && is_scalar_character(object))
-#   read_object <- paste0("read_", object)
-#   if (!read_object %in% names(.bin_readers)) {
-#     known_objects <- gsub("read_", "", names(.bin_readers))
-#     cli_abort(
-#       c(
-#         "unknown object {.field {object}}",
-#         "i" = "known objects: {.field {known_objects}}"
-#       )
-#     )
-#   }
-#   return(.bin_readers[[read_object]](bfile))
-# }
+# core object readers ======
 
-# basic class readers ======
+# read object - this is the main function
+read_object <- function(bfile, class, func = NULL, ...) {
+  func_quo <- enquo(func)
+  # if func is not explicitly provided, look for read_<class>
+  if (quo_is_null(func_quo)) {
+    func_name <- paste0("read_", class)
+    if (!exists(func_name)) {
+      cli_abort(
+        "function {.field {func_name}} does not exist, please specify which {.emph func} to use to read a {.field {class}}"
+      )
+    }
+  } else {
+    func_name <- as_name(func_quo)
+  }
+
+  # try to read the runtime class
+  object_info <- bfile |> read_CRuntimeClass(class)
+
+  # failed to read runtime class?
+  if (bfile$has_blocking_cnds) {
+    return(object_info)
+  }
+
+  # update current object index
+  bfile$current_obj_idx <- object_info$obj_idx
+
+  # try to read the object
+  dots <- enquos(...)
+  read_call <- call2(func_name, bfile, !!!dots)
+  object_read <- eval_tidy(read_call)
+
+  # success? update the current object back to its container
+  if (!bfile$has_blocking_cnds) {
+    bfile$current_obj_idx <- dplyr::filter(
+      bfile$index,
+      .data$obj_idx == object_info$obj_idx
+    )$container_idx
+  }
+
+  # return (everything from object_info that's not in object_read + all of object_read)
+  # note: if version is re-read, should there be a check here that they are the same?
+  object_info |>
+    dplyr::select(-dplyr::any_of(names(object_read))) |>
+    dplyr::bind_cols(object_read)
+}
+
 
 # find objects (instances of a Cxyz class serialized with the MFC library's CArchive)
 read_all_CRuntimeClasses <- function(bfile) {
@@ -490,33 +579,57 @@ read_CRuntimeClass <- function(bfile, class = NULL, advance = TRUE) {
       return(dplyr::tibble())
     }
 
+    # update index
+    index <- bfile |>
+      update_index(
+        class = data$class,
+        start = start_pos,
+        version = data$version
+      )
+
     # jump to the end
     bfile$pos <- data$end + 1L
   } else {
-    # must be pointer --> reread the start bytes
+    # must be pointer --> reread the start bytes and read reference
     ref_idx <- bfile |> skip_bytes(-2) |> read_CRuntimeClass_reference()
-    data <- bfile$objects |>
-      dplyr::filter(.data$class == !!class) |>
-      dplyr::slice_head(n = 1)
+
+    # try to find this reference class
+    data <- bfile$index |> dplyr::filter(.data$class_idx == !!ref_idx)
+
     if (nrow(data) == 0L) {
       # missing
       bfile |>
         register_cnd(cli_abort(
-          "found object reference {ref_idx} but {.field {class}} is not a known class in this file"
+          "encountered unknown class reference index {ref_idx} (not in the {nrow(bfile$index)} previously encountered classes)"
         ))
       return(dplyr::tibble())
     }
-    # add ref_idx and update start
-    data <- data |>
-      dplyr::mutate(ref_idx = !!ref_idx, .before = 1L, start = !!start_pos)
+
+    if (!is.null(class) && !identical(data$class[1], class)) {
+      # not the requested/known class type
+      bfile |>
+        register_cnd(cli_abort(
+          "expected object of type {.field {class}} but found reference to {cli::col_red(data$class[1])} instad"
+        ))
+      return(dplyr::tibble())
+    }
+
+    # update index
+    index <- bfile |>
+      update_index(
+        class_idx = ref_idx,
+        class = data$class,
+        start = start_pos,
+        version = data$version
+      )
   }
   # don't advance?
   if (!advance) {
     bfile$pos <- start_pos
   }
-  # is already a tibble, just remove misleading end (it's not end of the object, just end of the runtimeclass)
-  data$end <- NULL
-  return(data)
+
+  # return
+  return(index |> dplyr::select("obj_idx", "class"))
 }
 
 # read the reference index for the runtime class
@@ -525,35 +638,27 @@ read_CRuntimeClass_reference <- function(bfile) {
   ref_idx <- NA_integer_
   start <- bfile |> read_binary_data("raw", n = 2)
   if (identical(start, as.raw(c(0x7f, 0xff)))) {
-    # cached object that has a high ID (>32,767), doubt this will ever happen
+    # cached object that has a long from ID (>32,767), doubt this will ever happen
     raw_id <- bfile |> read_binary_data("raw", n = 4)
     cache_id <- readBin(raw_id, "int", size = 4)
-    if (bitwAnd(cache_id, 0x80000000) != 0) {
-      # remove high bit to get cache id
-      # does this work if int is signed? I don't think so!
-      ref_idx <- bitwAnd(cache_id, bitwNot(0x80000000))
-    } else {
-      # don't have the highest bit set, this can't be a class ID!
-      bfile |>
-        register_cnd(cli_abort(
-          "expected object ID with high bit flag set but found {cli::col_red(raw_id)}"
-        ))
-    }
+    is_class_ref <- bitwAnd(cache_id, 0x80000000) != 0
+    ref_idx <- bitwAnd(cache_id, bitwNot(0x80000000))
   } else {
-    # cached object with ID <= 32767
+    # cached object with short form ID <= 32767
     raw_id <- start
     cache_id <- readBin(raw_id, "int", size = 2, signed = FALSE)
-    if (bitwAnd(cache_id, 0x8000) != 0) {
-      # remove high bit to get cache id
-      ref_idx <- bitwAnd(cache_id, bitwNot(0x8000))
-    } else {
-      # don't have the highest bit set, this can't be a class ID!
-      bfile |>
-        register_cnd(cli_abort(
-          "expected object ID with high bit flag set but found {cli::col_red(raw_id)}"
-        ))
-    }
+    is_class_ref <- bitwAnd(cache_id, 0x8000) != 0
+    ref_idx <- bitwAnd(cache_id, bitwNot(0x8000))
   }
+
+  # don't have the highest bit set, this can't be a class ID (but could be an object ID - untested)
+  if (is_class_ref) {
+    bfile |>
+      register_cnd(cli_abort(
+        "expected class reference ID with high bit flag set but found {cli::col_red(raw_id)} ({.field ref_idx = {ref_idx}}), this could be a repeat object instead referencing an exact earlier object copy - reading this kind of object is untested"
+      ))
+  }
+
   # return the ref_idx
   return(ref_idx)
 }
