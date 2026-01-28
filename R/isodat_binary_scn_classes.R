@@ -23,6 +23,7 @@ read_CScanStorage <- function(bfile) {
   }
 
   data$version <- bfile |> read_binary_data("int") # const
+
   # version check
   if (!is.na(data$version) && data$version < 4) {
     bfile |>
@@ -38,7 +39,7 @@ read_CScanStorage <- function(bfile) {
     bfile |> read_binary_data("string")
     bfile |> read_binary_data("string")
   }
-  # fields
+  # first set of fields
   data <- bfile |>
     read_binary_data_list(
       data = data,
@@ -48,7 +49,50 @@ read_CScanStorage <- function(bfile) {
         "n_traces" = "int" # +0x16c
       )
     )
-  # expect next object to be CBinary
-  bfile |> read_CRuntimeClass("CBinary", advance = FALSE)
+
+  # Cbinary object instance is next
+  data$CBinary <- bfile |>
+    read_object(
+      "CBinary",
+      n_points = data$n_points,
+      n_traces = data$n_traces
+    ) |>
+    list()
+
+  # a second instance but this one is empty --> not storing it
+  bfile |> read_object("CBinary", read_data = FALSE) |> list()
+
+  # CPlotInfo / CPlotRange are serialized in a separated index
+  current_index <- bfile$index
+  current_obj_idx <- bfile$current_obj_idx
+  bfile$index <- bfile$index[c(), ]
+  bfile$current_obj_idx <- NA_integer_
+
+  # CPlotInfo
+  data$CPlotInfo <- bfile |> read_object("CPlotInfo") |> list()
+
+  # CPlotRange
+  data$CPlotRange <- bfile |>
+    read_object("CPlotRange", n_traces = data$n_traces) |>
+    list()
+
+  # resume pre-PlotInfo index
+  bfile$index_plot <- bfile$index
+  bfile$index <- current_index
+  bfile$current_obj_idx <- current_obj_idx
+
+  # read time stamps
+  data <- bfile |>
+    read_binary_data_list(
+      data = data,
+      c(
+        timestamp_start = "timestamp", # 0xF8
+        timestamp_end = "timestamp", # 0xFC
+        x100 = "int", # some sort of flag?
+        x104 = "uint8", # bool or enum?
+        x108 = "string" # OS username?
+      )
+    )
+
   return(dplyr::as_tibble(data))
 }
