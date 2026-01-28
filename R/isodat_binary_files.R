@@ -576,7 +576,9 @@ read_CRuntimeClass <- function(bfile, class = NULL, advance = TRUE) {
   start <- bfile |> read_binary_data("raw", n = 2)
   if (identical(start, as.raw(c(0xff, 0xff)))) {
     # is an actual CRuntimeClass definition --> pull it from the objects
-    data <- bfile$objects |> dplyr::filter(.data$start == !!start_pos)
+    data <- bfile$objects |>
+      dplyr::filter(.data$start == !!start_pos) |>
+      dplyr::slice_head(n = 1L)
     if (
       !is.null(class) && (nrow(data) == 0L || !identical(data$class, class))
     ) {
@@ -603,7 +605,9 @@ read_CRuntimeClass <- function(bfile, class = NULL, advance = TRUE) {
     ref_idx <- bfile |> skip_bytes(-2) |> read_CRuntimeClass_reference()
 
     # try to find this reference class
-    data <- bfile$index |> dplyr::filter(.data$class_idx == !!ref_idx)
+    data <- bfile$index |>
+      dplyr::filter(.data$class_idx == !!ref_idx) |>
+      dplyr::slice_head(n = 1L)
 
     if (nrow(data) == 0L) {
       # missing
