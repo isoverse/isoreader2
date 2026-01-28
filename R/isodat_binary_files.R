@@ -164,7 +164,7 @@ move_to_object <- function(
 move_to_and_read_object <- function(
   bfile,
   class,
-  func,
+  func = NULL,
   ...,
   reset_pos = FALSE
 ) {
@@ -239,6 +239,7 @@ register_cnd <- function(bfile, exp, pos = bfile$prev_pos) {
   ascii = 1L,
   unicode = 2L,
   string = 4L,
+  timestamp = 4L,
   bool8 = 1L,
   bool16 = 2L,
   bool = 4L, # this seems to be the default
@@ -288,19 +289,25 @@ read_binary_data <- function(
   start_pos <- bfile$pos
   if (type == "string") {
     # CString start sequence
-    bfile |> read_binary_data("raw", n = 2, expected = as.raw(c(0xff, 0xfe)))
-    # third is usually 0xff but what if strings are more than 255 chars long, can this be different then?
     bfile |>
-      read_binary_data(
-        "raw",
-        n = 1,
-        expected = as.raw(0xff),
-        block_if_unexpected = FALSE
-      )
-    # string length
-    string_length <- bfile |> read_binary_data("uint8", n = 1)
+      read_binary_data("raw", n = 3, expected = as.raw(c(0xff, 0xfe, 0xff)))
+    # figure out string length
+    length_type <- bfile |> read_binary_data("raw", n = 3, advance = FALSE)
+    if (
+      !is.na(length_type[1]) &&
+        identical(length_type, as.raw(c(0xff, 0xff, 0xff)))
+    ) {
+      # length is 4 byte and starts after the FF FF FF
+      string_length <- bfile |> skip_bytes(3) |> read_binary_data("int")
+    } else if (!is.na(length_type[1]) && length_type[1] == as.raw(0xff)) {
+      # length is 2 byte and starts after the FF
+      string_length <- bfile |> skip_bytes(1) |> read_binary_data("uint16")
+    } else {
+      # most common case, string length is 1 byte (<256 characters)
+      string_length <- bfile |> read_binary_data("uint8")
+    }
     value <- ""
-    if (!is.null(string_length) && string_length > 0) {
+    if (!is.na(string_length) && string_length > 0) {
       value <- bfile |> read_binary_data("unicode", n = string_length)
     }
   } else if (type == "unicode") {
@@ -315,7 +322,7 @@ read_binary_data <- function(
     if (type %in% c("uint8", "uint16", "bool8", "bool16")) {
       read_type <- "int"
       signed <- FALSE
-    } else if (type == "bool") {
+    } else if (type %in% c("bool", "timestamp")) {
       read_type <- "int"
     } else if (type == "float") {
       read_type <- "numeric"
@@ -336,6 +343,8 @@ read_binary_data <- function(
           )
       }
       value <- as.logical(value)
+    } else if (type == "timestamp") {
+      value <- as.POSIXct(value, tz = "UTC")
     }
     # update position
     if (advance) {
@@ -652,7 +661,7 @@ read_CRuntimeClass_reference <- function(bfile) {
   }
 
   # don't have the highest bit set, this can't be a class ID (but could be an object ID - untested)
-  if (is_class_ref) {
+  if (!is_class_ref) {
     bfile |>
       register_cnd(cli_abort(
         "expected class reference ID with high bit flag set but found {cli::col_red(raw_id)} ({.field ref_idx = {ref_idx}}), this could be a repeat object instead referencing an exact earlier object copy - reading this kind of object is untested"
@@ -671,11 +680,9 @@ read_schema_version <- function(bfile, class_name, max_supported = NULL) {
   if (!is.null(max_supported) && !is.na(v) && v > max_supported) {
     bfile |>
       register_cnd(
-        cli::cli_warn(
-          "{cli::col_blue(class_name)} version ({v}) is newer than supported ({max_supported})",
-          .envir = environment()
-        ),
-        pos = bfile$pos
+        cli_warn(
+          "{cli::col_blue(class_name)} version (v{v}) is newer than supported (v{max_supported})"
+        )
       )
   }
 
