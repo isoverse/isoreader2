@@ -27,18 +27,17 @@ read_CData_derived_object <- function(bfile) {
     dplyr::bind_cols(obj)
 }
 
+# CData chain ===================
 
 # read CData object (complete)
 read_CData <- function(bfile) {
   # fields
-  data <- bfile |>
-    read_binary_data_list(
-      c(
-        "version" = "int", # const
-        "APP_ID" = "uint16", # +0x04 (enum APP_ID returned by CData::GetOwner, often set to 0x2f = 47 in constructors)
-        "?" = "string", # +0x34 # file name?
-        "value" = "string" # +0x38
-      )
+  data <-
+    list(
+      version = bfile |> read_schema_version("CData", 3),
+      app_id = bfile |> read_binary_data("uint16"), # +0x04 (enum APP_ID returned by CData::GetOwner, often set to 0x2f = 47 in constructors)
+      x34 = bfile |> read_binary_data("string"), # file name?
+      value = bfile |> read_binary_data("string") # +0x38
     )
 
   # additional data for version >= 3
@@ -48,8 +47,7 @@ read_CData <- function(bfile) {
     # +0x7c & 2 = CData::BackupFile
     # +0x7c & 4 = CData::IsDisabled
     # +0x7c & 8 = CData::IsAdvanced
-    data <- bfile |>
-      read_binary_data_list(data = data, c("flags" = "int"))
+    data$flags <- bfile |> read_binary_data("int") #0x7e
   }
 
   return(dplyr::as_tibble(data))
@@ -60,18 +58,10 @@ read_CData <- function(bfile) {
 read_CBlockData <- function(bfile) {
   # parent
   data <- list(
-    pCData = bfile |> read_CData() |> list()
+    pCData = bfile |> read_CData() |> list(),
+    version = bfile |> read_schema_version("CBlockData", 2),
+    n_objects = bfile |> read_binary_data("int") # +0x9C
   )
-
-  # fields
-  data <- bfile |>
-    read_binary_data_list(
-      data = data,
-      c(
-        "version" = "int", # const
-        "n_objects" = "int" # +0x9C
-      )
-    )
 
   # array of n (n_objects) CData-dervied child objects at +0x98
   # these are read with: class CObject object = CArchive::ReadObject(ar, &CData::classCData)
@@ -366,8 +356,229 @@ read_CGpibInterface <- function(bfile) {
   tibble::as_tibble(data)
 }
 
+# CSimple chain ======
+
+# read CSimple object (complete)
+read_CSimple <- function(bfile) {
+  # fields
+  data <-
+    list(
+      version = bfile |> read_schema_version("CSimple", max_supported = 2),
+      "x38" = bfile |> read_binary_data("string")
+    )
+  return(dplyr::as_tibble(data))
+}
+
+# read CBinary object (complete)
+read_CBinary <- function(bfile, n_points, n_traces, read_data = TRUE) {
+  # parent
+  data <- list(
+    pCSimple = bfile |> read_CSimple() |> list(),
+    version = bfile |> read_schema_version("CBinary", max_supported = 2),
+    n_bytes = bfile |> read_binary_data("int")
+  )
+
+  # data
+  if (
+    read_data && !is.na(n_points) && !is.na(n_traces) && !is.na(data$n_bytes)
+  ) {
+    # n_bytes = 4 * n_points + 8 * n_traces * n_points
+    # safety check that this matches the provided n_points and n_traces
+    # (can not uniquely identify the number of traces/points from n_bytes alone! there are multiple solutions)
+    if (data$n_bytes != 4L * n_points + 8L * n_traces * n_points) {
+      bfile |>
+        register_cnd(
+          cli_abort(
+            "number of bytes ({data$n_bytes}) does not match what is expected based on the number of points ({n_points}) and traces ({n_traces})"
+          )
+        )
+    }
+    types <- c("float", rep("double", n_traces))
+    data$voltages <- bfile |>
+      read_binary_data_array(types, n = n_points) |>
+      list()
+  }
+
+  return(dplyr::as_tibble(data))
+}
+
+
+# CPlotInfo / CPlotRange =========
+
+# we do not have a decompiled code base for this
+# --> inferred by manual inspection (complete)
+# CPlotInfo and CPlotRange have separate serialization indices
+# so need to be started with a fresh index (see use in
+# read_CScanStorage)
+read_CPlotInfo <- function(bfile) {
+  # version
+  data <- list(
+    version = bfile |> read_schema_version("CPlotInfo", max_supported = 2)
+  )
+
+  # fields
+  data <- bfile |>
+    read_binary_data_list(
+      data = data,
+      c(
+        "?" = "int", # usually 0
+        "?" = "int", # usually 1
+        "?" = "int", # usually 1
+        "?" = "int", # usually 1
+        "?" = "float" # usually 10,000.00, is this the max accelerating voltage?
+      )
+    )
+
+  # spacer sequence (NOT an empty string)
+  spacer <- bfile |>
+    read_binary_data(
+      "raw",
+      4L,
+      expected = as.raw(c(0xff, 0xff, 0xff, 0x00)),
+      block_if_unexpected = FALSE
+    )
+
+  # next fields
+  data <- bfile |>
+    read_binary_data_list(
+      data = data,
+      c(
+        "?" = "int", # usually 0
+        "?" = "int", # usually 1
+        "?" = "raw", # usually 0E - is this an object reference of some kind?
+        "?" = "raw", # usually 00
+        "font" = "string", # usually Arial
+        "x_label" = "string", # without units!
+        "y_label" = "string", # without units!
+        "?" = "string" # usually Ratio
+      )
+    )
+
+  # CTrace Info
+  data$CTraceInfo <- bfile |> read_object("CTraceInfo") |> list()
+
+  return(dplyr::as_tibble(data))
+}
+
+# we do not have decomplied code for this
+# --> inferred by manual inspection (complete)
+read_CTraceInfo <- function(bfile) {
+  # no version serialized!
+  # spacer sequence (NOT an empty string)
+  spacer <- bfile |>
+    read_binary_data(
+      "raw",
+      4L,
+      expected = as.raw(c(0xff, 0xff, 0xff, 0x00)),
+      block_if_unexpected = FALSE
+    )
+
+  # number of traces
+  data <- list()
+  data$n_traces <- bfile |> read_binary_data("uint8")
+
+  # read CTraceInfoEntry records
+  if (!is.na(data$n_traces) && data$n_traces > 0) {
+    data$CTraceInfoEntry <-
+      1:data$n_traces |>
+      purrr::map(
+        ~ read_object(bfile, "CTraceInfoEntry")
+      ) |>
+      dplyr::bind_rows() |>
+      list()
+  }
+
+  # n_traces number again
+  data$n_traces <- bfile |> read_binary_data("uint8")
+
+  # read the trace labels (one for each trace)
+  if (!is.na(data$n_traces) && data$n_traces > 0) {
+    data$trace_labels <-
+      1:data$n_traces |>
+      purrr::map_chr(
+        ~ bfile |> read_binary_data("string")
+      ) |>
+      list()
+  }
+
+  return(dplyr::as_tibble(data))
+}
+
+# we do not have decomplied code for this
+# --> inferred by manual inspection (complete)
+read_CTraceInfoEntry <- function(bfile) {
+  # no version serialized!
+  data <- bfile |>
+    read_binary_data_list(
+      c(
+        "idx" = "uint8", # 0, 1, 2, etc.
+        "?" = "raw", # usually FF
+        "?" = "int", # variations of 08 00 00 00, 00 08 00 00, 00 00 08 00, etc.
+        "?" = "int", # usually 0
+        "?" = "int", # usually 0
+        "?" = "int" # usually 1
+      )
+    )
+  return(dplyr::as_tibble(data))
+}
+
+# we do not have decomplied code for this
+# --> inferred by manual inspection (complete)
+read_CPlotRange <- function(bfile, n_traces) {
+  # no version serialized!
+  data <- bfile |>
+    read_binary_data_list(
+      c(
+        "xmin" = "float",
+        "xmax" = "float",
+        "ymin" = "double",
+        "ymax" = "double"
+      )
+    )
+
+  # spacer - this actually looks like a typical class reference (09 80)
+  # but the fields after don't fit that pattern
+  spacer <- bfile |> read_binary_data("raw", 2L)
+
+  # fields
+  data <- bfile |>
+    read_binary_data_list(
+      data = data,
+      c(
+        "zoom_xmin" = "float",
+        "zoom_xmax" = "float",
+        "zoom_ymin" = "double",
+        "zoom_ymax" = "double",
+        "?" = "int",
+        "?" = "int",
+        # this seems to be just an inverted replication
+        "zoom_xmin_rep" = "float",
+        "zoom_xmax_rep" = "float",
+        "zoom_ymin_rep" = "double",
+        "zoom_ymax_rep" = "double",
+        "xmin_rep" = "float",
+        "xmax_rep" = "float",
+        "ymin_rep" = "double",
+        "ymax_rep" = "double"
+      )
+    )
+
+  # read the trace labels (one for each trace)
+  # this information is also in CTraceInfo
+  if (!is.na(n_traces) && n_traces > 0) {
+    data$trace_labels <-
+      1:n_traces |>
+      purrr::map_chr(
+        ~ bfile |> read_binary_data("string")
+      ) |>
+      list()
+  }
+  return(dplyr::as_tibble(data))
+}
+
 
 # molecule class readers =========
+
 read_CMolecule <- function(bfile) {
   data <- list(pCData = bfile |> read_CData() |> list())
 
