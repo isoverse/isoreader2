@@ -344,7 +344,8 @@ read_binary_data <- function(
       }
       value <- as.logical(value)
     } else if (type == "timestamp") {
-      value <- as.POSIXct(value, tz = "UTC")
+      # as.POSIXct does not create an object that can be writtenas parquet but this does
+      value <- lubridate::as_datetime(value, tz = "UTC")
     }
     # update position
     if (advance) {
@@ -656,6 +657,10 @@ read_CRuntimeClass_reference <- function(bfile) {
     cache_id <- readBin(raw_id, "int", size = 4)
     is_class_ref <- bitwAnd(cache_id, 0x80000000) != 0
     ref_idx <- bitwAnd(cache_id, bitwNot(0x80000000))
+    bfile |>
+      register_cnd(cli_warn(
+        "untested 4 byte class index ({.field ref_idx = {ref_idx}}), double check the data is correct"
+      ))
   } else {
     # cached object with short form ID <= 32767
     raw_id <- start
