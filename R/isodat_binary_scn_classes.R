@@ -1,4 +1,4 @@
-# scan class readers =========
+# scan class reader =========
 
 # read CScanStorage object
 read_CScanStorage <- function(bfile) {
@@ -62,24 +62,10 @@ read_CScanStorage <- function(bfile) {
   # a second instance but this one is empty --> not storing it
   bfile |> read_object("CBinary", read_data = FALSE) |> list()
 
-  # CPlotInfo / CPlotRange are serialized in a separated index
-  current_index <- bfile$index
-  current_obj_idx <- bfile$current_obj_idx
-  bfile$index <- bfile$index[c(), ]
-  bfile$current_obj_idx <- NA_integer_
-
-  # CPlotInfo
-  data$CPlotInfo <- bfile |> read_object("CPlotInfo") |> list()
-
-  # CPlotRange
-  data$CPlotRange <- bfile |>
-    read_object("CPlotRange", n_traces = data$n_traces) |>
+  # CPlotInfo is serialized in a separate indepnendent index (i.e. index resets just for this)
+  data$CPlotInfo <- bfile |>
+    read_object("CPlotInfo", independent_index = "plot_index") |>
     list()
-
-  # resume pre-PlotInfo index
-  bfile$index_plot <- bfile$index
-  bfile$index <- current_index
-  bfile$current_obj_idx <- current_obj_idx
 
   # read time stamps
   data <- bfile |>
@@ -93,6 +79,26 @@ read_CScanStorage <- function(bfile) {
         x108 = "string" # OS username?
       )
     )
+
+  # first CScanPart
+  data$CScanPart1 <- bfile |>
+    # note: reads with general CScanPart but should this be less permissive and
+    # require CMagnetCurrentScanPart, CScaleHvScanPart, CClockScanPart, etc. be predefined?
+    read_object(pattern = "ScanPart", func = read_CScanPart) |>
+    list()
+
+  return(dplyr::as_tibble(data))
+}
+
+# CData::CBasicInterface::CScanPart chain =============
+
+# read CScanPart object
+# same function: CMagnetCurrentScanPart, CScaleHvScanPart, CClockScanPart, etc.
+read_CScanPart <- function(bfile) {
+  data <- list(
+    pCBasicInterface = bfile |> read_CBasicInterface() |> list(),
+    version = bfile |> read_schema_version("CScanPart", max_supported = 3)
+  )
 
   return(dplyr::as_tibble(data))
 }
