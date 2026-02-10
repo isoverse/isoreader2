@@ -229,6 +229,7 @@ register_cnd <- function(bfile, exp, pos = bfile$prev_pos) {
 .bin_number_types <- c(
   uint8 = 1L,
   uint16 = 2L,
+  uint32 = 4L,
   int = 4L,
   float = 4L,
   double = 8L
@@ -323,7 +324,7 @@ read_binary_data <- function(
     if (type %in% c("uint8", "uint16", "bool8", "bool16")) {
       read_type <- "int"
       signed <- FALSE
-    } else if (type %in% c("bool", "timestamp", "color")) {
+    } else if (type %in% c("uint32", "bool", "timestamp", "color")) {
       read_type <- "int"
     } else if (type == "float") {
       read_type <- "numeric"
@@ -344,6 +345,9 @@ read_binary_data <- function(
           )
       }
       value <- as.logical(value)
+    } else if (type == "uint32") {
+      # wrap int to become unsigned int
+      value <- value %% 2^32
     } else if (type == "timestamp") {
       # as.POSIXct does not create an object that can be writtenas parquet but this does
       value <- lubridate::as_datetime(value, tz = "UTC")
