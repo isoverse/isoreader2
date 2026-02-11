@@ -346,8 +346,9 @@ read_binary_data <- function(
       }
       value <- as.logical(value)
     } else if (type == "uint32") {
-      # wrap int to become unsigned int
+      # wrap int to become unsigned int (promoted to double since it doesn't fit Rs signed int)
       value <- value %% 2^32
+      if (value <= 2^31) value <- as.integer(value) # can be stored in an integer
     } else if (type == "timestamp") {
       # as.POSIXct does not create an object that can be writtenas parquet but this does
       value <- lubridate::as_datetime(value, tz = "UTC")
