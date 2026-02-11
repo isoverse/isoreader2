@@ -22,7 +22,8 @@ read_CScanStorage <- function(bfile) {
       )
   }
 
-  data$version <- bfile |> read_binary_data("int") # const
+  data$version <- bfile |>
+    read_schema_version("CScanStorage", max_supported = 6)
 
   # version check
   if (!is.na(data$version) && data$version < 4) {
@@ -81,24 +82,92 @@ read_CScanStorage <- function(bfile) {
     )
 
   # first CScanPart
-  data$CScanPart1 <- bfile |>
-    # note: reads with general CScanPart but should this be less permissive and
-    # require CMagnetCurrentScanPart, CScaleHvScanPart, CClockScanPart, etc. be predefined?
-    read_object(pattern = "ScanPart", func = read_CScanPart) |>
-    list()
+  data$CScanPart1 <- bfile |> read_object(pattern = "ScanPart") |> list()
+
+  # second CScanPart
+  data$CScanPart2 <- bfile |> read_object(pattern = "ScanPart") |> list()
 
   return(dplyr::as_tibble(data))
 }
 
 # CData::CBasicInterface::CScanPart chain =============
 
-# read CScanPart object
-# same function: CMagnetCurrentScanPart, CScaleHvScanPart, CClockScanPart, etc.
+# read CScanPart object (complete)
 read_CScanPart <- function(bfile) {
+  # parent an version
   data <- list(
     pCBasicInterface = bfile |> read_CBasicInterface() |> list(),
     version = bfile |> read_schema_version("CScanPart", max_supported = 3)
   )
+
+  # CHardwarePart
+  data$CHardwarePart <- bfile |>
+    read_object(pattern = "HardwarePart") |>
+    list()
+
+  # other fields
+  data$xA0 <- bfile |> read_binary_data("int")
+  data$xA4 <- bfile |> read_binary_data("int")
+  data$xB0 <- bfile |> read_binary_data("int")
+
+  return(dplyr::as_tibble(data))
+}
+
+
+# read CScanPart::CClockScanPart (complete)
+read_CClockScanPart <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCScanPart = bfile |> read_CScanPart() |> list(),
+    version = bfile |> read_schema_version("CClockScanPart", max_supported = 2)
+  )
+  # other fields
+  data$scan_time <- bfile |> read_binary_data("int") # almost certain
+  return(dplyr::as_tibble(data))
+}
+
+# read CScanPart::CScaleHvScanPart (complete)
+read_CScaleHvScanPart <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCScanPart = bfile |> read_CScanPart() |> list(),
+    version = bfile |>
+      read_schema_version("CScaleHvScanPart", max_supported = 2)
+  )
+  # other fields
+  data$start <- bfile |> read_binary_data("int")
+  data$stop <- bfile |> read_binary_data("int")
+  data$step <- bfile |> read_binary_data("int")
+  data$delay <- bfile |> read_binary_data("int") # not 100% sure this is correct
+  return(dplyr::as_tibble(data))
+}
+
+# read CScanPart::CMagnetCurrentScanPart (complete)
+read_CMagnetCurrentScanPart <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCScanPart = bfile |> read_CScanPart() |> list(),
+    version = bfile |>
+      read_schema_version("CMagnetCurrentScanPart", max_supported = 2)
+  )
+  # other fields
+  data$start <- bfile |> read_binary_data("int")
+  data$stop <- bfile |> read_binary_data("int")
+  data$step <- bfile |> read_binary_data("int")
+  data$delay <- bfile |> read_binary_data("int") # not 100% sure this is correct
+  return(dplyr::as_tibble(data))
+}
+
+# read CScanPart::CIntegrationUnitScanPart
+read_CIntegrationUnitScanPart <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCScanPart = bfile |> read_CScanPart() |> list(),
+    version = bfile |>
+      read_schema_version("CIntegrationUnitScanPart", max_supported = 3)
+  )
+
+  # FIXME: continue here
 
   return(dplyr::as_tibble(data))
 }
