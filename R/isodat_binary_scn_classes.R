@@ -68,7 +68,7 @@ read_CScanStorage <- function(bfile) {
     read_object("CPlotInfo", independent_index = "plot_index") |>
     list()
 
-  # read time stamps
+  # additional fields
   data <- bfile |>
     read_binary_data_list(
       data = data,
@@ -86,6 +86,49 @@ read_CScanStorage <- function(bfile) {
 
   # second CScanPart
   data$CScanPart2 <- bfile |> read_object(pattern = "ScanPart") |> list()
+
+  # additional fields
+  data$xD8 <- bfile |> read_binary_data("int")
+  data$xDC <- bfile |> read_binary_data("int")
+  data$xE0 <- bfile |> read_binary_data("int")
+
+  # CGasConfiguration
+  data$CGasConfiguration <- bfile |> read_object("CGasConfiguration")
+
+  # version gated fields
+  if (!is.na(data$version) && data$version >= 3) {
+    data$n_peak_list <- bfile |> read_binary_data("int")
+
+    if (!is.na(data$n_peak_list) && data$n_peak_list > 0) {
+      bfile |>
+        register_cnd(cli_abort(
+          "unexpectedly encountered {data$n_peak_list} CPeakList objects - not yet implemented"
+        ))
+    }
+    # version 5
+    if (!is.na(data$version) && data$version >= 5) {
+      data$n_graphic_info <- bfile |> read_binary_data("int")
+      if (!is.na(data$n_graphic_info) && data$n_graphic_info > 0) {
+        bfile |>
+          register_cnd(cli_abort(
+            "unexpectedly encountered {data$n_graphic_info} CSimpleGraphicInfo objects - not yet implemented"
+          ))
+      }
+
+      # version 5
+      if (!is.na(data$version) && data$version >= 6) {
+        data$n_custom <- bfile |> read_binary_data("int")
+        if (!is.na(data$n_custom) && data$n_custom > 0) {
+          bfile |>
+            register_cnd(cli_abort(
+              "unexpectedly encountered {data$data$n_custom} custom objects - not yet implemented"
+            ))
+        }
+      }
+
+      # there's a legacy field here in older versions, not worth deserializing
+    }
+  }
 
   return(dplyr::as_tibble(data))
 }
@@ -158,7 +201,7 @@ read_CMagnetCurrentScanPart <- function(bfile) {
   return(dplyr::as_tibble(data))
 }
 
-# read CScanPart::CIntegrationUnitScanPart
+# read CScanPart::CIntegrationUnitScanPart (complete)
 read_CIntegrationUnitScanPart <- function(bfile) {
   # parent and version
   data <- list(
@@ -167,7 +210,9 @@ read_CIntegrationUnitScanPart <- function(bfile) {
       read_schema_version("CIntegrationUnitScanPart", max_supported = 3)
   )
 
-  # FIXME: continue here
+  # fields
+  data$xC0 <- bfile |> read_binary_data("int")
+  data$xC4 <- bfile |> read_binary_data("uint8")
 
   return(dplyr::as_tibble(data))
 }

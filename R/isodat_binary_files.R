@@ -525,9 +525,13 @@ read_object <- function(
   if (quo_is_null(func_quo)) {
     func_name <- paste0("read_", class)
     if (!exists(func_name)) {
-      cli_abort(
-        "function {.field {func_name}} does not exist, please specify which {.emph func} to use to read a {.field {class}}"
-      )
+      bfile |>
+        register_cnd(
+          cli_abort(
+            "function {.field {func_name}} does not exist, please specify which {.emph func} to use to read a {.field {class}}"
+          )
+        )
+      return(object_info)
     }
   } else {
     func_name <- as_name(func_quo)
@@ -548,9 +552,11 @@ read_object <- function(
 
   # return (everything from object_info that's not in object_read + all of object_read)
   # note: if version is re-read, should there be a check here that they are the same?
-  object_info |>
-    dplyr::select(-dplyr::any_of(names(object_read))) |>
-    dplyr::bind_cols(object_read)
+  return(
+    object_info |>
+      dplyr::select(-dplyr::any_of(names(object_read))) |>
+      dplyr::bind_cols(object_read)
+  )
 }
 
 
@@ -615,8 +621,9 @@ read_CRuntimeClass <- function(
   advance = TRUE
 ) {
   # safety check
+  unknown_class <- dplyr::tibble(obj_idx = NA_integer_)
   if (bfile$has_blocking_cnds) {
-    return(dplyr::tibble())
+    return(unknown_class)
   }
 
   # get the start bytes
@@ -633,21 +640,21 @@ read_CRuntimeClass <- function(
         register_cnd(cli_abort(
           "expected a C runtime class object at this position but found none"
         ))
-      return(dplyr::tibble())
+      return(unknown_class)
     } else if (!is.null(class) && !identical(data$class, class)) {
       # not the one we expected here!
       bfile |>
         register_cnd(cli_abort(
           "expected object of type {.field {class}} but found {cli::col_red(data$class)}"
         ))
-      return(dplyr::tibble())
+      return(unknown_class)
     } else if (!is.null(pattern) && !grepl(pattern, data$class)) {
       # not the one we expected here!
       bfile |>
         register_cnd(cli_abort(
           "expected object with pattern {.field {pattern}} but found {cli::col_red(data$class)}"
         ))
-      return(dplyr::tibble())
+      return(unknown_class)
     }
 
     # update index
@@ -663,6 +670,9 @@ read_CRuntimeClass <- function(
   } else {
     # must be pointer --> reread the start bytes and read reference
     ref_idx <- bfile |> skip_bytes(-2) |> read_CRuntimeClass_reference()
+    if (is.na(ref_idx)) {
+      return(unknown_class)
+    }
 
     # try to find this reference class
     data <- bfile$index |>
@@ -671,20 +681,25 @@ read_CRuntimeClass <- function(
 
     if (nrow(data) == 0L) {
       # missing
+      info <- if (!is.null(class)) {
+        format_inline(" instead of {.field {class}}")
+      } else {
+        ""
+      }
       bfile |>
         register_cnd(cli_abort(
-          "encountered unknown class reference index {ref_idx} (not in the {nrow(bfile$index)} previously encountered classes)"
+          "encountered unknown class reference index {ref_idx} (not in the {nrow(bfile$index)} previously encountered classes){info}"
         ))
-      return(dplyr::tibble())
+      return(unknown_class)
     }
 
     if (!is.null(class) && !identical(data$class[1], class)) {
       # not the requested/known class type
       bfile |>
         register_cnd(cli_abort(
-          "expected object of type {.field {class}} but found reference to {cli::col_red(data$class[1])} instad"
+          "expected object of type {.field {class}} but found reference to {cli::col_red(data$class[1])} instead"
         ))
-      return(dplyr::tibble())
+      return(unknown_class)
     }
 
     # update index
@@ -732,7 +747,7 @@ read_CRuntimeClass_reference <- function(bfile) {
   if (!is_class_ref) {
     bfile |>
       register_cnd(cli_abort(
-        "expected class reference ID with high bit flag set but found {cli::col_red(raw_id)} ({.field ref_idx = {ref_idx}}), this could be a repeat object instead referencing an exact earlier object copy - reading this kind of object is untested"
+        "expected class reference ID with high bit flag set but found {cli::col_red(raw_id)} ({.field ref_idx = {ref_idx}}), this likely means there is no C runtime class where one should be but it could also be a repeat object instead referencing an exact earlier object copy (unlikely but possible)"
       ))
   }
 
