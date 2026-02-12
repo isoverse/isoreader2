@@ -1,32 +1,3 @@
-# general class readers ======
-
-read_CData_derived_object <- function(bfile) {
-  info <- bfile |> read_CRuntimeClass(class = NULL) # read actual class header
-  if (nrow(info) == 0L) {
-    return(tibble::tibble())
-  }
-
-  cls <- info$class[[1]]
-  fn <- paste0("read_", cls)
-
-  if (!exists(fn, mode = "function", inherits = TRUE)) {
-    bfile |>
-      register_cnd(
-        cli_abort(
-          "no reader implemented for CData-derived class {.field {cls}}"
-        ),
-        pos = bfile$pos
-      )
-    return(info)
-  }
-
-  obj <- get(fn, mode = "function", inherits = TRUE)(bfile)
-
-  info |>
-    dplyr::select(-dplyr::any_of(names(obj))) |>
-    dplyr::bind_cols(obj)
-}
-
 # CData chain ===================
 
 # read CData object (complete)
@@ -111,7 +82,7 @@ read_CBasicScan <- function(bfile) {
   return(dplyr::as_tibble(data))
 }
 
-# read CData::CMolecule
+# read CData::CMolecule (complete)
 read_CMolecule <- function(bfile) {
   # parent and version
   data <- list(
@@ -122,16 +93,6 @@ read_CMolecule <- function(bfile) {
   data$molecule <- bfile |> read_binary_data("string")
   dplyr::as_tibble(data)
 }
-
-#===========================================================
-# CGpibInterface
-# Parent: CBasicInterface (which reads CData)
-# After parent fields:
-#   gpib_version (int, const 3 on write)
-#   cfg_byte1 (uint8)
-#   cfg_byte2 (uint8)
-#   cfg_byte3 (uint8) only if gpib_version >= 3
-#===========================================================
 
 # CData::CBlockData chain ====
 
@@ -288,7 +249,7 @@ read_CVisualisationData <- function(bfile) {
   return(dplyr::as_tibble(data))
 }
 
-# read CBockData::CGasConfiguration object
+# read CBockData::CGasConfiguration object (complete)
 read_CGasConfiguration <- function(bfile) {
   # parent
   data <- list(pCBlockData = bfile |> read_CBlockData() |> list())
@@ -479,6 +440,90 @@ read_CChannelGasConfPart <- function(bfile) {
   }
 
   dplyr::as_tibble(data)
+}
+
+# CData::CBasicInterface::CScanPart chain =============
+
+# read CScanPart object (complete)
+read_CScanPart <- function(bfile) {
+  # parent an version
+  data <- list(
+    pCBasicInterface = bfile |> read_CBasicInterface() |> list(),
+    version = bfile |> read_schema_version("CScanPart", max_supported = 3)
+  )
+
+  # CHardwarePart
+  data$CHardwarePart <- bfile |>
+    read_object(pattern = "HardwarePart") |>
+    list()
+
+  # other fields
+  data$xA0 <- bfile |> read_binary_data("int")
+  data$xA4 <- bfile |> read_binary_data("int")
+  data$xB0 <- bfile |> read_binary_data("int")
+
+  return(dplyr::as_tibble(data))
+}
+
+
+# read CScanPart::CClockScanPart (complete)
+read_CClockScanPart <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCScanPart = bfile |> read_CScanPart() |> list(),
+    version = bfile |> read_schema_version("CClockScanPart", max_supported = 2)
+  )
+  # other fields
+  data$scan_time <- bfile |> read_binary_data("int") # almost certain
+  return(dplyr::as_tibble(data))
+}
+
+# read CScanPart::CScaleHvScanPart (complete)
+read_CScaleHvScanPart <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCScanPart = bfile |> read_CScanPart() |> list(),
+    version = bfile |>
+      read_schema_version("CScaleHvScanPart", max_supported = 2)
+  )
+  # other fields
+  data$start <- bfile |> read_binary_data("int")
+  data$stop <- bfile |> read_binary_data("int")
+  data$step <- bfile |> read_binary_data("int")
+  data$delay <- bfile |> read_binary_data("int") # not 100% sure this is correct
+  return(dplyr::as_tibble(data))
+}
+
+# read CScanPart::CMagnetCurrentScanPart (complete)
+read_CMagnetCurrentScanPart <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCScanPart = bfile |> read_CScanPart() |> list(),
+    version = bfile |>
+      read_schema_version("CMagnetCurrentScanPart", max_supported = 2)
+  )
+  # other fields
+  data$start <- bfile |> read_binary_data("int")
+  data$stop <- bfile |> read_binary_data("int")
+  data$step <- bfile |> read_binary_data("int")
+  data$delay <- bfile |> read_binary_data("int") # not 100% sure this is correct
+  return(dplyr::as_tibble(data))
+}
+
+# read CScanPart::CIntegrationUnitScanPart (complete)
+read_CIntegrationUnitScanPart <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCScanPart = bfile |> read_CScanPart() |> list(),
+    version = bfile |>
+      read_schema_version("CIntegrationUnitScanPart", max_supported = 3)
+  )
+
+  # fields
+  data$xC0 <- bfile |> read_binary_data("int")
+  data$xC4 <- bfile |> read_binary_data("uint8")
+
+  return(dplyr::as_tibble(data))
 }
 
 # CData::CBasicInterface::CHardwarePart chain ====
@@ -703,7 +748,7 @@ read_CClockHardwarePart <- function(bfile) {
   return(dplyr::as_tibble(data))
 }
 
-# read CHardwarePart::CScaleHardwarePart::CIntegrationUnitHardwarePart
+# read CHardwarePart::CScaleHardwarePart::CIntegrationUnitHardwarePart (complete)
 read_CIntegrationUnitHardwarePart <- function(bfile) {
   # parent and version
   data <- list(
@@ -865,7 +910,7 @@ read_CDword <- function(bfile) {
 read_CPeakCenterOffset <- read_CDword
 
 
-# read CBinary object (complete)
+# read CSimple::CBinary object (complete)
 read_CBinary <- function(bfile, n_points, n_traces, read_data = TRUE) {
   # parent
   data <- list(
@@ -1038,60 +1083,3 @@ read_CPlotRange <- function(bfile) {
     )
   return(dplyr::as_tibble(data))
 }
-
-#===========================================================
-# CHardwarePart (parent reader)
-#===========================================================
-
-#===========================================================
-# CChannelHardwarePart
-# Parent: CHardwarePart -> CBasicInterface -> CData
-# After CHardwarePart:
-#   channel_version (int, writes 2)
-#   channel_param_1 (int)
-#   channel_param_2 (int)
-#===========================================================
-
-#===========================================================
-# CScaleHardwarePart (parent reader, used by derived classes)
-# Parent: CHardwarePart -> CBasicInterface -> CData
-# After CHardwarePart:
-#   scale_version (int, writes 12)
-#   unit_string (string)
-#   min_value (int)
-#   max_value (int)
-#   then several gated 4-byte fields (use "int" since uint32 is not supported)
-#   then gated strings
-#   then gated doubles (8 bytes) for v>=12
-#===========================================================
-
-#===========================================================
-# CClockHardwarePart (derived from CScaleHardwarePart)
-# After parent:
-#   clock_version (int, writes 2)
-#   clock_param (int)
-#===========================================================
-
-#===========================================================
-# CDacHardwarePart (derived from CScaleHardwarePart)
-# After parent:
-#   dac_version (int, writes 3)
-#   4 uint8 config bytes
-#   (v>=3) dac_device_name (string)
-#===========================================================
-
-#===========================================================
-# CMagnetCurrentHardwarePart
-# Parent: CDacHardwarePart
-# After parent:
-#   param_A (uint32 in notes) -> read as "int" (4 bytes)
-#   param_B (uint32 in notes) -> read as "int" (4 bytes)
-#===========================================================
-
-#===========================================================
-# CScaleHvHardwarePart
-# Parent: CDacHardwarePart
-# After parent:
-#   hv_version (int, store writes 3; load returns early if <3)
-#   (v>=3) hv_scale_value (double, 8 bytes)
-#===========================================================
