@@ -372,11 +372,10 @@ read_CAdcTransferPart <- function(bfile) {
 }
 
 # same implementations as CAdcTransferPart
-read_CDacTransferPart <- read_CAdcTransferPart
 read_CDioTransferPart <- read_CAdcTransferPart
+read_CDacTransferPart <- read_CAdcTransferPart
 read_CBasicHvTransferPart <- read_CDacTransferPart
 read_CCalculatingDacTransferPart <- read_CBasicHvTransferPart
-read_CBasicHvTransferPart <- read_CDacTransferPart
 read_CScaleHvTransferPart <- read_CBasicHvTransferPart
 
 # read CData:CBasicInterface::CTransferPart::CDacTransferPart::CMagnetCurrentTransferPart (complete)
