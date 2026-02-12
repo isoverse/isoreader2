@@ -229,6 +229,7 @@ register_cnd <- function(bfile, exp, pos = bfile$prev_pos) {
 .bin_number_types <- c(
   uint8 = 1L,
   uint16 = 2L,
+  uint32 = 4L,
   int = 4L,
   float = 4L,
   double = 8L
@@ -240,6 +241,7 @@ register_cnd <- function(bfile, exp, pos = bfile$prev_pos) {
   unicode = 2L,
   string = 4L,
   timestamp = 4L,
+  color = 4L,
   bool8 = 1L,
   bool16 = 2L,
   bool = 4L, # this seems to be the default
@@ -322,7 +324,7 @@ read_binary_data <- function(
     if (type %in% c("uint8", "uint16", "bool8", "bool16")) {
       read_type <- "int"
       signed <- FALSE
-    } else if (type %in% c("bool", "timestamp")) {
+    } else if (type %in% c("uint32", "bool", "timestamp", "color")) {
       read_type <- "int"
     } else if (type == "float") {
       read_type <- "numeric"
@@ -343,8 +345,19 @@ read_binary_data <- function(
           )
       }
       value <- as.logical(value)
+    } else if (type == "uint32") {
+      # wrap int to become unsigned int (promoted to double since it doesn't fit Rs signed int)
+      value <- value %% 2^32
+      if (value <= 2^31) value <- as.integer(value) # can be stored in an integer
     } else if (type == "timestamp") {
-      value <- as.POSIXct(value, tz = "UTC")
+      # as.POSIXct does not create an object that can be writtenas parquet but this does
+      value <- lubridate::as_datetime(value, tz = "UTC")
+    } else if (type == "color") {
+      # a windows OLE_COLOR color value
+      r <- bitwAnd(value, 0xFF)
+      g <- bitwAnd(bitwShiftR(value, 8), 0xFF)
+      b <- bitwAnd(bitwShiftR(value, 16), 0xFF)
+      value <- sprintf("#%02x%02x%02x", r, g, b)
     }
     # update position
     if (advance) {
@@ -465,22 +478,36 @@ read_binary_data_array <- function(bfile, types, n) {
 # core object readers ======
 
 # read object - this is the main function
-read_object <- function(bfile, class, func = NULL, ...) {
-  func_quo <- enquo(func)
-  # if func is not explicitly provided, look for read_<class>
-  if (quo_is_null(func_quo)) {
-    func_name <- paste0("read_", class)
-    if (!exists(func_name)) {
-      cli_abort(
-        "function {.field {func_name}} does not exist, please specify which {.emph func} to use to read a {.field {class}}"
-      )
-    }
-  } else {
-    func_name <- as_name(func_quo)
+# @param bfile the binary file environment with its $pos at the position to read this object
+# @param ... parameters passed to func
+# @param class the CRuntime class that is expected
+# @param pattern alternatively, a grepl pattern for the object that is being read
+# @param func the function used to read the object (if not the same as the read_<classname>)
+# @param independent_index - whether to start a separate independent index for reading this object (and its children). Provide the name of the index to trigger this.
+read_object <- function(
+  bfile,
+  class = NULL,
+  ...,
+  pattern = NULL,
+  func = NULL,
+  independent_index = NULL
+) {
+  # independent index?
+  if (!is.null(independent_index)) {
+    current_index <- bfile$index
+    current_obj_idx <- bfile$current_obj_idx
+    bfile$index <- bfile$index[c(), ]
+    bfile$current_obj_idx <- NA_integer_
+    on.exit({
+      # resume pre-PlotInfo index
+      bfile[[independent_index]] <- bfile$index
+      bfile$index <- current_index
+      bfile$current_obj_idx <- current_obj_idx
+    })
   }
 
   # try to read the runtime class
-  object_info <- bfile |> read_CRuntimeClass(class)
+  object_info <- bfile |> read_CRuntimeClass(class = class, pattern = pattern)
 
   # failed to read runtime class?
   if (bfile$has_blocking_cnds) {
@@ -489,6 +516,26 @@ read_object <- function(bfile, class, func = NULL, ...) {
 
   # update current object index
   bfile$current_obj_idx <- object_info$obj_idx
+
+  # try to read the object
+  class <- object_info$class
+
+  # if func is not explicitly provided, look for read_<class>
+  func_quo <- enquo(func)
+  if (quo_is_null(func_quo)) {
+    func_name <- paste0("read_", class)
+    if (!exists(func_name)) {
+      bfile |>
+        register_cnd(
+          cli_abort(
+            "function {.field {func_name}} does not exist, please specify which {.emph func} to use to read a {.field {class}}"
+          )
+        )
+      return(object_info)
+    }
+  } else {
+    func_name <- as_name(func_quo)
+  }
 
   # try to read the object
   dots <- enquos(...)
@@ -505,9 +552,11 @@ read_object <- function(bfile, class, func = NULL, ...) {
 
   # return (everything from object_info that's not in object_read + all of object_read)
   # note: if version is re-read, should there be a check here that they are the same?
-  object_info |>
-    dplyr::select(-dplyr::any_of(names(object_read))) |>
-    dplyr::bind_cols(object_read)
+  return(
+    object_info |>
+      dplyr::select(-dplyr::any_of(names(object_read))) |>
+      dplyr::bind_cols(object_read)
+  )
 }
 
 
@@ -565,10 +614,16 @@ read_all_CRuntimeClasses <- function(bfile) {
 }
 
 # read the runtime class name
-read_CRuntimeClass <- function(bfile, class = NULL, advance = TRUE) {
+read_CRuntimeClass <- function(
+  bfile,
+  class = NULL,
+  pattern = NULL,
+  advance = TRUE
+) {
   # safety check
+  unknown_class <- dplyr::tibble(obj_idx = NA_integer_)
   if (bfile$has_blocking_cnds) {
-    return(dplyr::tibble())
+    return(unknown_class)
   }
 
   # get the start bytes
@@ -579,15 +634,27 @@ read_CRuntimeClass <- function(bfile, class = NULL, advance = TRUE) {
     data <- bfile$objects |>
       dplyr::filter(.data$start == !!start_pos) |>
       dplyr::slice_head(n = 1L)
-    if (
-      !is.null(class) && (nrow(data) == 0L || !identical(data$class, class))
-    ) {
-      found <- if (nrow(data) == 0L) "none" else cli::col_red(data$class[[1]])
+    if (nrow(data) == 0L) {
+      # no CRuntime class object here!
       bfile |>
         register_cnd(cli_abort(
-          "expected object of type {.field {class}} but found {if(nrow(data) == 0L) 'none' else cli::col_red(data$class[1])}"
+          "expected a C runtime class object at this position but found none"
         ))
-      return(dplyr::tibble())
+      return(unknown_class)
+    } else if (!is.null(class) && !identical(data$class, class)) {
+      # not the one we expected here!
+      bfile |>
+        register_cnd(cli_abort(
+          "expected object of type {.field {class}} but found {cli::col_red(data$class)}"
+        ))
+      return(unknown_class)
+    } else if (!is.null(pattern) && !grepl(pattern, data$class)) {
+      # not the one we expected here!
+      bfile |>
+        register_cnd(cli_abort(
+          "expected object with pattern {.field {pattern}} but found {cli::col_red(data$class)}"
+        ))
+      return(unknown_class)
     }
 
     # update index
@@ -603,6 +670,9 @@ read_CRuntimeClass <- function(bfile, class = NULL, advance = TRUE) {
   } else {
     # must be pointer --> reread the start bytes and read reference
     ref_idx <- bfile |> skip_bytes(-2) |> read_CRuntimeClass_reference()
+    if (is.na(ref_idx)) {
+      return(unknown_class)
+    }
 
     # try to find this reference class
     data <- bfile$index |>
@@ -611,20 +681,25 @@ read_CRuntimeClass <- function(bfile, class = NULL, advance = TRUE) {
 
     if (nrow(data) == 0L) {
       # missing
+      info <- if (!is.null(class)) {
+        format_inline(" instead of {.field {class}}")
+      } else {
+        ""
+      }
       bfile |>
         register_cnd(cli_abort(
-          "encountered unknown class reference index {ref_idx} (not in the {nrow(bfile$index)} previously encountered classes)"
+          "encountered unknown class reference index {ref_idx} (not in the {nrow(bfile$index)} previously encountered classes){info}"
         ))
-      return(dplyr::tibble())
+      return(unknown_class)
     }
 
     if (!is.null(class) && !identical(data$class[1], class)) {
       # not the requested/known class type
       bfile |>
         register_cnd(cli_abort(
-          "expected object of type {.field {class}} but found reference to {cli::col_red(data$class[1])} instad"
+          "expected object of type {.field {class}} but found reference to {cli::col_red(data$class[1])} instead"
         ))
-      return(dplyr::tibble())
+      return(unknown_class)
     }
 
     # update index
@@ -642,7 +717,7 @@ read_CRuntimeClass <- function(bfile, class = NULL, advance = TRUE) {
   }
 
   # return
-  return(index |> dplyr::select("obj_idx", "class"))
+  return(index |> dplyr::select("obj_idx", "version", "class"))
 }
 
 # read the reference index for the runtime class
@@ -656,6 +731,10 @@ read_CRuntimeClass_reference <- function(bfile) {
     cache_id <- readBin(raw_id, "int", size = 4)
     is_class_ref <- bitwAnd(cache_id, 0x80000000) != 0
     ref_idx <- bitwAnd(cache_id, bitwNot(0x80000000))
+    bfile |>
+      register_cnd(cli_warn(
+        "untested 4 byte class index ({.field ref_idx = {ref_idx}}), double check the data is correct"
+      ))
   } else {
     # cached object with short form ID <= 32767
     raw_id <- start
@@ -668,7 +747,7 @@ read_CRuntimeClass_reference <- function(bfile) {
   if (!is_class_ref) {
     bfile |>
       register_cnd(cli_abort(
-        "expected class reference ID with high bit flag set but found {cli::col_red(raw_id)} ({.field ref_idx = {ref_idx}}), this could be a repeat object instead referencing an exact earlier object copy - reading this kind of object is untested"
+        "expected class reference ID with high bit flag set but found {cli::col_red(raw_id)} ({.field ref_idx = {ref_idx}}), this likely means there is no C runtime class where one should be but it could also be a repeat object instead referencing an exact earlier object copy (unlikely but possible)"
       ))
   }
 

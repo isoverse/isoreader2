@@ -1,4 +1,4 @@
-# scan class readers =========
+# scan class reader =========
 
 # read CScanStorage object
 read_CScanStorage <- function(bfile) {
@@ -22,7 +22,8 @@ read_CScanStorage <- function(bfile) {
       )
   }
 
-  data$version <- bfile |> read_binary_data("int") # const
+  data$version <- bfile |>
+    read_schema_version("CScanStorage", max_supported = 6)
 
   # version check
   if (!is.na(data$version) && data$version < 4) {
@@ -62,26 +63,12 @@ read_CScanStorage <- function(bfile) {
   # a second instance but this one is empty --> not storing it
   bfile |> read_object("CBinary", read_data = FALSE) |> list()
 
-  # CPlotInfo / CPlotRange are serialized in a separated index
-  current_index <- bfile$index
-  current_obj_idx <- bfile$current_obj_idx
-  bfile$index <- bfile$index[c(), ]
-  bfile$current_obj_idx <- NA_integer_
-
-  # CPlotInfo
-  data$CPlotInfo <- bfile |> read_object("CPlotInfo") |> list()
-
-  # CPlotRange
-  data$CPlotRange <- bfile |>
-    read_object("CPlotRange", n_traces = data$n_traces) |>
+  # CPlotInfo is serialized in a separate indepnendent index (i.e. index resets just for this)
+  data$CPlotInfo <- bfile |>
+    read_object("CPlotInfo", independent_index = "plot_index") |>
     list()
 
-  # resume pre-PlotInfo index
-  bfile$index_plot <- bfile$index
-  bfile$index <- current_index
-  bfile$current_obj_idx <- current_obj_idx
-
-  # read time stamps
+  # additional fields
   data <- bfile |>
     read_binary_data_list(
       data = data,
@@ -93,6 +80,55 @@ read_CScanStorage <- function(bfile) {
         x108 = "string" # OS username?
       )
     )
+
+  # first CScanPart
+  data$CScanPart1 <- bfile |> read_object(pattern = "ScanPart") |> list()
+
+  # second CScanPart
+  data$CScanPart2 <- bfile |> read_object(pattern = "ScanPart") |> list()
+
+  # additional fields
+  data$xD8 <- bfile |> read_binary_data("int")
+  data$xDC <- bfile |> read_binary_data("int")
+  data$xE0 <- bfile |> read_binary_data("int")
+
+  # CGasConfiguration
+  data$CGasConfiguration <- bfile |> read_object("CGasConfiguration")
+
+  # version gated fields
+  if (!is.na(data$version) && data$version >= 3) {
+    data$n_peak_list <- bfile |> read_binary_data("int")
+
+    if (!is.na(data$n_peak_list) && data$n_peak_list > 0) {
+      bfile |>
+        register_cnd(cli_abort(
+          "unexpectedly encountered {data$n_peak_list} CPeakList objects - not yet implemented"
+        ))
+    }
+    # version 5
+    if (!is.na(data$version) && data$version >= 5) {
+      data$n_graphic_info <- bfile |> read_binary_data("int")
+      if (!is.na(data$n_graphic_info) && data$n_graphic_info > 0) {
+        bfile |>
+          register_cnd(cli_abort(
+            "unexpectedly encountered {data$n_graphic_info} CSimpleGraphicInfo objects - not yet implemented"
+          ))
+      }
+
+      # version 5
+      if (!is.na(data$version) && data$version >= 6) {
+        data$n_custom <- bfile |> read_binary_data("int")
+        if (!is.na(data$n_custom) && data$n_custom > 0) {
+          bfile |>
+            register_cnd(cli_abort(
+              "unexpectedly encountered {data$data$n_custom} custom objects - not yet implemented"
+            ))
+        }
+      }
+
+      # there's a legacy field here in older versions, not worth deserializing
+    }
+  }
 
   return(dplyr::as_tibble(data))
 }

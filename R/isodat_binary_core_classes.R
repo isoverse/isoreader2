@@ -1,32 +1,3 @@
-# general class readers ======
-
-read_CData_derived_object <- function(bfile) {
-  info <- bfile |> read_CRuntimeClass(class = NULL) # read actual class header
-  if (nrow(info) == 0L) {
-    return(tibble::tibble())
-  }
-
-  cls <- info$class[[1]]
-  fn <- paste0("read_", cls)
-
-  if (!exists(fn, mode = "function", inherits = TRUE)) {
-    bfile |>
-      register_cnd(
-        cli_abort(
-          "no reader implemented for CData-derived class {.field {cls}}"
-        ),
-        pos = bfile$pos
-      )
-    return(info)
-  }
-
-  obj <- get(fn, mode = "function", inherits = TRUE)(bfile)
-
-  info |>
-    dplyr::select(-dplyr::any_of(names(obj))) |>
-    dplyr::bind_cols(obj)
-}
-
 # CData chain ===================
 
 # read CData object (complete)
@@ -36,7 +7,7 @@ read_CData <- function(bfile) {
     list(
       version = bfile |> read_schema_version("CData", 3),
       app_id = bfile |> read_binary_data("uint16"), # +0x04 (enum APP_ID returned by CData::GetOwner, often set to 0x2f = 47 in constructors)
-      x34 = bfile |> read_binary_data("string"), # file name?
+      label = bfile |> read_binary_data("string"), # +0x34
       value = bfile |> read_binary_data("string") # +0x38
     )
 
@@ -53,6 +24,77 @@ read_CData <- function(bfile) {
   return(dplyr::as_tibble(data))
 }
 
+# read CData::CCalibrationPoint (complete)
+read_CCalibrationPoint <- function(bfile) {
+  # fields
+  data <-
+    list(
+      pCData = bfile |> read_CData() |> list(),
+      version = bfile |> read_schema_version("CCalibrationPoint", 3),
+      x94 = bfile |> read_binary_data("int"),
+      x98 = bfile |> read_binary_data("double")
+    )
+
+  # version gated fields
+  if (!is.na(data$version) && data$version >= 3) {
+    data$xA0 <- bfile |> read_binary_data("double")
+    data$xA8 <- bfile |> read_binary_data("double")
+  }
+
+  return(dplyr::as_tibble(data))
+}
+
+# read CData::CBasicScan object (complete)
+read_CBasicScan <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCData = bfile |> read_CData() |> list(),
+    version = bfile |> read_schema_version("CBasicScan", max_supported = 4)
+  )
+
+  # CScanParts
+  data$CScanPart1 <- bfile |> read_object(pattern = "ScanPart") |> list()
+  data$CScanPart2 <- bfile |> read_object(pattern = "ScanPart") |> list()
+
+  # CBlockData
+  data$CBlockData <- bfile |> read_object("CBlockData") |> list()
+
+  # check if there are CData derived child objects
+  if (
+    !is.na(data$CBlockData[[1]]$n_objects) &&
+      data$CBlockData[[1]]$n_objects > 0
+  ) {
+    bfile |>
+      register_cnd(cli_abort(
+        "unexpectedly encountered {data$CBlockData[[1]]$n_objects} CData objects - not yet implemented"
+      ))
+  }
+
+  # fields
+  data$x04 <- bfile |> read_binary_data("int")
+  data$xA4 <- bfile |> read_binary_data("int") # might be a flag
+
+  # version gated fields
+  if (!is.na(data$version) && data$version >= 4) {
+    data$x94 <- bfile |> read_binary_data("int") # defaults to 1
+  }
+
+  return(dplyr::as_tibble(data))
+}
+
+# read CData::CMolecule (complete)
+read_CMolecule <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCData = bfile |> read_CData() |> list(),
+    version = bfile |> read_schema_version("CMolecule", max_supported = 1)
+  )
+  # fields
+  data$molecule <- bfile |> read_binary_data("string")
+  dplyr::as_tibble(data)
+}
+
+# CData::CBlockData chain ====
 
 # read CBlockData object (complete BUT derived classes need to take care of the objects stored in the CBlock array)
 read_CBlockData <- function(bfile) {
@@ -69,145 +111,145 @@ read_CBlockData <- function(bfile) {
   return(tibble::as_tibble(data))
 }
 
-# read CBasicInterface object
-read_CBasicInterface <- function(bfile) {
+
+# read CCalibration object (complete)
+read_CCalibration <- function(bfile) {
+  # parent
   data <- list(
-    pCData = bfile |> read_CData() |> list()
+    pCBlockData = bfile |> read_CBlockData() |> list()
   )
+  # read CBlockData objects
+  if (!is.na(data$pCBlockData[[1]]$n_objects)) {
+    data$CCalibrationPoint <-
+      1:data$pCBlockData[[1]]$n_objects |>
+      purrr::map(
+        ~ read_object(bfile, "CCalibrationPoint")
+      ) |>
+      dplyr::bind_rows() |>
+      list()
+  }
+  # version
+  data$version <- bfile |> read_schema_version("CCalibration", 5)
+  # fields
+  data <- bfile |>
+    read_binary_data_list(
+      data = data,
+      c(
+        "xA8" = "uint8",
+        "xAC" = "string",
+        "xB0" = "timestamp"
+      )
+    )
+
+  # legacy byte in lower version
+  if (!is.na(data$version) && data$version < 5) {
+    bfile |> read_binary_data("double")
+  }
+
+  # fields
+  data$xBC <- bfile |> read_binary_data("int")
+
+  # another byte
+  if (!is.na(data$version) && data$version >= 3) {
+    data$xC0 <- bfile |> read_binary_data("uint8")
+  }
+
+  # splines
+  if (!is.na(data$version) && data$version >= 4) {
+    continue <- TRUE
+    i <- 0
+    splines <- tibble()
+    while (continue) {
+      i <- i + 1
+      n <- rep(NA_integer_, 8)
+      x <- rep(list(list()), 8)
+      for (idx in 1:8) {
+        n[idx] <- bfile |> read_binary_data("uint16")
+        x[idx] <- bfile |> read_binary_data("double", n[idx]) |> list()
+      }
+      continue <- bfile |> read_binary_data("bool")
+      splines <- splines |> dplyr::bind_rows(tibble(spline = i, n = n, x = x))
+    }
+    data$splines <- splines |> list()
+  }
+
   return(tibble::as_tibble(data))
 }
 
-read_CFinniganInterface <- function(bfile) {
-  data <- list(pCBasicInterface = bfile |> read_CBasicInterface() |> list())
-
-  data$version <- read_schema_version(
-    bfile,
-    "CFinniganInterface",
-    max_supported = 6
-  )
-
-  data <- bfile |> read_binary_data_list(data = data, c("param_0x9c" = "int"))
-
-  if (!is.na(data$version) && data$version >= 3) {
-    data <- bfile |>
-      read_binary_data_list(
-        data = data,
-        c("param_0xa0" = "int", "chk_409_option1" = "int")
-      )
-  }
-
-  if (!is.na(data$version) && data$version >= 5) {
-    data <- bfile |>
-      read_binary_data_list(data = data, c("chk_40a_master" = "int"))
-  }
-
-  if (!is.na(data$version) && data$version >= 6) {
-    data <- bfile |>
-      read_binary_data_list(data = data, c("chk_40b_dependent" = "int"))
-  }
-
-  dplyr::as_tibble(data)
-}
-
-read_CGpibInterface <- function(bfile) {
-  data <- list(
-    pCBasicInterface = bfile |> read_CBasicInterface() |> list()
-  )
-
-  # CGpibInterface schema version (writes 3)
-  data$gpib_version <- read_schema_version(
-    bfile,
-    "CGpibInterface",
-    max_supported = 3
-  )
-
-  # config bytes
-  data <- bfile |>
-    read_binary_data_list(
-      data = data,
-      c(
-        "gpib_cfg_byte1" = "uint8", # +0x9c
-        "gpib_cfg_byte2" = "uint8" # +0x9d
-      )
-    )
-
-  # added in schema version 3
-  if (!is.na(data$gpib_version) && data$gpib_version >= 3) {
-    data <- bfile |>
-      read_binary_data_list(
-        data = data,
-        c("gpib_cfg_byte3" = "uint8") # +0x9e
-      )
-  }
-
-  tibble::as_tibble(data)
-}
-
-# read CBasicScan object
-read_CBasicScan <- function(bfile) {
+# read CBockData::CVisualisationData (complete)
+read_CVisualisationData <- function(bfile) {
   # parent
-  data <- list(pCData = bfile |> read_CData() |> list())
-
-  # CBasicScan schema version (writes 4)
-  data$version <- read_schema_version(
-    bfile,
-    "CBasicScan",
-    max_supported = 4
+  data <- list(
+    pCBlockData = bfile |> read_CBlockData() |> list()
   )
-  v <- data$version
 
-  # local: read polymorphic MFC object (reads runtime class header, dispatches to read_<Class>)
-  read_mfc_any <- function(bfile) {
-    info <- bfile |> read_CRuntimeClass(class = NULL)
-    if (nrow(info) == 0L) {
-      return(tibble::tibble())
-    }
-
-    cls <- info$class[[1]]
-    fn <- paste0("read_", cls)
-
-    if (!exists(fn, mode = "function", inherits = TRUE)) {
-      bfile |>
-        register_cnd(
-          cli_abort("no reader implemented for runtime class {.field {cls}}"),
-          pos = bfile$pos
-        )
-      return(info)
-    }
-
-    obj <- get(fn, mode = "function", inherits = TRUE)(bfile)
-
-    info |>
-      dplyr::select(-dplyr::any_of(names(obj))) |>
-      dplyr::bind_cols(obj)
+  # check if there are CData derived child objects
+  if (
+    !is.na(data$pCBlockData[[1]]$n_objects) &&
+      data$pCBlockData[[1]]$n_objects > 0
+  ) {
+    bfile |>
+      register_cnd(cli_abort(
+        "unexpectedly encountered {data$pCBlockData[[1]]$n_objects} CData objects - not yet implemented"
+      ))
   }
 
-  # objects: X scan part, Y scan part, block data container
-  data$pXScanPart <- (bfile |> read_mfc_any()) |> list()
-  data$pYScanPart <- (bfile |> read_mfc_any()) |> list()
-  data$pBlockData <- (bfile |> read_mfc_any()) |> list()
+  # CVisualisationData schema version (writes 8)
+  data$version <- bfile |>
+    read_schema_version("CVisualisationData", max_supported = 8)
 
-  # fields after objects
-  data <- bfile |>
-    read_binary_data_list(
-      data = data,
-      c(
-        "APP_ID_32" = "int", # uint32 in C++
-        "flags_0xA0" = "int" # uint32 in C++
-      )
-    )
+  # double arrays (unknown function)
+  data$xA8 <- bfile |> read_binary_data("int", 4) |> list()
+  data$xB8 <- bfile |> read_binary_data("int", 10) |> list()
+  data$xE0 <- bfile |> read_binary_data("int", 10) |> list()
 
-  # gated field (version >= 4)
-  if (!is.na(v) && v >= 4) {
+  # version gated visulization options
+  if (!is.na(data$version) && data$version >= 2) {
     data <- bfile |>
-      read_binary_data_list(data = data, c("mode_0x94" = "int")) # uint32 in C++
+      read_binary_data_list(
+        data = data,
+        c(
+          "font" = "string",
+          "x10C" = "string",
+          "x110" = "string"
+        )
+      )
+
+    # version 3
+    if (!is.na(data$version) && data$version >= 3) {
+      data$x120 <- bfile |> read_binary_data("int")
+
+      # version 4
+      if (!is.na(data$version) && data$version >= 4) {
+        data$x124 <- bfile |> read_binary_data("int")
+
+        # version 5
+        if (!is.na(data$version) && data$version >= 5) {
+          data$x148 <- bfile |> read_binary_data("string")
+
+          # version 6
+          if (!is.na(data$version) && data$version >= 6) {
+            data$x11C <- bfile |> read_binary_data("int")
+
+            # version 7
+            if (!is.na(data$version) && data$version >= 7) {
+              data$x128 <- bfile |> read_binary_data("int")
+
+              # version 8
+              if (!is.na(data$version) && data$version >= 8) {
+                data$x12C <- bfile |> read_binary_data("int")
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
-  dplyr::as_tibble(data)
+  return(dplyr::as_tibble(data))
 }
 
-
-# read CGasConfiguration object
+# read CBockData::CGasConfiguration object (complete)
 read_CGasConfiguration <- function(bfile) {
   # parent
   data <- list(pCBlockData = bfile |> read_CBlockData() |> list())
@@ -215,146 +257,628 @@ read_CGasConfiguration <- function(bfile) {
   # CBlockData child objects (count stored in CBlockData)
   n <- data$pCBlockData[[1]]$n_objects
 
-  # ReadObject(..., &CData::classCData) -> CData-derived objects
-  if (!is.na(n) && n > 0) {
-    kids <- vector("list", n)
-    for (i in seq_len(n)) {
-      kids[[i]] <- bfile |> read_CData_derived_object()
+  # check if there are CData derived child objects
+  if (
+    !is.na(data$pCBlockData[[1]]$n_objects) &&
+      data$pCBlockData[[1]]$n_objects > 0
+  ) {
+    cdata_objects <- list()
+    for (i in 1:data$pCBlockData[[1]]$n_objects) {
+      obj <- bfile |> read_object(pattern = "C")
+      if (!is.na(obj$obj_idx)) {
+        cdata_objects <- c(
+          cdata_objects,
+          dplyr::tibble(list(obj)) |> set_names(obj$class) |> list()
+        )
+      }
     }
-    data$child_objects <- list(kids)
-  } else {
-    data$child_objects <- list(list())
+    data$CData <- cdata_objects |>
+      dplyr::bind_cols(.name_repair = "unique_quiet") |>
+      list()
   }
 
-  # CGasConfiguration schema version (writes 3)
-  data$version <- read_schema_version(
-    bfile,
-    "CGasConfiguration",
-    max_supported = 3
-  )
-  v <- data$version
+  # version
+  data$version <- bfile |>
+    read_schema_version("CGasConfiguration", max_supported = 3)
 
-  # modified timestamp (only present for version >= 3)
-  if (!is.na(v) && v >= 3) {
-    data <- bfile |>
-      read_binary_data_list(data = data, c("modified_time" = "int"))
+  # version gated fields
+  if (!is.na(data$version) && data$version >= 3) {
+    data$timestamp <- bfile |>
+      read_binary_data("timestamp")
+  }
+
+  return(dplyr::as_tibble(data))
+}
+
+
+# CData::CBasicInterface chain =====
+
+# read CData::CBasicInterface object (same as read CData, complete)
+read_CBasicInterface <- read_CData
+
+# read CData::CBasicInterface::CFinniganInterface object (complete)
+read_CFinniganInterface <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCBasicInterface = bfile |> read_CBasicInterface() |> list(),
+    version = bfile |>
+      read_schema_version("CFinniganInterface", max_supported = 6),
+    x9C = bfile |> read_binary_data("int") # unknown setting
+  )
+
+  # version gated fields
+  if (!is.na(data$version) && data$version >= 3) {
+    data$xA0 = bfile |> read_binary_data("int") # unknown setting
+    data$xA4 = bfile |> read_binary_data("bool") # checkbox
+
+    # additional checkboxs for higher versions
+    if (!is.na(data$version) && data$version >= 5) {
+      data$xA8 = bfile |> read_binary_data("bool") # checkbox
+    }
+
+    if (!is.na(data$version) && data$version >= 6) {
+      data$xAC = bfile |> read_binary_data("bool") # checkbox
+    }
+  }
+  dplyr::as_tibble(data)
+}
+
+# read CData::CBasicInterface::CGpibInterface (complete)
+read_CGpibInterface <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCBasicInterface = bfile |> read_CBasicInterface() |> list(),
+    version = bfile |>
+      read_schema_version("CGpibInterface", max_supported = 3)
+  )
+
+  # fields
+  data$x9C <- bfile |> read_binary_data("uint8")
+  data$x9D <- bfile |> read_binary_data("uint8")
+
+  # added in schema version 3
+  if (!is.na(data$version) && data$version >= 3) {
+    data$x9E <- bfile |> read_binary_data("uint8")
+  }
+
+  return(tibble::as_tibble(data))
+}
+
+# read CData:CBasicInterface::CTransferPart (complete)
+read_CTransferPart <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCBasicInterface = bfile |> read_CBasicInterface() |> list(),
+    version = bfile |>
+      read_schema_version("CTransferPart", max_supported = 2)
+  )
+  # fields
+  data$x9C <- bfile |> read_binary_data("int")
+  data$xA0 <- bfile |> read_binary_data("int")
+  return(tibble::as_tibble(data))
+}
+
+# read CData:CBasicInterface::CTransferPart::CAdcTransferPart (complete)
+read_CAdcTransferPart <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCTransferPart = bfile |> read_CTransferPart() |> list(),
+    version = bfile |>
+      read_schema_version("CAdcTransferPart", max_supported = 2)
+  )
+  # fields
+  data$raw_value <- bfile |> read_binary_data("int") # 0xA4
+  return(tibble::as_tibble(data))
+}
+
+# same implementations as CAdcTransferPart
+read_CDacTransferPart <- read_CAdcTransferPart
+read_CDioTransferPart <- read_CAdcTransferPart
+read_CBasicHvTransferPart <- read_CDacTransferPart
+read_CCalculatingDacTransferPart <- read_CBasicHvTransferPart
+read_CBasicHvTransferPart <- read_CDacTransferPart
+read_CScaleHvTransferPart <- read_CBasicHvTransferPart
+
+# read CData:CBasicInterface::CTransferPart::CDacTransferPart::CMagnetCurrentTransferPart (complete)
+read_CMagnetCurrentTransferPart <- function(bfile) {
+  # parent
+  data <- list(
+    pCDacTransferPart = bfile |> read_CDacTransferPart() |> list()
+  )
+  # fields
+  data$xA8 <- bfile |> read_binary_data("bool")
+  return(tibble::as_tibble(data))
+}
+
+# CData::CBasicInterface::CGasConfPart chain =========
+
+# read CData::CBasicInterface::CGasConfPart object (same as CData/CInterface, complete)
+read_CGasConfPart <- read_CBasicInterface
+
+# read CData::CBasicInterface::CGasConfPart::CIntegrationUnitGasConfPart (complete)
+read_CIntegrationUnitGasConfPart <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCGasConfPart = bfile |> read_CGasConfPart() |> list(),
+    version = bfile |>
+      read_schema_version("CIntegrationUnitGasConfPart", max_supported = 2)
+  )
+  data$n_configs <- bfile |> read_binary_data("uint8") # 0xA4
+  if (!is.na(data$n_configs) && data$n_configs > 0) {
+    data$CChannelGasConfPart <- 1:data$n_configs |>
+      purrr::map(
+        ~ read_object(bfile, "CChannelGasConfPart")
+      ) |>
+      dplyr::bind_rows() |>
+      list()
+  }
+  dplyr::as_tibble(data)
+}
+
+# read CData::CBasicInterface::CGasConfPart::CChannelGasConfPart (complete)
+read_CChannelGasConfPart <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCGasConfPart = bfile |> read_CGasConfPart() |> list(),
+    version = bfile |>
+      read_schema_version("CChannelGasConfPart", max_supported = 4)
+  )
+  # fields
+  data$cup <- bfile |> read_binary_data("uint8")
+  data$mass <- bfile |> read_binary_data("double")
+  data$xA8 <- bfile |> read_binary_data("double")
+
+  # version gated fields
+  if (!is.na(data$version) && data$version >= 3) {
+    data$xB0 <- bfile |> read_binary_data("bool") # some sort of checkbox
+
+    # version 4
+    if (!is.na(data$version) && data$version >= 4) {
+      data$xB4 <- bfile |> read_binary_data("bool") # some sort of checkbox
+      data$xB8 <- bfile |> read_binary_data("double")
+    }
   }
 
   dplyr::as_tibble(data)
 }
 
-# read CVisualisationData object
-# read CVisualisationData object (covers full CSV including child objects)
-read_CVisualisationData <- function(bfile) {
-  # parent
-  data <- list(pCBlockData = bfile |> read_CBlockData() |> list())
+# CData::CBasicInterface::CScanPart chain =============
 
-  # CBlockData child objects (count stored in CBlockData)
-  n <- data$pCBlockData[[1]]$n_objects
+# read CScanPart object (complete)
+read_CScanPart <- function(bfile) {
+  # parent an version
+  data <- list(
+    pCBasicInterface = bfile |> read_CBasicInterface() |> list(),
+    version = bfile |> read_schema_version("CScanPart", max_supported = 3)
+  )
 
-  # ReadObject(..., &CData::classCData) -> CData-derived objects
-  if (!is.na(n) && n > 0) {
-    kids <- vector("list", n)
-    for (i in seq_len(n)) {
-      kids[[i]] <- bfile |> read_CData_derived_object()
-    }
-    data$child_objects <- list(kids)
-  } else {
-    data$child_objects <- list(list())
+  # CHardwarePart
+  data$CHardwarePart <- bfile |>
+    read_object(pattern = "HardwarePart") |>
+    list()
+
+  # other fields
+  data$xA0 <- bfile |> read_binary_data("int")
+  data$xA4 <- bfile |> read_binary_data("int")
+  data$xB0 <- bfile |> read_binary_data("int")
+
+  return(dplyr::as_tibble(data))
+}
+
+
+# read CScanPart::CClockScanPart (complete)
+read_CClockScanPart <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCScanPart = bfile |> read_CScanPart() |> list(),
+    version = bfile |> read_schema_version("CClockScanPart", max_supported = 2)
+  )
+  # other fields
+  data$scan_time <- bfile |> read_binary_data("int") # almost certain
+  return(dplyr::as_tibble(data))
+}
+
+# read CScanPart::CScaleHvScanPart (complete)
+read_CScaleHvScanPart <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCScanPart = bfile |> read_CScanPart() |> list(),
+    version = bfile |>
+      read_schema_version("CScaleHvScanPart", max_supported = 2)
+  )
+  # other fields
+  data$start <- bfile |> read_binary_data("int")
+  data$stop <- bfile |> read_binary_data("int")
+  data$step <- bfile |> read_binary_data("int")
+  data$delay <- bfile |> read_binary_data("int") # not 100% sure this is correct
+  return(dplyr::as_tibble(data))
+}
+
+# read CScanPart::CMagnetCurrentScanPart (complete)
+read_CMagnetCurrentScanPart <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCScanPart = bfile |> read_CScanPart() |> list(),
+    version = bfile |>
+      read_schema_version("CMagnetCurrentScanPart", max_supported = 2)
+  )
+  # other fields
+  data$start <- bfile |> read_binary_data("int")
+  data$stop <- bfile |> read_binary_data("int")
+  data$step <- bfile |> read_binary_data("int")
+  data$delay <- bfile |> read_binary_data("int") # not 100% sure this is correct
+  return(dplyr::as_tibble(data))
+}
+
+# read CScanPart::CIntegrationUnitScanPart (complete)
+read_CIntegrationUnitScanPart <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCScanPart = bfile |> read_CScanPart() |> list(),
+    version = bfile |>
+      read_schema_version("CIntegrationUnitScanPart", max_supported = 3)
+  )
+
+  # fields
+  data$xC0 <- bfile |> read_binary_data("int")
+  data$xC4 <- bfile |> read_binary_data("uint8")
+
+  return(dplyr::as_tibble(data))
+}
+
+# CData::CBasicInterface::CHardwarePart chain ====
+
+# read CHardwarePart object (complete)
+read_CHardwarePart <- function(bfile) {
+  # parent + version
+  data <- list(
+    pCBasicInterface = bfile |> read_CBasicInterface() |> list(),
+    version = bfile |> read_schema_version("CHardwarePart", max_supported = 10)
+  )
+
+  # CInterface-derived member
+  data$CInterface <- bfile |> read_object(pattern = "Interface") |> list()
+
+  # hasGasConfPart flag + expected object
+  data$has_CGasConfPart <- bfile |> read_binary_data("bool")
+  if (!is.na(data$has_CGasConfPart) && data$has_CGasConfPart) {
+    data$CGasConfPart <- bfile |> read_object(pattern = "GasConfPart") |> list()
   }
 
-  # CVisualisationData schema version (writes 8)
-  data$version <- read_schema_version(
-    bfile,
-    "CVisualisationData",
-    max_supported = 8
-  )
-  v <- data$version
+  # hasMethodPart flag + expected object
+  data$has_CMethodPart <- bfile |> read_binary_data("bool")
+  if (!is.na(data$has_CMethodPart) && data$has_CMethodPart) {
+    # FIXME: not implemented
+    bfile |>
+      register_cnd(cli_abort(
+        "non-zero {.field CMethodPart} - not yet implemented"
+      ))
+  }
 
-  # fixed byte block (16 bytes)
-  data$bytes_16 <- list(replicate(16, bfile |> read_binary_data("uint8")))
+  # has_extra_CData flag + expected base (CData)
+  data$has_extra_CData <- bfile |> read_binary_data("bool")
+  if (!is.na(data$has_extra_CData) && data$has_extra_CData) {
+    # are there possibilites other than CCalibration here?
+    data$CData_extra <- bfile |> read_object(pattern = "CCalibration") |> list()
+  }
 
-  # array of uint32 (10 items): block A
-  data$blockA_u32_10 <- list(replicate(10, bfile |> read_binary_data("int")))
-
-  # array of uint32 (10 items): block B
-  data$blockB_u32_10 <- list(replicate(10, bfile |> read_binary_data("int")))
-
-  # 3 strings (version >= 2)
-  if (!is.na(v) && v >= 2) {
+  # version gated fields
+  if (!is.na(data$version) && data$version >= 3) {
     data <- bfile |>
       read_binary_data_list(
         data = data,
-        c("str_1" = "string", "str_2" = "string", "str_3" = "string")
+        c(
+          "xAC" = "bool",
+          "xB0" = "bool",
+          "xB4" = "bool",
+          "xB8" = "bool"
+        )
       )
+
+    # version 7
+    if (!is.na(data$version) && data$version >= 7) {
+      # CVisualization data
+      data$CVisualisationData <- bfile |>
+        read_object("CVisualisationData") |>
+        list()
+      data$xC8 <- bfile |> read_binary_data("double") # value tends to be 10,000.00
+      data$xBC <- bfile |> read_binary_data("int") # might be a visualization flag (bool)
+
+      # version 9
+      if (!is.na(data$version) && data$version >= 9) {
+        data$n_strings1 <- bfile |> read_binary_data("int") # 0xFC
+        if (!is.na(data$n_strings1) && data$n_strings1 > 0) {
+          bfile |>
+            register_cnd(cli_abort(
+              "non-zero {.field CStringArray} - not yet implemented"
+            ))
+        }
+        data$n_strings2 <- bfile |> read_binary_data("int") # 0x110
+        if (!is.na(data$n_strings2) && data$n_strings2 > 0) {
+          bfile |>
+            register_cnd(cli_abort(
+              "non-zero {.field CStringArray} - not yet implemented"
+            ))
+        }
+
+        # version 10
+        if (!is.na(data$version) && data$version >= 10) {
+          data$xA4 <- bfile |> read_binary_data("string") # user-defined GUI text
+        }
+      }
+    }
   }
 
-  # gated options (keep in this order)
-  if (!is.na(v) && v >= 3) {
-    data <- bfile |> read_binary_data_list(data = data, c("opt_A_u32" = "int"))
-  }
-  if (!is.na(v) && v >= 4) {
-    data <- bfile |> read_binary_data_list(data = data, c("opt_B_u32" = "int"))
-  }
-  if (!is.na(v) && v >= 5) {
-    data <- bfile |>
-      read_binary_data_list(data = data, c("preset_name" = "string"))
-  }
-  if (!is.na(v) && v >= 6) {
-    data <- bfile |> read_binary_data_list(data = data, c("opt_C_u32" = "int"))
-  }
-  if (!is.na(v) && v >= 7) {
-    data <- bfile |> read_binary_data_list(data = data, c("opt_D_u32" = "int"))
-  }
-  if (!is.na(v) && v >= 8) {
-    data <- bfile |> read_binary_data_list(data = data, c("opt_E_u32" = "int"))
-  }
-
-  dplyr::as_tibble(data)
+  return(dplyr::as_tibble(data))
 }
-#===========================================================
-# CGpibInterface
-# Parent: CBasicInterface (which reads CData)
-# After parent fields:
-#   gpib_version (int, const 3 on write)
-#   cfg_byte1 (uint8)
-#   cfg_byte2 (uint8)
-#   cfg_byte3 (uint8) only if gpib_version >= 3
-#===========================================================
 
-read_CGpibInterface <- function(bfile) {
+# read CHardwarePart::CCupHardwarePart (complete)
+read_CCupHardwarePart <- function(bfile) {
+  # parent and version
   data <- list(
-    pCBasicInterface = bfile |> read_CBasicInterface() |> list()
+    pCHardwarePart = bfile |> read_CHardwarePart() |> list(),
+    version = bfile |>
+      read_schema_version("CCupHardwarePart", max_supported = 5)
   )
 
-  # CGpibInterface schema version (writes 3)
-  data$gpib_version <- read_schema_version(
-    bfile,
-    "CGpibInterface",
-    max_supported = 3
+  # fields
+  data$mode <- bfile |> read_binary_data("uint8") # values observed: 0,1,2
+  data$resistor <- bfile |> read_binary_data("double")
+  data$x138 <- bfile |> read_binary_data("double") # values observed: 0 and 2.5
+
+  # version gated fields
+  if (!is.na(data$version) && data$version >= 3) {
+    data$x130 <- bfile |> read_binary_data("double") # values observed: 0 or same as resistor
+
+    if (!is.na(data$version) && data$version == 4) {
+      # 24 bytes of legacy ata that only existed in version 4 --> read but not stored
+      bfile |> read_binary_data("raw", n = 24L)
+    }
+  }
+  return(dplyr::as_tibble(data))
+}
+
+# read CHardwarePart::CChannelHardwarePart (complete)
+read_CChannelHardwarePart <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCHardwarePart = bfile |> read_CHardwarePart() |> list(),
+    version = bfile |>
+      read_schema_version("CChannelHardwarePart", max_supported = 2)
   )
 
-  # config bytes
+  # fields
+  data$x120 <- bfile |> read_binary_data("int")
+  data$x124 <- bfile |> read_binary_data("int")
+  return(dplyr::as_tibble(data))
+}
+
+# read CHardwarePart::CScaleHardwarePart (complete)
+read_CScaleHardwarePart <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCHardwarePart = bfile |> read_CHardwarePart() |> list(),
+    version = bfile |>
+      read_schema_version("CScaleHardwarePart", max_supported = 12)
+  )
+
+  # fields
   data <- bfile |>
     read_binary_data_list(
       data = data,
       c(
-        "gpib_cfg_byte1" = "uint8", # +0x9c
-        "gpib_cfg_byte2" = "uint8" # +0x9d
+        "units" = "string",
+        "min_step" = "uint32", # 0x180
+        "max_step" = "uint32" # 0x184
       )
     )
 
-  # added in schema version 3
-  if (!is.na(data$gpib_version) && data$gpib_version >= 3) {
-    data <- bfile |>
-      read_binary_data_list(
-        data = data,
-        c("gpib_cfg_byte3" = "uint8") # +0x9e
-      )
+  # version gated fields
+  if (!is.na(data$version) && data$version >= 4) {
+    data$format_mask <- bfile |> read_binary_data("uint32") # 0x120
+    # version 5
+    if (!is.na(data$version) && data$version >= 5) {
+      data <- bfile |>
+        read_binary_data_list(
+          data = data,
+          c(
+            # these (and subsequent uint32s) are potentially mostly flags (booleans)
+            "x124" = "uint32",
+            "x128" = "uint32",
+            "x130" = "uint32",
+            "x134" = "uint32",
+            "x140" = "uint32"
+          )
+        )
+
+      # version 6
+      if (!is.na(data$version) && data$version >= 6) {
+        data$x144 <- bfile |> read_binary_data("uint32")
+        data$x148 <- bfile |> read_binary_data("uint32")
+        data$x14C <- bfile |> read_binary_data("uint32")
+
+        # version 7
+        if (!is.na(data$version) && data$version >= 7) {
+          data$x150 <- bfile |> read_binary_data("uint32")
+
+          # version 8
+          if (!is.na(data$version) && data$version >= 8) {
+            data$x154 <- bfile |> read_binary_data("string")
+            data$x158 <- bfile |> read_binary_data("uint32")
+
+            # version 9
+            if (!is.na(data$version) && data$version >= 9) {
+              data$x138 <- bfile |> read_binary_data("uint32")
+              data$x13C <- bfile |> read_binary_data("uint32")
+
+              # version 10
+              if (!is.na(data$version) && data$version >= 10) {
+                data$x15C <- bfile |> read_binary_data("string")
+
+                # version 11
+                if (!is.na(data$version) && data$version >= 11) {
+                  data$x160 <- bfile |> read_binary_data("uint32")
+                  data$x164 <- bfile |> read_binary_data("uint32")
+                }
+
+                # version 12
+                if (!is.na(data$version) && data$version >= 12) {
+                  data$min_value <- bfile |> read_binary_data("double") # 0x168, defaults to -10,000.00
+                  data$max_value <- bfile |> read_binary_data("double") # 0x170 defaults to +10,000.00
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
-  tibble::as_tibble(data)
+  return(dplyr::as_tibble(data))
 }
+
+# read CHardwarePart::CScaleHardwarePart::CClockHardwarePart (complete)
+read_CClockHardwarePart <- function(bfile) {
+  data <- list(
+    pCScaleHardwarePart = bfile |> read_CScaleHardwarePart() |> list(),
+    version = bfile |>
+      read_schema_version("CClockHardwarePart", max_supported = 2)
+  )
+  data$x190 <- bfile |> read_binary_data("uint32")
+  return(dplyr::as_tibble(data))
+}
+
+# read CHardwarePart::CScaleHardwarePart::CIntegrationUnitHardwarePart (complete)
+read_CIntegrationUnitHardwarePart <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCScaleHardwarePart = bfile |> read_CScaleHardwarePart() |> list(),
+    version = bfile |>
+      read_schema_version("CIntegrationUnitHardwarePart", max_supported = 3)
+  )
+
+  # fields
+  data <- bfile |>
+    read_binary_data_list(
+      data = data,
+      c(
+        "x194" = "int",
+        "x198" = "uint8",
+        "x19C" = "int", # constructor initializes to 1000
+        "x1A0" = "int",
+        "x199" = "uint8",
+        "x190" = "uint8",
+        "n_integration_times" = "uint8" # 0x1B8
+      )
+    )
+
+  if (!is.na(data$n_integration_times) && data$n_integration_times > 0) {
+    # most likely in miliseconds
+    data$integration_times <- bfile |>
+      read_binary_data("uint16", n = data$n_integration_times) |>
+      list() # 0x1B4
+  }
+
+  # read cup definitions
+  data$n_cups <- bfile |> read_binary_data("uint8") # 0x1E0
+  if (!is.na(data$n_cups) && data$n_cups > 0) {
+    data$CCupHardwarePart <-
+      1:data$n_cups |>
+      purrr::map(
+        ~ bfile |> read_object("CCupHardwarePart")
+      ) |>
+      dplyr::bind_rows() |>
+      list()
+  }
+
+  # read channel definitions
+  data$n_channels <- bfile |> read_binary_data("uint8") # 0x1CC
+  if (!is.na(data$n_channels) && data$n_channels > 0) {
+    data$CChannelHardwarePart <-
+      1:data$n_channels |>
+      purrr::map(
+        ~ bfile |> read_object("CChannelHardwarePart")
+      ) |>
+      dplyr::bind_rows() |>
+      list()
+  }
+
+  # version gated fields
+  if (!is.na(data$version) && data$version >= 3) {
+    data$x1A8 <- bfile |> read_binary_data("bool") # gui checkbox
+    data$x1AC <- bfile |> read_binary_data("bool") # gui checkbox
+  }
+
+  return(dplyr::as_tibble(data))
+}
+
+# read CHardwarePart::CScaleHardwarePart::CDacHardwarePart (complete)
+read_CDacHardwarePart <- function(bfile) {
+  data <- list(
+    pCScaleHardwarePart = bfile |> read_CScaleHardwarePart() |> list(),
+    version = bfile |>
+      read_schema_version("CDacHardwarePart", max_supported = 3)
+  )
+
+  # fields
+  data <- bfile |>
+    read_binary_data_list(
+      data = data,
+      c(
+        "x190" = "uint8",
+        "x191" = "uint8",
+        "x192" = "uint8",
+        "x193" = "uint8"
+      )
+    )
+
+  # version gated fields
+  if (!is.na(data$version) && data$version >= 3) {
+    data$format <- bfile |> read_binary_data("string") # 0x194, looks like a sprintf format
+  }
+
+  return(dplyr::as_tibble(data))
+}
+
+# read CHardwarePart::CScaleHardwarePart::CDacHardwarePart::CScaleHvHardwarePart (complete)
+read_CScaleHvHardwarePart <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCDacHardwarePart = bfile |> read_CDacHardwarePart() |> list(),
+    version = bfile |>
+      read_schema_version("CScaleHvHardwarePart", max_supported = 3)
+  )
+
+  # version gated fields
+  if (!is.na(data$version) && data$version >= 3) {
+    data$x198 <- bfile |> read_binary_data("double")
+  }
+
+  return(dplyr::as_tibble(data))
+}
+
+# read CHardwarePart::CScaleHardwarePart::CDacHardwarePart::CMagnetCurrentHardwarePart (complete)
+read_CMagnetCurrentHardwarePart <- function(bfile) {
+  # parent and version
+  data <- list(
+    pCDacHardwarePart = bfile |> read_CDacHardwarePart() |> list(),
+    version = bfile |>
+      read_schema_version("CMagnetCurrentHardwarePart", max_supported = 2)
+  )
+
+  # fields
+  data <- bfile |>
+    read_binary_data_list(
+      data = data,
+      c(
+        "x198" = "int", # maybe some sort of wait time in ms (10000)
+        "x19C" = "int" # maybe some sort of wait time in ms (10000)
+      )
+    )
+
+  return(dplyr::as_tibble(data))
+}
+
 
 # CSimple chain ======
 
@@ -364,12 +888,29 @@ read_CSimple <- function(bfile) {
   data <-
     list(
       version = bfile |> read_schema_version("CSimple", max_supported = 2),
-      "x38" = bfile |> read_binary_data("string")
+      "label" = bfile |> read_binary_data("string")
     )
+
   return(dplyr::as_tibble(data))
 }
 
-# read CBinary object (complete)
+# read CSimple::CDword object (complete)
+read_CDword <- function(bfile) {
+  # version
+  data <- list(
+    pCSimple = bfile |> read_CSimple() |> list(),
+    version = bfile |> read_schema_version("CDword", max_supported = 2)
+  )
+  # fields
+  data$value <- bfile |> read_binary_data("int")
+  return(dplyr::as_tibble(data))
+}
+
+# read CSimple::CDword::CPeakCenterOffset (same as the parent)
+read_CPeakCenterOffset <- read_CDword
+
+
+# read CSimple::CBinary object (complete)
 read_CBinary <- function(bfile, n_points, n_traces, read_data = TRUE) {
   # parent
   data <- list(
@@ -403,79 +944,86 @@ read_CBinary <- function(bfile, n_points, n_traces, read_data = TRUE) {
 }
 
 
-# CPlotInfo / CPlotRange =========
+# CPlotInfo & children =========
 
-# we do not have a decompiled code base for this
-# --> inferred by manual inspection (complete)
-# CPlotInfo and CPlotRange have separate serialization indices
-# so need to be started with a fresh index (see use in
-# read_CScanStorage)
+# read CPlotInfo object (complete)
+# TODO: the meaning of the fields can all be figured out by using a scn file to
+# change right-click-->Options one at a time and see what's what
 read_CPlotInfo <- function(bfile) {
-  # version
-  data <- list(
-    version = bfile |> read_schema_version("CPlotInfo", max_supported = 2)
-  )
+  # no version serialized beyond what MFC object serializes --> pull it from there
+  version <- bfile$index |>
+    dplyr::filter(.data$obj_idx == bfile$current_obj_idx) |>
+    dplyr::pull(version)
 
   # fields
   data <- bfile |>
     read_binary_data_list(
-      data = data,
       c(
-        "?" = "int", # usually 0
-        "?" = "int", # usually 1
-        "?" = "int", # usually 1
-        "?" = "int", # usually 1
-        "?" = "float" # usually 10,000.00, is this the max accelerating voltage?
-      )
-    )
-
-  # spacer sequence (NOT an empty string)
-  spacer <- bfile |>
-    read_binary_data(
-      "raw",
-      4L,
-      expected = as.raw(c(0xff, 0xff, 0xff, 0x00)),
-      block_if_unexpected = FALSE
-    )
-
-  # next fields
-  data <- bfile |>
-    read_binary_data_list(
-      data = data,
-      c(
-        "?" = "int", # usually 0
-        "?" = "int", # usually 1
-        "?" = "raw", # usually 0E - is this an object reference of some kind?
-        "?" = "raw", # usually 00
+        "x10" = "int", # probably a toggle, default 1
+        "x20" = "int", # probably a toggle, default 0
+        "x14" = "int", # probably a toggle, default 1
+        "x18" = "int", # probably a toggle, default 1
+        "x1c" = "int", # probably a toggle, default 1
+        "right_left_factor" = "float", # pretty sure "Right left faktor" in Options, usually 10,000.00
+        "background_color" = "color", # background color, default FF FF FF 00 (=white)
+        "labels_color" = "color", # label color, default 00 00 00 00 (=black)
+        "x38" = "int", # potentially linewidth (or another toggle), default 1
+        "x3c" = "uint16", # potentially font size (default value is 0E 00 = 14)
         "font" = "string", # usually Arial
         "x_label" = "string", # without units!
         "y_label" = "string", # without units!
-        "?" = "string" # usually Ratio
+        "trace" = "string" # usually Ratio
       )
     )
 
   # CTrace Info
   data$CTraceInfo <- bfile |> read_object("CTraceInfo") |> list()
 
+  # CPlotRange x2
+  data$CPlotRange <- bfile |> read_object("CPlotRange") |> list()
+  data$CPlotRange_zoom <- bfile |> read_object("CPlotRange") |> list()
+
+  # additional indices (only if version > 1)
+  if (!is.na(version) && version > 1) {
+    data$x08 <- bfile |> read_binary_data("int") # potentially toggle, usually 1
+    data$x0c <- bfile |> read_binary_data("int") # potentially toggle, usually 0
+  }
+
+  # then we have again a repeat of just the CPlotRange data (CPlotRange_zoom first this time)
+  # FIXME: does this always happen for CPlotRange or is this a consequence of the second
+  # point in CScanStorage (0x140) only? i.e. should this be here or elsewhere?
+  data$CPlotRange_zoom2 <- bfile |> read_CPlotRange() |> list()
+  data$CPlotRange2 <- bfile |> read_CPlotRange() |> list()
+
+  # then we have again the trace labels
+  # this information is redundant with that's in CTraceInfo
+  n_traces <- data$CTraceInfo[[1]]$n_traces
+  if (!is.na(n_traces) && n_traces > 0) {
+    data$trace_labels <-
+      1:n_traces |>
+      purrr::map_chr(
+        ~ bfile |> read_binary_data("string")
+      ) |>
+      list()
+  }
   return(dplyr::as_tibble(data))
 }
 
-# we do not have decomplied code for this
-# --> inferred by manual inspection (complete)
+# read CTraceInfo object (complete)
+# TODO: the meaning of the fields can all be figured out by using a scn file to
+# change right-click-->Options-->Traces one at a time and see what's what
 read_CTraceInfo <- function(bfile) {
   # no version serialized!
-  # spacer sequence (NOT an empty string)
-  spacer <- bfile |>
-    read_binary_data(
-      "raw",
-      4L,
-      expected = as.raw(c(0xff, 0xff, 0xff, 0x00)),
-      block_if_unexpected = FALSE
+  # fields
+  data <- bfile |>
+    read_binary_data_list(
+      c(
+        # todo: these can maybe be figured out by using a scn file to
+        # change right-click-->Options one at a time and see what's what
+        "x04" = "int", # potentially another color, default FF FF FF 00 (=white)
+        "n_traces" = "uint8" # 0x44, number of traces
+      )
     )
-
-  # number of traces
-  data <- list()
-  data$n_traces <- bfile |> read_binary_data("uint8")
 
   # read CTraceInfoEntry records
   if (!is.na(data$n_traces) && data$n_traces > 0) {
@@ -504,27 +1052,25 @@ read_CTraceInfo <- function(bfile) {
   return(dplyr::as_tibble(data))
 }
 
-# we do not have decomplied code for this
-# --> inferred by manual inspection (complete)
+# read CTraceInfoEntry object (complete)
 read_CTraceInfoEntry <- function(bfile) {
   # no version serialized!
   data <- bfile |>
     read_binary_data_list(
       c(
         "idx" = "uint8", # 0, 1, 2, etc.
-        "?" = "raw", # usually FF
-        "?" = "int", # variations of 08 00 00 00, 00 08 00 00, 00 00 08 00, etc.
-        "?" = "int", # usually 0
-        "?" = "int", # usually 0
-        "?" = "int" # usually 1
+        "x05" = "raw", # usually FF but could be some additionl index
+        "trace_color" = "color", # 0x08 the trace color: 08 00 00 00 (= maroon), 00 08 00 00 (= medium green), 00 00 08 00 (= navy blue)
+        "x0c" = "int", # probably a toggle, usually 0
+        "x10" = "int", # probably a toggle, usually 0
+        "x14" = "int" # probably a toggle, usually 1
       )
     )
   return(dplyr::as_tibble(data))
 }
 
-# we do not have decomplied code for this
-# --> inferred by manual inspection (complete)
-read_CPlotRange <- function(bfile, n_traces) {
+# read CPlotRange object (complete)
+read_CPlotRange <- function(bfile) {
   # no version serialized!
   data <- bfile |>
     read_binary_data_list(
@@ -535,450 +1081,5 @@ read_CPlotRange <- function(bfile, n_traces) {
         "ymax" = "double"
       )
     )
-
-  # spacer - this actually looks like a typical class reference (09 80)
-  # but the fields after don't fit that pattern
-  spacer <- bfile |> read_binary_data("raw", 2L)
-
-  # fields
-  data <- bfile |>
-    read_binary_data_list(
-      data = data,
-      c(
-        "zoom_xmin" = "float",
-        "zoom_xmax" = "float",
-        "zoom_ymin" = "double",
-        "zoom_ymax" = "double",
-        "?" = "int",
-        "?" = "int",
-        # this seems to be just an inverted replication
-        "zoom_xmin_rep" = "float",
-        "zoom_xmax_rep" = "float",
-        "zoom_ymin_rep" = "double",
-        "zoom_ymax_rep" = "double",
-        "xmin_rep" = "float",
-        "xmax_rep" = "float",
-        "ymin_rep" = "double",
-        "ymax_rep" = "double"
-      )
-    )
-
-  # read the trace labels (one for each trace)
-  # this information is also in CTraceInfo
-  if (!is.na(n_traces) && n_traces > 0) {
-    data$trace_labels <-
-      1:n_traces |>
-      purrr::map_chr(
-        ~ bfile |> read_binary_data("string")
-      ) |>
-      list()
-  }
   return(dplyr::as_tibble(data))
-}
-
-
-# molecule class readers =========
-
-read_CMolecule <- function(bfile) {
-  data <- list(pCData = bfile |> read_CData() |> list())
-
-  data$version <- read_schema_version(bfile, "CMolecule", max_supported = 0)
-
-  data <- bfile |> read_binary_data_list(data = data, c("formula" = "string"))
-
-  dplyr::as_tibble(data)
-}
-
-
-# optional fallbacks (only used if your package does not already define these)
-if (!exists("cli_warn", mode = "function")) {
-  cli_warn <- function(text) {
-    rlang::warning_cnd(message = cli::format_inline(text))
-  }
-}
-if (!exists("cli_abort", mode = "function")) {
-  cli_abort <- function(text) {
-    rlang::error_cnd(message = cli::format_inline(text))
-  }
-}
-
-
-#===========================================================
-# CHardwarePart (parent reader)
-#===========================================================
-read_CHardwarePart <- function(bfile) {
-  # parent + version
-  data <- list(
-    pCBasicInterface = bfile |> read_CBasicInterface() |> list(),
-    version = bfile |> read_schema_version("CHardwarePart", max_supported = 10)
-  )
-  hv <- data$version
-
-  # member object (likely derived from CBasicInterface)
-  data$device_interface <- bfile |>
-    read_interface_object() |>
-    list()
-
-  # hasGasConfPart flag + expected object
-  hasGasConfPart <- bfile |> read_binary_data("int")
-  data$hasGasConfPart <- hasGasConfPart
-  if (!is.na(hasGasConfPart) && hasGasConfPart > 0) {
-    if (!exists("read_CGasConfPart", mode = "function", inherits = TRUE)) {
-      bfile |>
-        register_cnd(
-          cli_abort(
-            "non-zero {.field hasGasConfPart} but read_CGasConfPart() is not implemented yet"
-          ),
-          pos = bfile$pos
-        )
-      return(dplyr::as_tibble(data))
-    }
-    data$gas_conf_part <- bfile |>
-      read_object("CGasConfPart", read_CGasConfPart) |>
-      list()
-  }
-
-  # hasMethodPart flag + expected object
-  hasMethodPart <- bfile |> read_binary_data("int")
-  data$hasMethodPart <- hasMethodPart
-  if (!is.na(hasMethodPart) && hasMethodPart > 0) {
-    if (!exists("read_CMethodPart", mode = "function", inherits = TRUE)) {
-      bfile |>
-        register_cnd(
-          cli_abort(
-            "non-zero {.field hasMethodPart} but read_CMethodPart() is not implemented yet"
-          ),
-          pos = bfile$pos
-        )
-      return(dplyr::as_tibble(data))
-    }
-    data$method_part <- bfile |>
-      read_object("CMethodPart", read_CMethodPart) |>
-      list()
-  }
-
-  # hasExtraData flag + expected base (CData)
-  hasExtraData <- bfile |> read_binary_data("int")
-  data$hasExtraData <- hasExtraData
-  if (!is.na(hasExtraData) && hasExtraData > 0) {
-    data$extra_data <- bfile |>
-      read_object("CData", read_CData) |>
-      list()
-  }
-
-  # checkboxes (version >= 3)
-  if (!is.na(hv) && hv >= 3) {
-    data <- bfile |>
-      read_binary_data_list(
-        data = data,
-        c(
-          "chk_404" = "int",
-          "chk_405" = "int",
-          "chk_406" = "int",
-          "chk_407" = "int"
-        )
-      )
-  }
-
-  # visualisation section (version >= 7)
-  if (!is.na(hv) && hv >= 7) {
-    if (
-      !exists("read_CVisualisationData", mode = "function", inherits = TRUE)
-    ) {
-      bfile |>
-        register_cnd(
-          cli_abort(
-            "version >= 7 but read_CVisualisationData() is not implemented yet"
-          ),
-          pos = bfile$pos
-        )
-      return(dplyr::as_tibble(data))
-    }
-    data$visualisation_data <- bfile |>
-      read_object("CVisualisationData", read_CVisualisationData) |>
-      list()
-
-    # 8 bytes (uint64 or double). Keep uint64 for now.
-    data$edit_mode_visualisation_value <- bfile |> read_binary_data("double")
-
-    data <- bfile |>
-      read_binary_data_list(
-        data = data,
-        c("multi_select_visualisation" = "int")
-      )
-  }
-
-  # CStringArray blocks (version >= 9)
-  safe_count <- function(x) {
-    if (is.null(x) || length(x) == 0 || is.na(x)) {
-      return(0L)
-    }
-    if (!is.numeric(x)) {
-      return(0L)
-    }
-    x <- as.integer(x)
-    if (is.na(x) || x < 0) {
-      return(0L)
-    }
-    x
-  }
-
-  if (!is.na(hv) && hv >= 9) {
-    data$set_hwparts_count <- bfile |> read_binary_data("int")
-    n1 <- safe_count(data$set_hwparts_count)
-    data$set_hwparts_strings <- list(lapply(
-      seq_len(n1),
-      function(i) bfile |> read_binary_data("string")
-    ))
-
-    data$get_hwparts_count <- bfile |> read_binary_data("int")
-    n2 <- safe_count(data$get_hwparts_count)
-    data$get_hwparts_strings <- list(lapply(
-      seq_len(n2),
-      function(i) bfile |> read_binary_data("string")
-    ))
-  }
-
-  # text field (version >= 10)
-  if (!is.na(hv) && hv >= 10) {
-    data$hardware_text <- bfile |> read_binary_data("string")
-  }
-
-  dplyr::as_tibble(data)
-}
-
-
-#===========================================================
-# CChannelHardwarePart
-# Parent: CHardwarePart -> CBasicInterface -> CData
-# After CHardwarePart:
-#   channel_version (int, writes 2)
-#   channel_param_1 (int)
-#   channel_param_2 (int)
-#===========================================================
-
-read_CChannelHardwarePart <- function(bfile) {
-  data <- list(
-    pCHardwarePart = bfile |> read_CHardwarePart() |> list()
-  )
-
-  data$channel_version <- read_schema_version(
-    bfile,
-    "CChannelHardwarePart",
-    max_supported = 2
-  )
-
-  data <- bfile |>
-    read_binary_data_list(
-      data = data,
-      c(
-        "channel_param_1" = "int",
-        "channel_param_2" = "int"
-      )
-    )
-
-  dplyr::as_tibble(data)
-}
-
-
-#===========================================================
-# CScaleHardwarePart (parent reader, used by derived classes)
-# Parent: CHardwarePart -> CBasicInterface -> CData
-# After CHardwarePart:
-#   scale_version (int, writes 12)
-#   unit_string (string)
-#   min_value (int)
-#   max_value (int)
-#   then several gated 4-byte fields (use "int" since uint32 is not supported)
-#   then gated strings
-#   then gated doubles (8 bytes) for v>=12
-#===========================================================
-read_CScaleHardwarePart <- function(bfile) {
-  data <- list(
-    pCHardwarePart = bfile |> read_CHardwarePart() |> list()
-  )
-
-  data$scale_version <- read_schema_version(
-    bfile,
-    "CScaleHardwarePart",
-    max_supported = 12
-  )
-  sv <- data$scale_version
-
-  data <- bfile |>
-    read_binary_data_list(
-      data = data,
-      c(
-        "unit_string" = "string",
-        "min_value" = "int",
-        "max_value" = "int"
-      )
-    )
-
-  # v>=4 (uint32 in notes, but read_binary_data supports only "int" for 4 bytes)
-  if (!is.na(sv) && sv >= 4) {
-    data$fmt_param_1 <- bfile |> read_binary_data("int")
-  }
-
-  # v>=5
-  if (!is.na(sv) && sv >= 5) {
-    data$fmt_param_2 <- bfile |> read_binary_data("int")
-    data$cfg_flag_1 <- bfile |> read_binary_data("int")
-    data$cfg_val_1 <- bfile |> read_binary_data("int")
-    data$cfg_val_2 <- bfile |> read_binary_data("int")
-    data$enable_flag <- bfile |> read_binary_data("int")
-  }
-
-  # v>=6
-  if (!is.na(sv) && sv >= 6) {
-    data$str_param_1 <- bfile |> read_binary_data("string")
-    data$rubber_cfg_1 <- bfile |> read_binary_data("int")
-    data$rubber_cfg_2 <- bfile |> read_binary_data("int")
-  }
-
-  # v>=7
-  if (!is.na(sv) && sv >= 7) {
-    data$rubber_digits <- bfile |> read_binary_data("int")
-  }
-
-  # v>=8
-  if (!is.na(sv) && sv >= 8) {
-    data$str_param_2 <- bfile |> read_binary_data("string")
-    data$action_flag <- bfile |> read_binary_data("int")
-  }
-
-  # v>=9
-  if (!is.na(sv) && sv >= 9) {
-    data$rubber_vis_1 <- bfile |> read_binary_data("int")
-    data$rubber_vis_2 <- bfile |> read_binary_data("int")
-  }
-
-  # v>=10
-  if (!is.na(sv) && sv >= 10) {
-    data$rubber_label <- bfile |> read_binary_data("string")
-  }
-
-  # v>=11
-  if (!is.na(sv) && sv >= 11) {
-    data$rubber_cfg_3 <- bfile |> read_binary_data("int")
-    data$rubber_cfg_4 <- bfile |> read_binary_data("int")
-  }
-
-  # v>=12
-  if (!is.na(sv) && sv >= 12) {
-    data$lower_bound <- bfile |> read_binary_data("double")
-    data$upper_bound <- bfile |> read_binary_data("double")
-  }
-
-  dplyr::as_tibble(data)
-}
-
-#===========================================================
-# CClockHardwarePart (derived from CScaleHardwarePart)
-# After parent:
-#   clock_version (int, writes 2)
-#   clock_param (int)
-#===========================================================
-read_CClockHardwarePart <- function(bfile) {
-  data <- list(
-    pCScaleHardwarePart = bfile |> read_CScaleHardwarePart() |> list()
-  )
-
-  data$clock_version <- read_schema_version(
-    bfile,
-    "CClockHardwarePart",
-    max_supported = 2
-  )
-
-  data <- bfile |>
-    read_binary_data_list(
-      data = data,
-      c("clock_param" = "int")
-    )
-
-  dplyr::as_tibble(data)
-}
-
-#===========================================================
-# CDacHardwarePart (derived from CScaleHardwarePart)
-# After parent:
-#   dac_version (int, writes 3)
-#   4 uint8 config bytes
-#   (v>=3) dac_device_name (string)
-#===========================================================
-read_CDacHardwarePart <- function(bfile) {
-  data <- list(
-    pCScaleHardwarePart = bfile |> read_CScaleHardwarePart() |> list()
-  )
-
-  data$dac_version <- read_schema_version(
-    bfile,
-    "CDacHardwarePart",
-    max_supported = 3
-  )
-  dv <- data$dac_version
-
-  data <- bfile |>
-    read_binary_data_list(
-      data = data,
-      c(
-        "dac_cfg_1" = "uint8",
-        "dac_cfg_2" = "uint8",
-        "dac_cfg_4" = "uint8",
-        "dac_cfg_3" = "uint8"
-      )
-    )
-
-  if (!is.na(dv) && dv >= 3) {
-    data$dac_device_name <- bfile |> read_binary_data("string")
-  }
-
-  dplyr::as_tibble(data)
-}
-
-
-#===========================================================
-# CMagnetCurrentHardwarePart
-# Parent: CDacHardwarePart
-# After parent:
-#   param_A (uint32 in notes) -> read as "int" (4 bytes)
-#   param_B (uint32 in notes) -> read as "int" (4 bytes)
-#===========================================================
-read_CMagnetCurrentHardwarePart <- function(bfile) {
-  data <- list(
-    pCDacHardwarePart = bfile |> read_CDacHardwarePart() |> list()
-  )
-
-  data <- bfile |>
-    read_binary_data_list(
-      data = data,
-      c(
-        "param_A" = "int",
-        "param_B" = "int"
-      )
-    )
-
-  dplyr::as_tibble(data)
-}
-
-#===========================================================
-# CScaleHvHardwarePart
-# Parent: CDacHardwarePart
-# After parent:
-#   hv_version (int, store writes 3; load returns early if <3)
-#   (v>=3) hv_scale_value (double, 8 bytes)
-#===========================================================
-read_CScaleHvHardwarePart <- function(bfile) {
-  data <- list(
-    pCDacHardwarePart = bfile |> read_CDacHardwarePart() |> list()
-  )
-
-  v <- bfile |> read_schema_version("CScaleHvHardwarePart", max_supported = 3)
-  data$hv_version <- v
-
-  if (!is.na(v) && v >= 3) {
-    data$hv_scale_value <- bfile |> read_binary_data("double")
-  }
-
-  dplyr::as_tibble(data)
 }
