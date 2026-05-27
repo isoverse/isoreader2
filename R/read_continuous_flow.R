@@ -80,12 +80,14 @@ ir_find_continuous_flow <- function(
 #' @param file_paths paths to the continuous flow file(s), single value or vector of paths. Use [ir_find_continuous_flow()] to get all continuous flow files in a folder.
 #' @param show_progress whether to show a progress bar, by default always enabled when running interactively e.g. inside Positron or RStudio (and disabled in a notebook), turn off with `show_progress = FALSE`
 #' @param show_problems whether to show problems encountered along the way (rather than just keeping track of them with [ir_get_problems()]). Set to `show_problems = FALSE` to turn off the live printout. Either way, all encountered problems can be retrieved with running [ir_get_problems()] for the returned list
+#' @param reextract whether to re-extract files (uses isoextract to read files from scratch), if FALSE (default) only extract files not previously extracted
 #' @return a tibble data frame where each row holds the file path and nested tibbles of datasets extracted from the continuous flow files. Use [orbi_aggregate_raw()] to aggregate data safely across files.
 #' @export
 ir_read_continuous_flow <- function(
   file_paths,
   show_progress = rlang::is_interactive(),
-  show_problems = TRUE
+  show_problems = TRUE,
+  reextract = FALSE
 ) {
   # keep track of current env to anchor progress bars
   root_env <- current_env()
@@ -125,7 +127,7 @@ ir_read_continuous_flow <- function(
 
   # empty metadata
   empty_meta <- tibble::tibble(
-    reader_version = NA_character_,
+    isoextract_version = NA_character_,
     file_type = NA_character_,
     file_size_bytes = NA_integer_,
     complete = NA
@@ -151,7 +153,12 @@ ir_read_continuous_flow <- function(
         }
       )
     ) |>
-    tidyr::unnest(.data$meta)
+    tidyr::unnest(.data$meta) |>
+    dplyr::left_join(.file_type_specs, by = "file_type") |>
+    dplyr::mutate(
+      version_ok = numeric_version(.data$isoextract_version) >=
+        numeric_version(.data$min_isoextract_version)
+    )
 
   finish_info(
     "read {nrow(file_paths_info)} continuous flow file{?s}",
@@ -168,7 +175,7 @@ ir_read_continuous_flow <- function(
 read_json_meta <- function(json_path) {
   meta <- RcppSimdJson::fload(json_path, query = "/meta")
   tibble::tibble(
-    reader_version = meta$reader_version,
+    isoextract_version = meta$isoextract_version,
     file_type = meta$file_type,
     file_size_bytes = meta$file_size_bytes,
     complete = meta$complete
