@@ -1,0 +1,256 @@
+#' Find continuous flow files
+#' @description Finds all continuous flow isodat files in a folder.
+#' @param folder path to a folder with isodat files
+#' @param types file extensions to include (without leading dot), default is
+#'   `c("dxf", "cf")`
+#' @param pattern provide a name pattern to find only specific files
+#' @param recursive whether to find files recursively
+#'
+#' @examples
+#'
+#' # all continuous flow files provided with the isoreader2 package
+#' ir_find_continuous_flow(system.file("extdata", package = "isoreader2"))
+#'
+#' @export
+ir_find_continuous_flow <- function(
+  folder,
+  types = c("dxf", "cf"),
+  pattern = NULL,
+  recursive = TRUE
+) {
+  # safety checks
+  check_arg(
+    folder,
+    !missing(folder) &&
+      is_character(folder) &&
+      length(folder) > 0 &&
+      all(dir.exists(folder)),
+    format_inline(
+      "must point to {qty(if(!missing(folder)) length(folder) else 1)}{?an/} existing director{?y/ies}"
+    ),
+    include_type = FALSE,
+    include_value = TRUE
+  )
+  check_arg(
+    types,
+    is_character(types) && length(types) > 0,
+    "must be a non-empty character vector of file extensions"
+  )
+  check_arg(
+    pattern,
+    is.null(pattern) || is_scalar_character(pattern),
+    "must be a single string if provided"
+  )
+  check_arg(recursive, is_scalar_logical(recursive), "must be TRUE or FALSE")
+
+  types <- tolower(types)
+  ext_pattern <- paste0("\\.(", paste(types, collapse = "|"), ")$")
+  json_ext_pattern <- paste0("\\.(", paste(types, collapse = "|"), ")\\.json$")
+
+  # direct isodat files
+  files <- list.files(
+    folder,
+    pattern = ext_pattern,
+    full.names = TRUE,
+    ignore.case = TRUE,
+    recursive = recursive
+  )
+
+  # .json data files (e.g. .dxf.json) — strip the .json suffix so paths are canonical
+  json_files <- list.files(
+    folder,
+    pattern = json_ext_pattern,
+    full.names = TRUE,
+    ignore.case = TRUE,
+    recursive = recursive
+  )
+  json_files <- sub("\\.json$", "", json_files, ignore.case = TRUE)
+
+  files <- unique(c(files, json_files))
+
+  if (!is.null(pattern)) {
+    files <- files[grepl(pattern, files)]
+  }
+
+  return(sort(files))
+}
+
+#' Read continuous flow files
+#'
+#' @param file_paths paths to the continuous flow file(s), single value or vector of paths. Use [ir_find_continuous_flow()] to get all continuous flow files in a folder.
+#' @param show_progress whether to show a progress bar, by default always enabled when running interactively e.g. inside Positron or RStudio (and disabled in a notebook), turn off with `show_progress = FALSE`
+#' @param show_problems whether to show problems encountered along the way (rather than just keeping track of them with [ir_get_problems()]). Set to `show_problems = FALSE` to turn off the live printout. Either way, all encountered problems can be retrieved with running [ir_get_problems()] for the returned list
+#' @param reextract whether to re-extract files (uses isoextract to read files from scratch), if FALSE (default) only extract files not previously extracted
+#' @return a tibble data frame where each row holds the file path and nested tibbles of datasets extracted from the continuous flow files. Use [orbi_aggregate_raw()] to aggregate data safely across files.
+#' @export
+ir_read_continuous_flow <- function(
+  file_paths,
+  show_progress = rlang::is_interactive(),
+  show_problems = TRUE,
+  reextract = FALSE
+) {
+  # keep track of current env to anchor progress bars
+  root_env <- current_env()
+
+  # safety checks
+  file_paths <- check_file_paths(file_paths)
+  show_progress |>
+    check_arg(is_scalar_logical(show_progress), "must be TRUE OR FALSE")
+  show_problems |>
+    check_arg(is_scalar_logical(show_problems), "must be TRUE OR FALSE")
+  reextract |> check_arg(is_scalar_logical(reextract), "must be TRUE OR FALSE")
+
+  # file paths info (strip the json for purposes of what the original files were)
+  file_paths_info <- tibble(file_path = gsub("\\.json$", "", file_paths))
+
+  # check if need to reextract
+  if (reextract) {
+    # reextract all
+    file_paths_info <- file_paths_info |> dplyr::mutate(extract = TRUE)
+  } else {
+    # empty metadata
+    empty_meta <- tibble::tibble(
+      isoextract_version = NA_character_,
+      file_type = NA_character_,
+      previous_file_size = NA_integer_,
+      complete = NA
+    )
+    # fetch metadata from json files to determine if any need reextraction
+    file_paths_info <- file_paths_info |>
+      dplyr::mutate(
+        has_json = file.exists(file_path |> paste0(".json")),
+        meta = purrr::map2(
+          .data$file_path,
+          .data$has_json,
+          function(fp, has_json) {
+            if (!has_json) {
+              # no json file
+              return(empty_meta)
+            }
+            out <- read_json_meta(paste0(fp, ".json")) |> try_catch_cnds()
+            if (is.null(out$result)) {
+              # something went wrong reading the metadata --> re-extract
+              return(empty_meta)
+            }
+            return(out$result)
+          }
+        )
+      ) |>
+      tidyr::unnest(.data$meta) |>
+      dplyr::left_join(.file_type_specs, by = "file_type") |>
+      dplyr::mutate(
+        version_ok = numeric_version(.data$isoextract_version) >=
+          numeric_version(.data$min_isoextract_version),
+        file_size = file.size(file_path),
+        size_identical = .data$file_size == .data$previous_file_size,
+        # (re-) extract flag
+        extract = !.data$has_json | !.data$version_ok | !.data$size_identical
+      )
+  }
+
+  # (re-)extract
+  if (any(file_paths_info$extract)) {
+    file_paths_info |>
+      dplyr::filter(.data$extract) |>
+      dplyr::pull("file_path") |>
+      ir_extract_isofiles(
+        show_progress = show_progress,
+        show_problems = FALSE # show total errors later during file read
+      )
+  }
+
+  # read files safely
+  read_safely <- function(file_path) {
+    # progress
+    if (!is.null(start$pb)) {
+      cli_progress_update(
+        id = start$pb,
+        inc = 1,
+        extra = list(file_path = file_path),
+        status = "reading",
+        .envir = root_env
+      )
+    }
+
+    # start timer
+    file_start <- start_info()
+
+    # parse existing issues from isoextract
+    issues_path <- file_path |> paste0(".issues.log")
+    isoextract_problems <- tibble()
+    if (file.exists(issues_path)) {
+      # FIXME: read from the issues file, each line is one error or warning (starts with error/warning) and should be captured accordingly
+    }
+
+    # work on json path
+    json_path <- file_path |> paste0(".json")
+
+    # function (so traceback is informative)
+    func_quo <- expr(read_dxf_json(file_path))
+
+    # call with error handling
+    out <-
+      try_catch_cnds(
+        eval_tidy(func_quo),
+        error_value = tibble(
+          filepath = info$file_path,
+          problems = list(tibble())
+        ),
+        catch_errors = !orbi_get_option("debug")
+      )
+
+    # did we get anything back?
+    has_file_info <- "file_info" %in% names(out$result)
+
+    # how many scans?
+    n_spectra_scans <- 0
+    if ("spectra" %in% names(out$result) && length(out$result$spectra) > 0) {
+      n_spectra_scans <- out$result$spectra[[1]]$scan.no |> unique() |> length()
+    }
+
+    # merge new into the returned problems
+    problems <- out$conditions
+    if ("problems" %in% names(out$result)) {
+      problems <- bind_rows(problems, out$result$problems)
+      out$result$problems <- list(problems)
+    }
+
+    # info
+    finish_info(
+      format_inline(...),
+      start = file_start,
+      conditions = problems,
+      show_conditions = show_problems,
+      .call = expr(orbi_read_raw()),
+      .env = root_env
+    )
+
+    # add index and whether there is file info in the result
+    return(
+      out$result |>
+        dplyr::mutate(idx = info$idx, has_file_info = !!has_file_info)
+    )
+  }
+
+  # info / progress
+  start <- start_info(
+    "is reading {pb_current}/{pb_total} files {pb_bar} ",
+    "| {pb_elapsed} | ETA {pb_eta} | {.file {basename(pb_extra$file_path)}} ",
+    "| {.field {pb_status}}",
+    pb_total = nrow(file_paths_info),
+    pb_extra = list(file_path = NA_character_),
+    pb_status = "initializing",
+    show_progress = show_progress,
+    .env = root_env
+  )
+
+  finish_info(
+    "read {nrow(file_paths_info)} continuous flow file{?s}",
+    start = start,
+    #conditions = all_conditions,
+    show_conditions = show_problems,
+    .env = root_env
+  )
+
+  return(invisible(file_paths_info))
+}
