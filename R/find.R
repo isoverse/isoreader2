@@ -1,20 +1,14 @@
-#' Find continuous flow files
-#' @description Finds all continuous flow isodat files in a folder.
-#' @param folder path to a folder with isodat files
-#' @param types file extensions to include (without leading dot), default is
-#'   `c("dxf", "cf")`
+#' Find isodat files
+#' @description Finds isodat files with the specified extensions in one or more folders.
+#' @param folder path to a folder with isodat files, or a character vector of folder paths
+#' @param types file extensions to include (without leading dot)
 #' @param pattern provide a name pattern to find only specific files
 #' @param recursive whether to find files recursively
-#'
-#' @examples
-#'
-#' # all continuous flow files provided with the isoreader2 package
-#' ir_find_continuous_flow(system.file("extdata", package = "isoreader2"))
-#'
+#' @return a sorted character vector of unique file paths (`.json` sidecar suffixes are stripped so each file appears once regardless of whether a sidecar exists)
 #' @export
-ir_find_continuous_flow <- function(
+ir_find_isofiles <- function(
   folder,
-  types = c("dxf", "cf"),
+  types,
   pattern = NULL,
   recursive = TRUE
 ) {
@@ -33,7 +27,7 @@ ir_find_continuous_flow <- function(
   )
   check_arg(
     types,
-    is_character(types) && length(types) > 0,
+    !missing(types) && is_character(types) && length(types) > 0,
     "must be a non-empty character vector of file extensions"
   )
   check_arg(
@@ -73,4 +67,28 @@ ir_find_continuous_flow <- function(
   }
 
   return(sort(files))
+}
+
+#' @describeIn ir_find_isofiles finds continuous flow files (`.dxf`, `.cf`)
+#' @examples
+#' ir_find_continuous_flow(system.file("extdata", package = "isoreader2"))
+#' @export
+ir_find_continuous_flow <- function(folder, pattern = NULL, recursive = TRUE) {
+  ir_find_isofiles(folder, types = c("dxf", "cf"), pattern = pattern, recursive = recursive)
+}
+
+#' @describeIn ir_find_isofiles finds dual inlet files (`.did`, `.caf`)
+#' @examples
+#' ir_find_dual_inlet(system.file("extdata", package = "isoreader2"))
+#' @export
+ir_find_dual_inlet <- function(folder, pattern = NULL, recursive = TRUE) {
+  ir_find_isofiles(folder, types = c("did", "caf"), pattern = pattern, recursive = recursive)
+}
+
+#' @describeIn ir_find_isofiles finds scan files (`.scn`)
+#' @examples
+#' ir_find_scans(system.file("extdata", package = "isoreader2"))
+#' @export
+ir_find_scans <- function(folder, pattern = NULL, recursive = TRUE) {
+  ir_find_isofiles(folder, types = "scn", pattern = pattern, recursive = recursive)
 }
