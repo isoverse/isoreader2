@@ -107,55 +107,51 @@ ir_read_continuous_flow <- function(
 
     # work on json path
     json_path <- file_path |> paste0(".json")
+    if (!file.exists(json_path) && nrow(isoextract_problems) == 0) {
+      # json does not exist but there are NO errors registered from isoextract --> something is off
+      isoextract_problems <- try_catch_cnds(cli_abort(
+        ".json output file from isoextract does not exist, try running with {.code reextract = TRUE}"
+      ))
+    }
 
     # function (so traceback is informative)
-    func_quo <- expr(read_dxf_json(file_path))
+    func <- sprintf("read_%s_json", tools::file_ext(file_path))
+    func_quo <- expr((!!func)(file_path))
 
     # call with error handling
     out <-
       try_catch_cnds(
         eval_tidy(func_quo),
         error_value = tibble(
-          filepath = info$file_path,
+          file_path = !!file_path,
           problems = list(tibble())
         ),
-        catch_errors = !orbi_get_option("debug")
+        catch_errors = !isor_get_option("dev_mode")
       )
 
-    # did we get anything back?
-    has_file_info <- "file_info" %in% names(out$result)
-
-    # how many scans?
-    n_spectra_scans <- 0
-    if ("spectra" %in% names(out$result) && length(out$result$spectra) > 0) {
-      n_spectra_scans <- out$result$spectra[[1]]$scan.no |> unique() |> length()
-    }
-
-    # merge new into the returned problems
-    problems <- out$conditions
+    # merge problems from isoextract, this call, and any conditions in the result
+    problems <- dplyr::bind_rows(isoextract_problems, out$conditions)
     if ("problems" %in% names(out$result)) {
-      problems <- bind_rows(problems, out$result$problems)
+      problems <- dplyr::bind_rows(problems, out$result$problems)
       out$result$problems <- list(problems)
     }
 
-    # info
-    finish_info(
-      format_inline(...),
-      start = file_start,
-      conditions = problems,
-      show_conditions = show_problems,
-      .call = expr(orbi_read_raw()),
-      .env = root_env
-    )
+    # show problems?
+    if (show_problems) {
+      problems |>
+        show_cnds(
+          include_call = FALSE,
+          summary_format = "encountered {issues} reading {message}",
+          message = format_inline("{.file {file_path}}"),
+          collapse_single_line_cnd = TRUE
+        )
+    }
 
-    # add index and whether there is file info in the result
-    return(
-      out$result |>
-        dplyr::mutate(idx = info$idx, has_file_info = !!has_file_info)
-    )
+    # return result
+    return(out$result)
   }
 
-  # info / progress
+  # start progress bar
   start <- start_info(
     "is reading {pb_current}/{pb_total} files {pb_bar} ",
     "| {pb_elapsed} | ETA {pb_eta} | {.file {basename(pb_extra$file_path)}} ",
@@ -167,13 +163,21 @@ ir_read_continuous_flow <- function(
     .env = root_env
   )
 
+  # read files
+  all_files <- file_paths_info$file_path |>
+    purrr::map(read_safely) |>
+    dplyr::bind_rows()
+
+  # wrap up
+  problems <- all_files$problems |> dplyr::bind_rows()
   finish_info(
     "read {nrow(file_paths_info)} continuous flow file{?s}",
     start = start,
-    #conditions = all_conditions,
-    show_conditions = show_problems,
+    conditions = problems,
+    show_conditions = FALSE,
+    summary_error_symbol = "!",
     .env = root_env
   )
 
-  return(invisible(file_paths_info))
+  return(invisible(all_files))
 }
