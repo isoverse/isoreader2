@@ -12,6 +12,27 @@ read_cf_json <- function(json_path) {
   )
 }
 
+read_did_json <- function(json_path) {
+  tibble(
+    file_path = gsub("\\.json%", "", json_path),
+    problems = list(tibble())
+  )
+}
+
+read_caf_json <- function(json_path) {
+  tibble(
+    file_path = gsub("\\.json%", "", json_path),
+    problems = list(tibble())
+  )
+}
+
+read_scn_json <- function(json_path) {
+  tibble(
+    file_path = gsub("\\.json%", "", json_path),
+    problems = list(tibble())
+  )
+}
+
 # JSON pointers to CEvalIntegrationUnitHWInfoList, by file type.
 # The list is a single object (single-gas) or an array of objects (multi-gas);
 # the R code below handles both via is.data.frame() dispatch.
