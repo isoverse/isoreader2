@@ -1,12 +1,12 @@
-#' Read continuous flow files
+#' Read isotope data files
 #'
-#' @param file_paths paths to the continuous flow file(s), single value or vector of paths. Use [ir_find_continuous_flow()] to get all continuous flow files in a folder.
+#' @param file_paths paths to the isodat file(s), single value or vector of paths. Use [ir_find_isofiles()] to get files in a folder.
 #' @param show_progress whether to show a progress bar, by default always enabled when running interactively e.g. inside Positron or RStudio (and disabled in a notebook), turn off with `show_progress = FALSE`
 #' @param show_problems whether to show problems encountered along the way (rather than just keeping track of them with [ir_get_problems()]). Set to `show_problems = FALSE` to turn off the live printout. Either way, all encountered problems can be retrieved with running [ir_get_problems()] for the returned list
 #' @param reextract whether to re-extract files (uses isoextract to read files from scratch), if FALSE (default) only extract files not previously extracted
-#' @return a tibble data frame where each row holds the file path and nested tibbles of datasets extracted from the continuous flow files. Use [orbi_aggregate_raw()] to aggregate data safely across files.
+#' @return a tibble data frame where each row holds the file path and nested tibbles of datasets extracted from the isodat files. Use [orbi_aggregate_raw()] to aggregate data safely across files.
 #' @export
-ir_read_continuous_flow <- function(
+ir_read_isofiles <- function(
   file_paths,
   show_progress = rlang::is_interactive(),
   show_problems = TRUE,
@@ -102,7 +102,25 @@ ir_read_continuous_flow <- function(
     issues_path <- file_path |> paste0(".issues.log")
     isoextract_problems <- tibble()
     if (file.exists(issues_path)) {
-      # FIXME: read from the issues file, each line is one error or warning (starts with error/warning) and should be captured accordingly
+      lines <- readLines(issues_path, warn = FALSE)
+      lines <- lines[nzchar(trimws(lines))]
+      isoextract_problems <- purrr::map(lines, function(line) {
+        msg <- sub(
+          "^(?:error|warning): ",
+          "",
+          line,
+          ignore.case = TRUE,
+          perl = TRUE
+        )
+        out <- if (grepl("^error", line, ignore.case = TRUE)) {
+          try_catch_cnds(cli_abort(msg))
+        } else if (grepl("^warning", line, ignore.case = TRUE)) {
+          try_catch_cnds(cli_warn(msg))
+        }
+        out$conditions
+      }) |>
+        dplyr::bind_rows() |>
+        dplyr::mutate(call = "ir_extract_isofiles")
     }
 
     # work on json path
@@ -141,9 +159,9 @@ ir_read_continuous_flow <- function(
       problems |>
         show_cnds(
           include_call = FALSE,
-          summary_format = "encountered {issues} reading {message}",
+          summary_format = "encountered {issues} for {message}",
           message = format_inline("{.file {file_path}}"),
-          collapse_single_line_cnd = TRUE
+          collapse_single_line_cnd = FALSE
         )
     }
 
@@ -171,7 +189,7 @@ ir_read_continuous_flow <- function(
   # wrap up
   problems <- all_files$problems |> dplyr::bind_rows()
   finish_info(
-    "read {nrow(file_paths_info)} continuous flow file{?s}",
+    "read {nrow(file_paths_info)} isotope data file{?s}",
     start = start,
     conditions = problems,
     show_conditions = FALSE,
@@ -180,4 +198,15 @@ ir_read_continuous_flow <- function(
   )
 
   return(invisible(all_files))
+}
+
+# extract meta from a single JSON file
+read_json_meta <- function(json_path) {
+  meta <- RcppSimdJson::fload(json_path, query = "/meta")
+  tibble::tibble(
+    isoextract_version = meta$isoextract_version,
+    file_type = meta$file_type,
+    previous_file_size = meta$file_size_bytes,
+    complete = meta$complete
+  )
 }
