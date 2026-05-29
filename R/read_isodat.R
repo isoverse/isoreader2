@@ -1,98 +1,82 @@
 read_dxf_json <- function(json_path) {
+  problems <- empty_cnds_tibble()
+  resistors <- read_isodat_resistors(
+    json_path,
+    hw_list_ptr = "/CContiniousFlowBlockData/p/objects/CBlockData/5/objects/CMethod/p/objects/CEvalIntegrationUnitHWInfoStore/p/objects/CEvalIntegrationUnitHWInfoList",
+    gas_name_ptr = c(
+      "/CContiniousFlowBlockData/p/objects/CBlockData/5/objects/CMethod/p/objects/CNumericValue/CGasConfiguration/p/p/v",
+      "/CContiniousFlowBlockData/p/objects/CBlockData/5/objects/CMethod/p/objects/CGasConfiguration/p/p/v"
+    ),
+    sub_methods_ptr = "/CContiniousFlowBlockData/p/objects/CBlockData/5/objects/CMethod/CMethod"
+  ) |>
+    try_catch_cnds()
+  problems <- dplyr::bind_rows(problems, resistors$conditions)
   tibble(
-    file_path = gsub("\\.json%", "", json_path),
-    problems = list(tibble())
+    resistors = list(resistors$result),
+    problems = list(problems)
   )
 }
 
 read_cf_json <- function(json_path) {
+  problems <- empty_cnds_tibble()
+  resistors <- read_isodat_resistors(
+    json_path,
+    hw_list_ptr = "/CMethod/p/objects/CEvalIntegrationUnitHWInfoStore/p/objects/CEvalIntegrationUnitHWInfoList",
+    gas_name_ptr = "/CMethod/p/objects/CGasConfiguration/p/p/v",
+    sub_methods_ptr = "/CMethod/CMethod"
+  ) |>
+    try_catch_cnds()
+  problems <- dplyr::bind_rows(problems, resistors$conditions)
   tibble(
-    file_path = gsub("\\.json%", "", json_path),
-    problems = list(tibble())
+    resistors = list(resistors$result),
+    problems = list(problems)
   )
 }
 
 read_did_json <- function(json_path) {
+  problems <- empty_cnds_tibble()
+  resistors <- read_isodat_resistors(
+    json_path,
+    # two variants depending on isodat version: numeric path tried first, direct path as fallback
+    hw_list_ptr = c(
+      "/CDualInletBlockData/p/objects/CMethod/p/objects/CNumericValue/CEvalIntegrationUnitHWInfoStore/p/objects/CEvalIntegrationUnitHWInfoList",
+      "/CDualInletBlockData/p/objects/CMethod/p/objects/CEvalIntegrationUnitHWInfoStore/p/objects/CEvalIntegrationUnitHWInfoList"
+    ),
+    gas_name_ptr = "/CDualInletBlockData/p/objects/CMethod/p/objects/CGasConfiguration/p/p/v",
+    sub_methods_ptr = "/CDualInletBlockData/p/objects/CMethod/CMethod"
+  ) |>
+    try_catch_cnds()
+  problems <- dplyr::bind_rows(problems, resistors$conditions)
   tibble(
-    file_path = gsub("\\.json%", "", json_path),
-    problems = list(tibble())
+    resistors = list(resistors$result),
+    problems = list(problems)
   )
 }
 
 read_caf_json <- function(json_path) {
+  problems <- empty_cnds_tibble()
+  resistors <- read_isodat_resistors(
+    json_path,
+    hw_list_ptr = "/CBlockDataContext/p/objects/CMethod/p/objects/CEvalIntegrationUnitHWInfoStore/p/objects/CEvalIntegrationUnitHWInfoList",
+    gas_name_ptr = "/CBlockDataContext/p/objects/CMethod/p/objects/CGasConfiguration/p/p/v",
+    sub_methods_ptr = "/CBlockDataContext/p/objects/CMethod/CMethod"
+  ) |>
+    try_catch_cnds()
+  problems <- dplyr::bind_rows(problems, resistors$conditions)
   tibble(
-    file_path = gsub("\\.json%", "", json_path),
-    problems = list(tibble())
+    resistors = list(resistors$result),
+    problems = list(problems)
   )
 }
 
 read_scn_json <- function(json_path) {
+  # .scn files do not store calibrated resistors
   tibble(
-    file_path = gsub("\\.json%", "", json_path),
-    problems = list(tibble())
+    problems = list(empty_cnds_tibble())
   )
-}
-
-# JSON pointers to CEvalIntegrationUnitHWInfoList, by file type.
-# The list is a single object (single-gas) or an array of objects (multi-gas);
-# the R code below handles both via is.data.frame() dispatch.
-# .did has two variants depending on isodat version; see read_isodat_resistors().
-.hw_list_ptr <- list(
-  dxf = "/CContiniousFlowBlockData/p/objects/CBlockData/5/objects/CMethod/p/objects/CEvalIntegrationUnitHWInfoStore/p/objects/CEvalIntegrationUnitHWInfoList",
-  cf = "/CMethod/p/objects/CEvalIntegrationUnitHWInfoStore/p/objects/CEvalIntegrationUnitHWInfoList",
-  did_numeric = "/CDualInletBlockData/p/objects/CMethod/p/objects/CNumericValue/CEvalIntegrationUnitHWInfoStore/p/objects/CEvalIntegrationUnitHWInfoList",
-  did_direct = "/CDualInletBlockData/p/objects/CMethod/p/objects/CEvalIntegrationUnitHWInfoStore/p/objects/CEvalIntegrationUnitHWInfoList",
-  caf = "/CBlockDataContext/p/objects/CMethod/p/objects/CEvalIntegrationUnitHWInfoStore/p/objects/CEvalIntegrationUnitHWInfoList"
-)
-
-# JSON pointers to the top-level gas name (CGasConfiguration.p.p.v), by file type.
-.gas_name_ptr <- list(
-  dxf = "/CContiniousFlowBlockData/p/objects/CBlockData/5/objects/CMethod/p/objects/CGasConfiguration/p/p/v",
-  cf = "/CMethod/p/objects/CGasConfiguration/p/p/v",
-  did = "/CDualInletBlockData/p/objects/CMethod/p/objects/CGasConfiguration/p/p/v",
-  caf = "/CBlockDataContext/p/objects/CMethod/p/objects/CGasConfiguration/p/p/v"
-)
-
-# JSON pointers to the sub-method array (CMethod/CMethod), by file type.
-# Each sub-method carries its own gas configuration for multi-gas measurements.
-.sub_methods_ptr <- list(
-  dxf = "/CContiniousFlowBlockData/p/objects/CBlockData/5/objects/CMethod/CMethod",
-  cf = "/CMethod/CMethod",
-  did = "/CDualInletBlockData/p/objects/CMethod/CMethod",
-  caf = "/CBlockDataContext/p/objects/CMethod/CMethod"
-)
-
-# Return an ordered character vector of gas names matching the CEvalIntegrationUnitHWInfoList
-# entries: top-level gas first, then one entry per sub-method (for multi-gas files).
-.get_gas_names <- function(json_path, ext, hw_list) {
-  # did always uses the same gas-name path regardless of numeric/direct variant
-  gas_ext <- if (ext == "did") "did" else ext
-  top_gas <- RcppSimdJson::fload(json_path, query = .gas_name_ptr[[gas_ext]])
-
-  if (!is.data.frame(hw_list)) {
-    return(top_gas)
-  } # single-gas
-
-  # multi-gas: append gas name from each sub-method in order
-  subs <- RcppSimdJson::fload(
-    json_path,
-    query = .sub_methods_ptr[[gas_ext]],
-    query_error_ok = TRUE
-  )
-  sub_gas_names <- if (is.data.frame(subs)) {
-    # multiple sub-methods simplified to a data.frame
-    vapply(subs$p, function(p) p$objects$CGasConfiguration$p$p$v, character(1))
-  } else if (is.list(subs) && !is.null(subs$p)) {
-    # single sub-method returned as a named list
-    subs$p$objects$CGasConfiguration$p$p$v
-  } else {
-    character(0)
-  }
-  c(top_gas, sub_gas_names)
 }
 
 # Extract a tibble of cups from the p (parent) node of a CEvalIntegrationUnitHWInfoList entry.
-# Accepts the p sub-object (which has $objects$CEvalIntegrationUnitHWInfo) and the gas name.
 .extract_hw_info <- function(parent_node, gas) {
   hw <- parent_node$objects$CEvalIntegrationUnitHWInfo
   tibble::tibble(
@@ -104,58 +88,50 @@ read_scn_json <- function(json_path) {
   )
 }
 
-# Read calibrated Faraday cup resistors from an isodat JSON file produced by isoextract.
-#
-# Each row corresponds to one cup in one gas configuration and carries the gas
-# name, gain-calibrated resistance (ohms), mass (m/z), integration-unit channel
-# index, and physical cup number.  Files that measure multiple gases (e.g. CN or
-# CNS) produce one group of rows per gas configuration.  The calibrated values
-# reflect whichever resistor bank was active at measurement time.
-#
-# .scn files do not store calibrated resistors; returns NULL for those.
-#
-# @param json_path Path to the isodat JSON file (e.g. "run.dxf.json").
-# @return A tibble with columns gas (character), mass (numeric), channel
-#   (integer), cup (integer), resistor (numeric, ohms), or NULL for .scn files.
-read_isodat_resistors <- function(json_path) {
-  ext <- tolower(tools::file_ext(sub(
-    "\\.json$",
-    "",
-    json_path,
-    ignore.case = TRUE
-  )))
+# Return an ordered character vector of gas names matching the hw_list entries:
+# top-level gas first, then one entry per sub-method (for multi-gas files).
+.get_gas_names <- function(json_path, gas_name_ptr, sub_methods_ptr, hw_list) {
+  top_gas <- query_json(json_path, gas_name_ptr)
 
-  if (ext == "scn") {
-    return(NULL)
+  if (!is.data.frame(hw_list)) {
+    return(top_gas)
+  } # single-gas
+
+  # multi-gas: append gas name from each sub-method in order
+  subs <- query_json(json_path, sub_methods_ptr, required = FALSE)
+  sub_gas_names <- if (is.data.frame(subs)) {
+    vapply(subs$p, function(p) p$objects$CGasConfiguration$p$p$v, character(1))
+  } else if (is.list(subs) && !is.null(subs$p)) {
+    subs$p$objects$CGasConfiguration$p$p$v
+  } else {
+    character(0)
   }
+  c(top_gas, sub_gas_names)
+}
 
-  hw_list <- switch(
-    ext,
-    dxf = RcppSimdJson::fload(json_path, query = .hw_list_ptr$dxf),
-    cf = RcppSimdJson::fload(json_path, query = .hw_list_ptr$cf),
-    caf = RcppSimdJson::fload(json_path, query = .hw_list_ptr$caf),
-    did = {
-      x <- RcppSimdJson::fload(
-        json_path,
-        query = .hw_list_ptr$did_numeric,
-        query_error_ok = TRUE
-      )
-      if (is.null(x)) {
-        RcppSimdJson::fload(json_path, query = .hw_list_ptr$did_direct)
-      } else {
-        x
-      }
-    },
-    cli::cli_abort("Unsupported file type: .{ext}")
-  )
+# Read calibrated Faraday cup resistors from an isodat JSON file.
+#
+# @param hw_list_ptr JSON pointer(s) to the CEvalIntegrationUnitHWInfoList node.
+#   A character vector of length > 1 is tried in order; the first non-NA_complex_ result
+#   is used (e.g. the two .did variants).
+# @param gas_name_ptr JSON pointer to the top-level CGasConfiguration gas name.
+# @param sub_methods_ptr JSON pointer to the CMethod sub-method array (multi-gas).
+# @return A tibble with columns gas, mass, channel, cup, resistor.
+read_isodat_resistors <- function(
+  json_path,
+  hw_list_ptr,
+  gas_name_ptr,
+  sub_methods_ptr
+) {
+  hw_list <- query_json(json_path, hw_list_ptr)
 
-  gas_names <- .get_gas_names(json_path, ext, hw_list)
+  gas_names <- .get_gas_names(json_path, gas_name_ptr, sub_methods_ptr, hw_list)
 
   if (is.data.frame(hw_list)) {
-    # multi-gas: hw_list is a data.frame with p (parent) as a list-column, one row per gas config
+    # multi-gas: hw_list is a data.frame with p as a list-column, one row per gas config
     purrr::map2(hw_list$p, gas_names, .extract_hw_info) |> purrr::list_rbind()
   } else {
-    # single-gas: hw_list is a named list; pass its p (parent) sub-object
+    # single-gas: hw_list is a named list
     .extract_hw_info(hw_list$p, gas_names)
   }
 }
