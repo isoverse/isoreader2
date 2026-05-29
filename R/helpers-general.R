@@ -159,6 +159,7 @@ finish_info <- function(
   time = getOption("show_exec_times", default = TRUE),
   func = TRUE,
   success_format = "{cli::col_green(symbol$tick)} {msg}",
+  summary_error_symbol = "x",
   conditions = tibble(),
   show_conditions = TRUE,
   abort_if_warnings = abort_if_errors,
@@ -222,6 +223,11 @@ finish_info <- function(
       message = msg,
       include_call = FALSE,
       summary_format = "{message} but encountered {issues}",
+      summary_symbols = c(
+        success = "v",
+        warning = "!",
+        error = summary_error_symbol
+      ),
       include_cnds = show_conditions,
       .call = .call
     )

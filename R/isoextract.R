@@ -307,6 +307,7 @@ ir_extract_isofiles <- function(
     "finished extracting {length(file_paths)} file{?s} ",
     conditions = problems,
     show_conditions = show_problems,
+    summary_error_symbol = "!",
     start = start
   )
 }

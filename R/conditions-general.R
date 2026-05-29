@@ -213,6 +213,7 @@ summarize_cnds <- function(
   include_call = TRUE,
   call_format = "in {.strong {call}()}: ",
   summary_format = "{issues} {message}",
+  summary_symbols = c(success = "v", warning = "!", error = "x"),
   indent = 0,
   .call = caller_call()
 ) {
@@ -247,11 +248,11 @@ summarize_cnds <- function(
   if (include_symbol) {
     symbol <-
       if (nrow(conditions) == 0L) {
-        "v"
+        summary_symbols["success"]
       } else if (any(conditions$type == "error")) {
-        "!" # could be "x" but i find that more confusing than helful
+        summary_symbols["error"]
       } else {
-        "!"
+        summary_symbols["warning"]
       }
     # use name to support both bullets and abort
     summary <- set_names(summary, symbol)
@@ -371,6 +372,7 @@ summarize_and_format_cnds <- function(
   summary_format = "{message} encountered {issues}",
   summary_indent = 0,
   message = NULL,
+  summary_symbols = c(success = "v", warning = "!", error = "x"),
   # for format_cnds
   include_cnds = TRUE,
   include_cnd_calls = TRUE,
@@ -393,6 +395,7 @@ summarize_and_format_cnds <- function(
       include_symbol = include_symbol,
       include_call = include_call,
       summary_format = summary_format,
+      summary_symbols = summary_symbols,
       indent = summary_indent,
       .call = .call,
     )
@@ -449,6 +452,7 @@ show_cnds <- function(
   include_call = include_summary,
   summary_format = "{message} encountered {issues}",
   message = NULL,
+  summary_symbols = c(success = "v", warning = "!", error = "x"),
   # for format_cnds
   include_cnds = TRUE,
   include_cnd_calls = TRUE,
@@ -471,6 +475,7 @@ show_cnds <- function(
         include_summary = include_summary,
         include_call = include_call,
         summary_format = summary_format,
+        summary_symbols = summary_symbols,
         message = message,
         include_cnds = include_cnds,
         include_cnd_calls = include_cnd_calls,
