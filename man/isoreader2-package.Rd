@@ -12,7 +12,7 @@ Interface to the raw data file formats commonly encountered in scientific discip
 Resources:
 \itemize{
 \item Website for the isoreader2 package: \url{https://isoreader2.isoverse.org}
-\item Package options: \link{isor_options}
+\item Package options: \link{ir_options}
 }
 }
 \seealso{
@@ -26,5 +26,10 @@ Useful links:
 }
 \author{
 \strong{Maintainer}: Sebastian Kopf \email{sebastian.kopf@colorado.edu} (\href{https://orcid.org/0000-0002-2044-0201}{ORCID})
+
+Authors:
+\itemize{
+  \item Sebastian Kopf \email{sebastian.kopf@colorado.edu} (\href{https://orcid.org/0000-0002-2044-0201}{ORCID})
+}
 
 }
