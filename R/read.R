@@ -141,7 +141,7 @@ ir_read_isofiles <- function(
           file_path = !!file_path,
           problems = list(tibble())
         ),
-        catch_errors = !isor_get_option("dev_mode")
+        catch_errors = !ir_get_option("dev_mode")
       )
 
     # merge problems from isoextract, this call, and any conditions in the result

@@ -2,7 +2,7 @@
 #'
 #' Resources:
 #'   * Website for the isoreader2 package: <https://isoreader2.isoverse.org>
-#'   * Package options: [isor_options]
+#'   * Package options: [ir_options]
 "_PACKAGE"
 
 ## usethis namespace: start
