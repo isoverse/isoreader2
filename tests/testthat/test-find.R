@@ -7,7 +7,6 @@ test_that("ir_find_isofiles()", {
   expect_error(ir_find_isofiles(), "folder")
   expect_error(ir_find_isofiles("/no/such/dir"), "folder")
   expect_error(ir_find_isofiles(42L), "folder")
-  expect_error(ir_find_isofiles(extdata), "types")
   expect_error(ir_find_isofiles(extdata, types = 1L), "types")
   expect_error(ir_find_isofiles(extdata, types = character(0)), "types")
   expect_error(ir_find_isofiles(extdata, types = "dxf", pattern = c("a", "b")), "pattern")
@@ -24,6 +23,14 @@ test_that("ir_find_isofiles()", {
   expect_equal(files, sort(files))
   expect_equal(files, unique(files))
   expect_length(ir_find_isofiles(extdata, types = "xyz"), 0)
+
+  # default types ==============================================================
+  all_files <- ir_find_isofiles(extdata)
+  expect_true(any(grepl("\\.dxf$", all_files, ignore.case = TRUE)))
+  expect_true(any(grepl("\\.cf$", all_files, ignore.case = TRUE)))
+  expect_true(any(grepl("\\.caf$", all_files, ignore.case = TRUE)))
+  expect_true(any(grepl("\\.did$", all_files, ignore.case = TRUE)))
+  expect_true(any(grepl("\\.scn$", all_files, ignore.case = TRUE)))
 
   # types parameter ============================================================
   dxf_files <- ir_find_isofiles(extdata, types = "dxf")
