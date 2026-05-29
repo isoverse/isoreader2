@@ -105,17 +105,11 @@ ir_read_isofiles <- function(
       lines <- readLines(issues_path, warn = FALSE)
       lines <- lines[nzchar(trimws(lines))]
       isoextract_problems <- purrr::map(lines, function(line) {
-        msg <- sub(
-          "^(?:error|warning): ",
-          "",
-          line,
-          ignore.case = TRUE,
-          perl = TRUE
-        )
-        out <- if (grepl("^error", line, ignore.case = TRUE)) {
-          try_catch_cnds(cli_abort(msg))
-        } else if (grepl("^warning", line, ignore.case = TRUE)) {
+        msg <- sub("^(error|warning): ", "", line, ignore.case = TRUE)
+        out <- if (grepl("^warning", line, ignore.case = TRUE)) {
           try_catch_cnds(cli_warn(msg))
+        } else {
+          try_catch_cnds(cli_abort(msg))
         }
         out$conditions
       }) |>
@@ -127,9 +121,12 @@ ir_read_isofiles <- function(
     json_path <- file_path |> paste0(".json")
     if (!file.exists(json_path) && nrow(isoextract_problems) == 0) {
       # json does not exist but there are NO errors registered from isoextract --> something is off
-      isoextract_problems <- try_catch_cnds(cli_abort(
-        ".json output file from isoextract does not exist, try running with {.code reextract = TRUE}"
-      ))
+      isoextract_problems <- try_catch_cnds(
+        cli_abort(
+          ".json output file from isoextract does not exist, try running with {.code reextract = TRUE}",
+          .envir = root_env
+        )
+      )$conditions
     }
 
     # function (so traceback is informative)
