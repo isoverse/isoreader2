@@ -103,6 +103,16 @@ try_catch_cnds <- function(
   return(list(result = result, conditions = conds))
 }
 
+# helper to get an empty conditions tibble
+empty_cnds_tibble <- function() {
+  tibble(
+    type = character(),
+    call = character(),
+    message = character(),
+    condition = list()
+  )
+}
+
 # helper function to truncate call stacks (removing the try_catch_cnds wrapper)
 # note: this does more than just rebase the call stack (i.e. trace(base = env) is not the same)
 # @param recursive whether to also truncate parents
