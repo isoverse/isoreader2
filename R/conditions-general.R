@@ -194,10 +194,25 @@ condition_cnd_message <- function(cnd) {
   # conditionMessage can introduce line breaks where none exist for long message
   # we want to avoid that behaviour (only intended line breaks here) for later
   # formatting to fit the console width
-  lines <- strsplit(cnd$message, "\n", fixed = TRUE)[[1]] |>
-    purrr::map_chr(
+  lines <- c(cnd_header(cnd), cnd_body(cnd), cnd_footer(cnd)) |>
+    strsplit("\n", fixed = TRUE)
+  names(lines)[!have_name(lines)] <- ""
+  # reset cnd
+  cnd$message <- NULL
+  cnd$body <- NULL
+  # process
+  lines <-
+    purrr::map2_chr(
+      # unlist mangles the names hence this roundabout way
+      unlist(lines, use.names = FALSE),
+      rep(names(lines), lengths(lines)),
       ~ {
-        cnd$message <- .x
+        if (nzchar(.y)) {
+          cnd$body <- .x
+          attr(cnd$body, "names") <- .y
+        } else {
+          cnd$message <- .x
+        }
         conditionMessage(cnd) |>
           # don't let condition Message do any splits
           gsub(pattern = "\n", replacement = " ", fixed = TRUE)
@@ -264,23 +279,43 @@ summarize_cnds <- function(
       } else {
         summary_symbols["warning"]
       }
+    # replace common symbols to make indentation works
+    symbol <- switch(
+      symbol,
+      "!" = format_inline("{col_yellow('!')}"),
+      "x" = format_inline("{col_red(cli::symbol$cross)}"),
+      "v" = format_inline("{col_green(cli::symbol$tick)}"),
+      symbol
+    )
     # use name to support both bullets and abort
-    summary <- set_names(summary, symbol)
+    summary <- paste(symbol, summary)
   }
+  # format with indentation
+  format_bullets_raw_with_indentation(summary, indent)
+}
 
-  # takes care of line breaks and escapes {}
-  # it seems cli_escape in format_bullets_raw does NOT properly escape < and >
-  # will be fixed in https://github.com/r-lib/cli/issues/789
-  # take care of proper line breaks (also covers escaping {})
-  summary <-
+# helper to format bullets with indentation
+format_bullets_raw_with_indentation <- function(lines, indent = 0) {
+  lines <-
     withr::with_options(
-      list(cli.width = console_width() - indent),
-      summary |>
+      list(cli.width = console_width() - indent * 2),
+      lines |>
+        # it seems cli_escape in format_bullets_raw does NOT properly escape < and >
+        # might be fixed if https://github.com/r-lib/cli/issues/789 is addressed
         gsub(pattern = "<", replacement = "<<", fixed = TRUE) |>
         gsub(pattern = ">", replacement = ">>", fixed = TRUE) |>
         format_bullets_raw()
     )
-  return(summary)
+
+  # indendation
+  if (indent > 0) {
+    lines <-
+      # additional indents after first
+      paste0(rep("\u00a0", (indent - 1) * 2) |> paste(collapse = ""), lines) |>
+      # first space via names to support both bullets and aborts
+      set_names(" ")
+  }
+  return(lines)
 }
 
 # helper to cli format conditions into a bullet list
@@ -321,7 +356,6 @@ format_cnds <- function(
           }
         ),
       # account for multi-line messages
-
       message_w_type = strsplit(.data$message, "\n", fixed = TRUE) |>
         list(.data$symbol, .data$call_label) |>
         purrr::pmap(
@@ -342,28 +376,8 @@ format_cnds <- function(
     dplyr::pull(.data$message_w_type) |>
     unlist()
 
-  # take care of proper line breaks (also covers escaping {})
-  out <-
-    withr::with_options(
-      list(cli.width = console_width() - indent * 2),
-      out |>
-        # it seems cli_escape in format_bullets_raw does NOT properly escape < and >
-        # might be fixed if https://github.com/r-lib/cli/issues/789 is addressed
-        gsub(pattern = "<", replacement = "<<", fixed = TRUE) |>
-        gsub(pattern = ">", replacement = ">>", fixed = TRUE) |>
-        format_bullets_raw()
-    )
-
-  # indendation
-  if (indent > 0) {
-    out <-
-      # additional indents after first
-      paste0(rep("\u00a0", (indent - 1) * 2) |> paste(collapse = ""), out) |>
-      # first space via names to support both bullets and aborts
-      set_names(" ")
-  }
-
-  return(out)
+  # format with indentation
+  format_bullets_raw_with_indentation(out, indent)
 }
 
 # Summarizes and formats cnds
@@ -444,7 +458,8 @@ summarize_and_format_cnds <- function(
             ) |>
               paste(collapse = " ")
           )
-        )
+        ) |>
+        set_names(names(summary_line))
     }
   }
   # output
@@ -461,12 +476,13 @@ show_cnds <- function(
   include_summary = TRUE,
   include_call = include_summary,
   summary_format = "{message} encountered {issues}",
+  summary_indent = 0,
   message = NULL,
   summary_symbols = c(success = "v", warning = "!", error = "x"),
   # for format_cnds
   include_cnds = TRUE,
   include_cnd_calls = TRUE,
-  indent_cnds = include_summary,
+  indent_cnds = summary_indent + include_summary,
   collapse_single_line_cnd = FALSE,
   # call info
   .call = caller_call()
@@ -484,11 +500,13 @@ show_cnds <- function(
         include_symbol = include_symbol,
         include_summary = include_summary,
         include_call = include_call,
+        summary_indent = summary_indent,
         summary_format = summary_format,
         summary_symbols = summary_symbols,
         message = message,
         include_cnds = include_cnds,
         include_cnd_calls = include_cnd_calls,
+        indent_cnds = indent_cnds,
         collapse_single_line_cnd = collapse_single_line_cnd,
         .call = .call
       )
