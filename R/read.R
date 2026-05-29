@@ -100,7 +100,7 @@ ir_read_isofiles <- function(
 
     # parse existing issues from isoextract
     issues_path <- file_path |> paste0(".issues.log")
-    isoextract_problems <- tibble()
+    isoextract_problems <- empty_cnds_tibble()
     if (file.exists(issues_path)) {
       lines <- readLines(issues_path, warn = FALSE)
       lines <- lines[nzchar(trimws(lines))]
@@ -119,30 +119,35 @@ ir_read_isofiles <- function(
 
     # work on json path
     json_path <- file_path |> paste0(".json")
-    if (!file.exists(json_path) && nrow(isoextract_problems) == 0) {
-      # json does not exist but there are NO errors registered from isoextract --> something is off
-      isoextract_problems <- try_catch_cnds(
-        cli_abort(
-          ".json output file from isoextract does not exist, try running with {.code reextract = TRUE}",
-          .envir = root_env
-        )
-      )$conditions
-    }
-
-    # function (so traceback is informative)
-    func <- sprintf("read_%s_json", tools::file_ext(file_path))
-    func_quo <- expr((!!func)(file_path))
-
-    # call with error handling
-    out <-
-      try_catch_cnds(
-        eval_tidy(func_quo),
-        error_value = tibble(
-          file_path = !!file_path,
-          problems = list(tibble())
-        ),
-        catch_errors = !ir_get_option("dev_mode")
+    if (!file.exists(json_path)) {
+      # json file does not exist
+      if (nrow(isoextract_problems) == 0) {
+        # json does not exist but there are NO errors registered from isoextract --> something is off
+        isoextract_problems <- try_catch_cnds(
+          cli_abort(
+            ".json output file from isoextract does not exist, try running with {.code reextract = TRUE}",
+            .envir = root_env
+          )
+        )$conditions
+      }
+      out <- list(
+        result = tibble(problems = list(empty_cnds_tibble())),
+        conditions = empty_cnds_tibble()
       )
+    } else {
+      # file exsists!
+      # function (so traceback is informative)
+      func <- sprintf("read_%s_json", tools::file_ext(file_path))
+      func_quo <- expr((!!func)(json_path))
+
+      # call with error handling
+      out <-
+        try_catch_cnds(
+          eval_tidy(func_quo),
+          error_value = tibble(problems = list(empty_cnds_tibble())),
+          catch_errors = !ir_get_option("dev_mode")
+        )
+    }
 
     # merge problems from isoextract, this call, and any conditions in the result
     problems <- dplyr::bind_rows(isoextract_problems, out$conditions)
@@ -151,14 +156,19 @@ ir_read_isofiles <- function(
       out$result$problems <- list(problems)
     }
 
+    # add file path
+    out$result <- out$result |>
+      dplyr::mutate(file_path = !!file_path, .before = 1L)
+
     # show problems?
     if (show_problems) {
       problems |>
         show_cnds(
           include_call = FALSE,
-          summary_format = "encountered {issues} for {message}",
+          summary_format = "{message}: {issues}",
+          summary_indent = 1,
           message = format_inline("{.file {file_path}}"),
-          collapse_single_line_cnd = FALSE
+          collapse_single_line_cnd = TRUE
         )
     }
 
@@ -199,7 +209,7 @@ ir_read_isofiles <- function(
 
 # extract meta from a single JSON file
 read_json_meta <- function(json_path) {
-  meta <- RcppSimdJson::fload(json_path, query = "/meta")
+  meta <- query_json(json_path, "/meta")
   tibble::tibble(
     isoextract_version = meta$isoextract_version,
     file_type = meta$file_type,
