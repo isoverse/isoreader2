@@ -139,10 +139,26 @@ read_caf_json <- function(json_path) {
   )
 }
 
-# .scn — scan file. No gas name or calibrated resistors are stored.
+# .scn — scan file. No gas name or calibrated resistors; nominal values from CCupHardwarePart.
 read_scn_json <- function(json_path) {
+  # resistors (nominal, from CCupHardwarePart joined to active cups via CChannelGasConfPart)
+  resistors <- read_isodat_scn_resistors(
+    json_path,
+    cup_hw_ptr = "/CScanStorage/CIntegrationUnitScanPart/p/CIntegrationUnitHardwarePart/CCupHardwarePart",
+    channel_gas_ptr = "/CScanStorage/CGasConfiguration/p/objects/CIntegrationUnitGasConfPart/CChannelGasConfPart"
+  ) |>
+    try_catch_cnds()
+
+  # problems
+  problems <- dplyr::bind_rows(
+    empty_cnds_tibble(),
+    resistors$conditions
+  )
+
+  # return value
   tibble(
-    problems = list(empty_cnds_tibble())
+    resistors = list(resistors$result),
+    problems = list(problems)
   )
 }
 
@@ -213,5 +229,22 @@ extract_resistor_info <- function(parent_node, gas) {
     channel = as.integer(hw$channel),
     cup = as.integer(hw$cup),
     resistor = as.numeric(hw$resistor)
+  )
+}
+
+# Read nominal Faraday cup resistors for a .scn file.
+# .scn files store no calibrated resistor table; nominal values come from CCupHardwarePart.
+# Active cups and their mass/channel assignments are taken from CChannelGasConfPart;
+# resistor values are looked up by matching cup position to CCupHardwarePart$idx.
+# gas is NA because .scn files carry no gas name.
+read_isodat_scn_resistors <- function(json_path, cup_hw_ptr, channel_gas_ptr) {
+  hw <- query_json(json_path, cup_hw_ptr)
+  channels <- query_json(json_path, channel_gas_ptr)
+  tibble::tibble(
+    gas = NA_character_,
+    mass = as.numeric(channels$mass),
+    channel = as.integer(channels$idx),
+    cup = as.integer(channels$cup),
+    resistor = as.numeric(hw$resistor[match(channels$cup, hw$idx)])
   )
 }
