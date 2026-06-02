@@ -204,7 +204,7 @@ ir_read_isofiles <- function(
     .env = root_env
   )
 
-  return(invisible(all_files))
+  return(all_files)
 }
 
 # extract meta from a single JSON file
