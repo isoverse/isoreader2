@@ -1,87 +1,6 @@
 # individual file readers ==================
 # Each function reads the .json from one file type
 
-# .dxf — continuous-flow file (CContiniousFlowBlockData root).
-# Gas name may be under CGasConfiguration or CNumericValue/CGasConfiguration.
-read_dxf_json <- function(json_path) {
-  # gas names
-  gas_names <- read_isodat_gas_names(
-    json_path,
-    # two variants: direct path tried first, CNumericValue-wrapped as fallback
-    gas_name_ptr = c(
-      "/CContiniousFlowBlockData/p/objects/CBlockData/5/objects/CMethod/p/objects/CGasConfiguration/p/p/v",
-      "/CContiniousFlowBlockData/p/objects/CBlockData/5/objects/CMethod/p/objects/CNumericValue/CGasConfiguration/p/p/v"
-    ),
-    sub_methods_ptr = "/CContiniousFlowBlockData/p/objects/CBlockData/5/objects/CMethod/CMethod"
-  ) |>
-    try_catch_cnds()
-
-  # resistors
-  resistors <- read_isodat_resistors(
-    json_path,
-    hw_list_ptr = "/CContiniousFlowBlockData/p/objects/CBlockData/5/objects/CMethod/p/objects/CEvalIntegrationUnitHWInfoStore/p/objects/CEvalIntegrationUnitHWInfoList",
-    gas_names = gas_names$result
-  ) |>
-    try_catch_cnds()
-
-  # raw trace data from RawDataBlock
-  raw_data <- read_isodat_dxf_raw_data(json_path) |>
-    try_catch_cnds()
-
-  # problems
-  problems <- dplyr::bind_rows(
-    empty_cnds_tibble(),
-    gas_names$conditions,
-    resistors$conditions,
-    raw_data$conditions
-  )
-
-  # return value
-  tibble(
-    resistors = list(resistors$result),
-    raw_data = list(raw_data$result),
-    problems = list(problems)
-  )
-}
-
-# .cf — continuous-flow file (CMethod root, simpler structure than .dxf).
-read_cf_json <- function(json_path) {
-  # gas names
-  gas_names <- read_isodat_gas_names(
-    json_path,
-    gas_name_ptr = "/CMethod/p/objects/CGasConfiguration/p/p/v",
-    sub_methods_ptr = "/CMethod/CMethod"
-  ) |>
-    try_catch_cnds()
-
-  # resistors
-  resistors <- read_isodat_resistors(
-    json_path,
-    hw_list_ptr = "/CMethod/p/objects/CEvalIntegrationUnitHWInfoStore/p/objects/CEvalIntegrationUnitHWInfoList",
-    gas_names = gas_names$result
-  ) |>
-    try_catch_cnds()
-
-  # raw trace data
-  raw_data <- read_isodat_cf_raw_data(json_path, gas_names$result) |>
-    try_catch_cnds()
-
-  # problems
-  problems <- dplyr::bind_rows(
-    empty_cnds_tibble(),
-    gas_names$conditions,
-    resistors$conditions,
-    raw_data$conditions
-  )
-
-  # return value
-  tibble(
-    resistors = list(resistors$result),
-    raw_data = list(raw_data$result),
-    problems = list(problems)
-  )
-}
-
 # .did — dual-inlet file (CDualInletBlockData root).
 # HW info store may be directly under CMethod or wrapped in CNumericValue.
 read_did_json <- function(json_path) {
@@ -246,6 +165,148 @@ parse_isodat_datetime <- function(x) {
   )
 }
 
+
+# file type specific readers ==========
+
+## dxf =====================
+
+# .dxf — continuous-flow file (CContiniousFlowBlockData root).
+# Gas name may be under CGasConfiguration or CNumericValue/CGasConfiguration.
+read_dxf_json <- function(json_path) {
+  # gas names
+  gas_names <- read_isodat_gas_names(
+    json_path,
+    # two variants: direct path tried first, CNumericValue-wrapped as fallback
+    gas_name_ptr = c(
+      "/CContiniousFlowBlockData/p/objects/CBlockData/5/objects/CMethod/p/objects/CGasConfiguration/p/p/v",
+      "/CContiniousFlowBlockData/p/objects/CBlockData/5/objects/CMethod/p/objects/CNumericValue/CGasConfiguration/p/p/v"
+    ),
+    sub_methods_ptr = "/CContiniousFlowBlockData/p/objects/CBlockData/5/objects/CMethod/CMethod"
+  ) |>
+    try_catch_cnds()
+
+  # resistors
+  resistors <- read_isodat_resistors(
+    json_path,
+    hw_list_ptr = "/CContiniousFlowBlockData/p/objects/CBlockData/5/objects/CMethod/p/objects/CEvalIntegrationUnitHWInfoStore/p/objects/CEvalIntegrationUnitHWInfoList",
+    gas_names = gas_names$result
+  ) |>
+    try_catch_cnds()
+
+  # raw trace data from RawDataBlock
+  raw_data <- read_isodat_dxf_raw_data(json_path) |>
+    try_catch_cnds()
+
+  # problems
+  problems <- dplyr::bind_rows(
+    empty_cnds_tibble(),
+    gas_names$conditions,
+    resistors$conditions,
+    raw_data$conditions
+  )
+
+  # return value
+  tibble(
+    resistors = list(resistors$result),
+    raw_data = list(raw_data$result),
+    problems = list(problems)
+  )
+}
+
+# Find the integer index of a named CBlockData block in a .dxf JSON file.
+# Scans /CContiniousFlowBlockData/p/objects/CBlockData/N/p/l for N = 0..max_idx.
+# Aborts if the label is not found.
+find_dxf_block_idx <- function(json_path, label, max_idx = 9L) {
+  base <- "/CContiniousFlowBlockData/p/objects/CBlockData"
+  for (i in seq(0L, max_idx)) {
+    l <- query_json(json_path, paste0(base, "/", i, "/p/l"), required = FALSE)
+    if (!json_missing(l) && identical(l, label)) return(i)
+  }
+  cli_abort(
+    "no CBlockData entry with label {.val {label}} found in {.path {json_path}}"
+  )
+}
+
+# Read raw trace data from the RawDataBlock of a .dxf JSON file.
+# Returns a tibble with one row per gas:
+#   gas     <chr>  — gas formula (e.g. "H2", "CO")
+#   x       <list> — numeric vector of time values (seconds)
+#   traces  <list> — matrix n_traces × n_pts; each row is one Faraday cup trace
+read_isodat_dxf_raw_data <- function(json_path) {
+  raw_idx <- find_dxf_block_idx(json_path, "RawDataBlock")
+  raw_data_ptr <- paste0(
+    "/CContiniousFlowBlockData/p/objects/CBlockData/",
+    raw_idx,
+    "/objects/CRawData"
+  )
+  craw <- query_json(json_path, raw_data_ptr)
+
+  if (is.data.frame(craw)) {
+    # multi-gas: CRawData is an array, one row per gas
+    purrr::map2(
+      craw$complete_formula,
+      craw$p,
+      function(gas, p) {
+        eval_pp <- p$CEvalGCData$p$p
+        tibble::tibble(
+          gas = gas,
+          x = list(eval_pp$x),
+          traces = list(eval_pp$traces)
+        )
+      }
+    ) |>
+      purrr::list_rbind()
+  } else {
+    # single gas: CRawData is a plain list
+    eval_pp <- craw$p$CEvalGCData$p$p
+    tibble::tibble(
+      gas = craw$complete_formula,
+      x = list(eval_pp$x),
+      traces = list(eval_pp$traces)
+    )
+  }
+}
+
+## cf ===============
+
+# .cf — continuous-flow file (CMethod root, simpler structure than .dxf).
+read_cf_json <- function(json_path) {
+  # gas names
+  gas_names <- read_isodat_gas_names(
+    json_path,
+    gas_name_ptr = "/CMethod/p/objects/CGasConfiguration/p/p/v",
+    sub_methods_ptr = "/CMethod/CMethod"
+  ) |>
+    try_catch_cnds()
+
+  # resistors
+  resistors <- read_isodat_resistors(
+    json_path,
+    hw_list_ptr = "/CMethod/p/objects/CEvalIntegrationUnitHWInfoStore/p/objects/CEvalIntegrationUnitHWInfoList",
+    gas_names = gas_names$result
+  ) |>
+    try_catch_cnds()
+
+  # raw trace data
+  raw_data <- read_isodat_cf_raw_data(json_path, gas_names$result) |>
+    try_catch_cnds()
+
+  # problems
+  problems <- dplyr::bind_rows(
+    empty_cnds_tibble(),
+    gas_names$conditions,
+    resistors$conditions,
+    raw_data$conditions
+  )
+
+  # return value
+  tibble(
+    resistors = list(resistors$result),
+    raw_data = list(raw_data$result),
+    problems = list(problems)
+  )
+}
+
 # Read raw trace data from a .cf JSON file.
 # .cf files store raw data under /CBlockData/0/objects/CBlockDataContext with three variants:
 #   A) single gas, CRawData: context -> inner CBlockDataContext -> CBlockData -> CRawData
@@ -318,61 +379,6 @@ read_isodat_cf_raw_data <- function(json_path, gas_names) {
   }
 }
 
-# Find the integer index of a named CBlockData block in a .dxf JSON file.
-# Scans /CContiniousFlowBlockData/p/objects/CBlockData/N/p/l for N = 0..max_idx.
-# Aborts if the label is not found.
-find_dxf_block_idx <- function(json_path, label, max_idx = 9L) {
-  base <- "/CContiniousFlowBlockData/p/objects/CBlockData"
-  for (i in seq(0L, max_idx)) {
-    l <- query_json(json_path, paste0(base, "/", i, "/p/l"), required = FALSE)
-    if (!json_missing(l) && identical(l, label)) return(i)
-  }
-  cli_abort(
-    "no CBlockData entry with label {.val {label}} found in {.path {json_path}}"
-  )
-}
-
-# Read raw trace data from the RawDataBlock of a .dxf JSON file.
-# Returns a tibble with one row per gas:
-#   gas     <chr>  — gas formula (e.g. "H2", "CO")
-#   x       <list> — numeric vector of time values (seconds)
-#   traces  <list> — matrix n_traces × n_pts; each row is one Faraday cup trace
-read_isodat_dxf_raw_data <- function(json_path) {
-  raw_idx <- find_dxf_block_idx(json_path, "RawDataBlock")
-  raw_data_ptr <- paste0(
-    "/CContiniousFlowBlockData/p/objects/CBlockData/",
-    raw_idx,
-    "/objects/CRawData"
-  )
-  craw <- query_json(json_path, raw_data_ptr)
-
-  if (is.data.frame(craw)) {
-    # multi-gas: CRawData is an array, one row per gas
-    purrr::map2(
-      craw$complete_formula,
-      craw$p,
-      function(gas, p) {
-        eval_pp <- p$CEvalGCData$p$p
-        tibble::tibble(
-          gas = gas,
-          x = list(eval_pp$x),
-          traces = list(eval_pp$traces)
-        )
-      }
-    ) |>
-      purrr::list_rbind()
-  } else {
-    # single gas: CRawData is a plain list
-    eval_pp <- craw$p$CEvalGCData$p$p
-    tibble::tibble(
-      gas = craw$complete_formula,
-      x = list(eval_pp$x),
-      traces = list(eval_pp$traces)
-    )
-  }
-}
-
-# file type specific readers ==========
 
 ## scn =====================
 
