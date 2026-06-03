@@ -4,7 +4,7 @@
 #' @param show_progress whether to show a progress bar, by default always enabled when running interactively e.g. inside Positron or RStudio (and disabled in a notebook), turn off with `show_progress = FALSE`
 #' @param show_problems whether to show problems encountered along the way (rather than just keeping track of them with [ir_get_problems()]). Set to `show_problems = FALSE` to turn off the live printout. Either way, all encountered problems can be retrieved with running [ir_get_problems()] for the returned list
 #' @param reextract whether to re-extract files (uses isoextract to read files from scratch), if FALSE (default) only extract files not previously extracted
-#' @return a tibble data frame where each row holds the file path and nested tibbles of datasets extracted from the isodat files. Use [orbi_aggregate_raw()] to aggregate data safely across files.
+#' @return a tibble data frame where each row holds the file path and nested tibbles of datasets extracted from the isodat files. Use [ir_aggregate_isofiles()] to aggregate data safely across files.
 #' @export
 ir_read_isofiles <- function(
   file_paths,
@@ -204,6 +204,8 @@ ir_read_isofiles <- function(
     .env = root_env
   )
 
+  # return
+  class(all_files) <- unique(c("isofiles", class(all_files)))
   return(all_files)
 }
 
