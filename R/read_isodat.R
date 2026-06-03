@@ -168,52 +168,42 @@ read_isodat_dxf_raw_data <- function(json_path, gas_names, resistors = NULL) {
     )
   }
 
+  # parse
   craw$p |>
     purrr::map2(
       gas_names,
-      function(p, gas) {
-        eval_pp <- p$CEvalGCData$p$p
-        res_for_gas <- if (!is.null(resistors)) {
-          dplyr::filter(resistors, .data$analyte == !!gas)
-        } else {
-          NULL
-        }
+      function(craw_parent, gas) {
         parse_isodat_continuous_flow_traces(
           gas,
-          eval_pp$x,
-          eval_pp$traces,
-          res_for_gas
+          craw_parent$CEvalGCData$p$p$x,
+          craw_parent$CEvalGCData$p$p$traces
         )
       }
     ) |>
-    purrr::list_rbind()
+    purrr::list_rbind() |>
+    # add resistor masses
+    dplyr::left_join(
+      resistors |> select("analyte", "channel", "mass", "resistor"),
+      by = c("analyte", "channel")
+    ) |>
+    dplyr::relocate("mass", .after = "channel")
 }
 
 # Parse one gas's trace matrix into a long-format tibble.
 # Trace row i corresponds to res_for_gas row i (same JSON order).
 # Returns: analyte (fct), channel (int), mass (fct), time.s (dbl), intensity.mV (dbl).
-# res_for_gas is NULL when resistors are unavailable; analyte/mass are NA in that case.
-parse_isodat_continuous_flow_traces <- function(gas, x, traces, res_for_gas) {
-  n_channels <- nrow(traces)
-  purrr::map(seq_len(n_channels), function(i) {
-    if (is.null(res_for_gas)) {
+parse_isodat_continuous_flow_traces <- function(gas, x, traces) {
+  traces |>
+    nrow() |>
+    seq_len() |>
+    purrr::map(function(i) {
       tibble::tibble(
-        analyte = as.factor(NA_character_),
-        channel = i,
-        mass = as.factor(NA_character_),
+        analyte = !!gas,
+        channel = i - 1L, # channel index is 0 based
         time.s = as.numeric(x),
         intensity.mV = as.numeric(traces[i, ])
       )
-    } else {
-      tibble::tibble(
-        analyte = res_for_gas$analyte[i],
-        channel = i,
-        mass = res_for_gas$mass[i],
-        time.s = as.numeric(x),
-        intensity.mV = as.numeric(traces[i, ])
-      )
-    }
-  }) |>
+    }) |>
     purrr::list_rbind()
 }
 
@@ -289,43 +279,44 @@ read_isodat_cf_raw_data <- function(json_path, gas_names, resistors = NULL) {
   #   B) single-gas ScanStorage: ctx_base/p/objects/CBlockData/objects/CRawDataScanStorage/p/CBinary
   #   A) single-gas CRawData:    ctx_base/p/objects/CBlockDataContext/.../CRawData/p/CEvalGCData/p/p
   # All three variants resolve to a node with {x, traces}; list_as_tibble normalises to a tibble.
-  purrr::map2(
-    seq_along(gas_names) - 1L,
-    gas_names,
-    function(i, gas) {
-      binary <- query_json(
-        json_path,
-        c(
-          sprintf(
-            "%s/%d/p/objects/CBlockData/objects/CRawDataScanStorage/p/CBinary",
-            ctx_base,
-            i
+  gas_names |>
+    seq_along() |>
+    purrr::map2(
+      gas_names,
+      function(i, gas) {
+        binary <- query_json(
+          json_path,
+          c(
+            sprintf(
+              "%s/%d/p/objects/CBlockData/objects/CRawDataScanStorage/p/CBinary",
+              ctx_base,
+              i - 1L # index is 0 based
+            ),
+            sprintf(
+              "%s/p/objects/CBlockData/objects/CRawDataScanStorage/p/CBinary",
+              ctx_base
+            ),
+            sprintf(
+              "%s/p/objects/CBlockDataContext/p/objects/CBlockData/objects/CRawData/p/CEvalGCData/p/p",
+              ctx_base
+            )
           ),
-          sprintf(
-            "%s/p/objects/CBlockData/objects/CRawDataScanStorage/p/CBinary",
-            ctx_base
-          ),
-          sprintf(
-            "%s/p/objects/CBlockDataContext/p/objects/CBlockData/objects/CRawData/p/CEvalGCData/p/p",
-            ctx_base
-          )
-        ),
-        list_as_tibble = TRUE
-      )
-      res_for_gas <- if (!is.null(resistors)) {
-        dplyr::filter(resistors, .data$analyte == !!gas)
-      } else {
-        NULL
+          list_as_tibble = TRUE
+        )
+        parse_isodat_continuous_flow_traces(
+          gas,
+          binary$x[[1L]],
+          binary$traces[[1L]]
+        )
       }
-      parse_isodat_continuous_flow_traces(
-        gas,
-        binary$x[[1L]],
-        binary$traces[[1L]],
-        res_for_gas
-      )
-    }
-  ) |>
-    purrr::list_rbind()
+    ) |>
+    purrr::list_rbind() |>
+    # add resistor masses
+    dplyr::left_join(
+      resistors |> select("analyte", "channel", "mass", "resistor"),
+      by = c("analyte", "channel")
+    ) |>
+    dplyr::relocate("mass", .after = "channel")
 }
 
 ## did ===========
