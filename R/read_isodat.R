@@ -52,8 +52,8 @@ read_isodat_resistors <- function(json_path, hw_list_ptr, gas_names) {
 
 # empty resistors tibble
 .empy_resistors <- tibble(
-  species = factor(),
-  mass = factor(),
+  species = character(),
+  mass = character(),
   channel = integer(),
   cup = integer(),
   resistor = double()
@@ -64,8 +64,8 @@ read_isodat_resistors <- function(json_path, hw_list_ptr, gas_names) {
 extract_resistor_info <- function(parent_node, gas) {
   hw <- parent_node$objects$CEvalIntegrationUnitHWInfo
   tibble::tibble(
-    species = as.factor(gas),
-    mass = as.factor(hw$mass),
+    species = as.character(gas),
+    mass = as.character(hw$mass),
     channel = as.integer(hw$channel),
     cup = as.integer(hw$cup),
     resistor = as.numeric(hw$resistor)
@@ -401,8 +401,8 @@ read_isodat_dual_inlet_cycles <- function(
     cli_warn(
       "resistors unavailable; {.field species} and {.field mass} set to NA for all channels"
     )
-    species_vals <- as.factor(rep(NA_character_, length(pre_row)))
-    mass_vals <- as.factor(rep(NA_character_, length(pre_row)))
+    species_vals <- rep(NA_character_, length(pre_row))
+    mass_vals <- rep(NA_character_, length(pre_row))
   } else {
     species_vals <- resistors$species
     mass_vals <- resistors$mass
@@ -572,7 +572,7 @@ read_isodat_scn_resistors <- function(json_path, cup_hw_ptr, channel_gas_ptr) {
   hw <- query_json(json_path, cup_hw_ptr)
   channels <- query_json(json_path, channel_gas_ptr)
   tibble::tibble(
-    mass = as.factor(channels$mass),
+    mass = as.character(channels$mass),
     channel = as.integer(channels$idx),
     cup = as.integer(channels$cup),
     resistor = as.numeric(hw$resistor[match(channels$cup, hw$idx)])
@@ -618,7 +618,7 @@ read_isodat_scn_raw_data <- function(json_path, resistors = NULL) {
 
   if (is.null(resistors)) {
     cli_warn("resistors unavailable; {.field mass} set to NA for all channels")
-    out <- dplyr::mutate(out, mass = as.factor(NA_character_), .after = channel)
+    out <- dplyr::mutate(out, mass = NA_character_, .after = channel)
   } else {
     out <- dplyr::left_join(
       out,
