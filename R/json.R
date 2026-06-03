@@ -75,32 +75,32 @@ diagnose_json_path <- function(json_path, query) {
   sprintf("%s%s", col_green(last_valid), col_red(missing_path))
 }
 
-# Find the integer index of a named CBlockData object
-# Aborts if the label is not found.
-find_json_block_idx_by_label <- function(
+# Find the integer index of a named CBlockData object by its p/v value.
+# Aborts if no entry is found within max_idx blocks.
+find_json_block_idx_by_value <- function(
   json_path,
   block_query,
-  label,
+  value,
   max_idx = 100L
 ) {
   i <- 0L
   while (i < max_idx) {
-    label_i <- query_json(
+    value_i <- query_json(
       json_path,
-      sprintf("%s/%d/p/l", block_query, i),
+      sprintf("%s/%d/p/v", block_query, i),
       required = FALSE
     )
     # no more blocks
-    if (json_missing(label_i)) {
+    if (json_missing(value_i)) {
       break
     }
     # found the right one?
-    if (identical(label_i, label)) {
+    if (identical(value_i, value)) {
       return(i)
     }
     i <- i + 1L
   }
   cli_abort(
-    "searched {i+1} CBlockData entr{?y/ies} but one with label {.val {label}} was not found in {col_green{block_query}}"
+    "searched {i+1} CBlockData entr{?y/ies} but one with value {.val {value}} was not found in {col_green({block_query})}"
   )
 }
