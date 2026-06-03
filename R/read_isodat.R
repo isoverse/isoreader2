@@ -8,22 +8,35 @@
 # @param gas_name_ptr JSON pointer(s) to the top-level CGasConfiguration gas name.
 # @param sub_methods_ptr JSON pointer to the CMethod sub-method array (multi-gas files).
 # @return character vector: top-level gas name first, then one entry per sub-method.
-read_isodat_gas_names <- function(json_path, gas_name_ptr, sub_methods_ptr) {
+read_isodat_gas_names <- function(
+  json_path,
+  gas_name_ptr,
+  sub_methods_ptr = NULL
+) {
   top_gas <- query_json(json_path, gas_name_ptr)
   # sub-methods only present in multi-gas files; list_as_tibble normalises single/multi uniformly
-  subs <- query_json(
-    json_path,
-    sub_methods_ptr,
-    required = FALSE,
-    list_as_tibble = TRUE
-  )
-  sub_gas_names <- if (!json_missing(subs)) {
-    vapply(subs$p, function(p) p$objects$CGasConfiguration$p$p$v, character(1))
+  sub_gas_names <- if (!is.null(sub_methods_ptr)) {
+    subs <- query_json(
+      json_path,
+      sub_methods_ptr,
+      required = FALSE,
+      list_as_tibble = TRUE
+    )
+    if (!json_missing(subs)) {
+      vapply(
+        subs$p,
+        function(p) p$objects$CGasConfiguration$p$p$v,
+        character(1)
+      )
+    } else {
+      character(0)
+    }
   } else {
     character(0)
   }
-  # should this be unique? probably yes, sometimes the same gas appears multiple
+  # should this be unique? sometimes the same gas appears multiple
   # times in submethods but only one data block is generated for it
+  # --> later join between raw data and resistor information depends on this
   c(top_gas, sub_gas_names) |> unique()
 }
 
@@ -46,8 +59,40 @@ read_isodat_resistors <- function(json_path, hw_list_ptr, gas_names) {
   }
   # extra resistor info
   resistors$p |>
-    purrr::map2(gas_names, extract_resistor_info) |>
+    purrr::map2(gas_names, function(parent_node, gas) {
+      hw <- parent_node$objects$CEvalIntegrationUnitHWInfo
+      tibble::tibble(
+        species = as.character(gas),
+        mass = as.character(hw$mass),
+        channel = as.integer(hw$channel),
+        cup = as.integer(hw$cup),
+        resistor = as.numeric(hw$resistor)
+      )
+    }) |>
     purrr::list_rbind()
+}
+
+# Read nominal Faraday cup resistors (this is used for a .scn file because
+# they store no calibrated resistor table; nominal values come from CCupHardwarePart)
+# but could also be used for other files.
+# Active cups and their mass/channel assignments are taken from CChannelGasConfPart;
+# resistor values are looked up by matching cup position to CCupHardwarePart$idx.
+read_isodat_nominal_resistors <- function(
+  json_path,
+  species,
+  cup_hw_ptr,
+  channel_gas_ptr
+) {
+  hw <- query_json(json_path, cup_hw_ptr)
+  channels <- query_json(json_path, channel_gas_ptr)
+  # resistor info
+  tibble::tibble(
+    species = species,
+    mass = as.character(channels$mass),
+    channel = as.integer(channels$idx),
+    cup = as.integer(channels$cup),
+    resistor = as.numeric(hw$resistor[match(channels$cup, hw$idx)])
+  )
 }
 
 # empty resistors tibble
@@ -58,19 +103,6 @@ read_isodat_resistors <- function(json_path, hw_list_ptr, gas_names) {
   cup = integer(),
   resistor = double()
 )
-
-# Extract a tibble of cups from the p (parent) node of a CEvalIntegrationUnitHWInfoList entry.
-# Each row is one Faraday cup: species (gas label), m/z mass, hardware channel, cup position, resistor value.
-extract_resistor_info <- function(parent_node, gas) {
-  hw <- parent_node$objects$CEvalIntegrationUnitHWInfo
-  tibble::tibble(
-    species = as.character(gas),
-    mass = as.character(hw$mass),
-    channel = as.integer(hw$channel),
-    cup = as.integer(hw$cup),
-    resistor = as.numeric(hw$resistor)
-  )
-}
 
 # Parse an ISO 8601 datetime string (with optional timezone offset) to POSIXct UTC.
 parse_isodat_datetime <- function(x) {
@@ -480,11 +512,19 @@ read_caf_json <- function(json_path) {
 
 ## scn =====================
 
-# .scn — scan file. No gas name or calibrated resistors; nominal values from CCupHardwarePart.
+# .scn — scan file. No calibrated resistors; nominal values from CCupHardwarePart.
 read_scn_json <- function(json_path) {
-  # resistors (nominal, from CCupHardwarePart joined to active cups via CChannelGasConfPart)
-  resistors <- read_isodat_scn_resistors(
+  # gas name (no sub-methods in scan files)
+  gas_names <- read_isodat_gas_names(
     json_path,
+    gas_name_ptr = "/CScanStorage/CGasConfiguration/p/p/v"
+  ) |>
+    try_catch_cnds()
+
+  # resistors (nominal, from CCupHardwarePart joined to active cups via CChannelGasConfPart)
+  resistors <- read_isodat_nominal_resistors(
+    json_path,
+    species = gas_names$result[1L] %||% NA_character_,
     cup_hw_ptr = "/CScanStorage/CIntegrationUnitScanPart/p/CIntegrationUnitHardwarePart/CCupHardwarePart",
     channel_gas_ptr = "/CScanStorage/CGasConfiguration/p/objects/CIntegrationUnitGasConfPart/CChannelGasConfPart"
   ) |>
@@ -501,6 +541,7 @@ read_scn_json <- function(json_path) {
   # problems
   problems <- dplyr::bind_rows(
     empty_cnds_tibble(),
+    gas_names$conditions,
     resistors$conditions,
     file_info$conditions,
     raw_data$conditions
@@ -563,24 +604,8 @@ read_isodat_scn_file_info <- function(json_path) {
   )
 }
 
-# Read nominal Faraday cup resistors for a .scn file.
-# .scn files store no calibrated resistor table; nominal values come from CCupHardwarePart.
-# Active cups and their mass/channel assignments are taken from CChannelGasConfPart;
-# resistor values are looked up by matching cup position to CCupHardwarePart$idx.
-# species+ is NA because .scn files carry no gas name.
-read_isodat_scn_resistors <- function(json_path, cup_hw_ptr, channel_gas_ptr) {
-  hw <- query_json(json_path, cup_hw_ptr)
-  channels <- query_json(json_path, channel_gas_ptr)
-  tibble::tibble(
-    mass = as.character(channels$mass),
-    channel = as.integer(channels$idx),
-    cup = as.integer(channels$cup),
-    resistor = as.numeric(hw$resistor[match(channels$cup, hw$idx)])
-  )
-}
-
 # Read raw scan data from a .scn JSON file.
-# @param resistors tibble from read_isodat_scn_resistors() used to join mass by channel;
+# @param resistors tibble from read_isodat_nominal_resistors() used to join mass by channel;
 #   if NULL a warning is issued and mass is set to NA for all rows.
 # Returns a long-format tibble with one row per (channel, scan-axis point):
 #   channel      <int>  — 1-based trace/channel index
@@ -617,15 +642,22 @@ read_isodat_scn_raw_data <- function(json_path, resistors = NULL) {
     purrr::list_rbind()
 
   if (is.null(resistors)) {
-    cli_warn("resistors unavailable; {.field mass} set to NA for all channels")
-    out <- dplyr::mutate(out, mass = NA_character_, .after = channel)
+    cli_warn(
+      "resistors unavailable; {.field species} and {.field mass} set to NA for all channels"
+    )
+    out <- dplyr::mutate(
+      out,
+      species = NA_character_,
+      mass = NA_character_,
+      .after = channel
+    )
   } else {
     out <- dplyr::left_join(
       out,
-      dplyr::select(resistors, "channel", "mass"),
+      dplyr::select(resistors, "channel", "species", "mass"),
       by = "channel"
     ) |>
-      dplyr::relocate(mass, .after = "channel")
+      dplyr::relocate(c(species, mass), .after = "channel")
   }
   out
 }
