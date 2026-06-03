@@ -106,6 +106,13 @@ parse_isodat_datetime <- function(x) {
   )
 }
 
+# Read file-level metadata from CFileHeader (all file types except .scn).
+# Returns a one-row tibble with file_datetime (POSIXct UTC).
+read_isodat_file_info <- function(json_path) {
+  ts <- query_json(json_path, "/CFileHeader/p/objects/CTimeObject/datetime")
+  tibble::tibble(file_datetime = parse_isodat_datetime(ts))
+}
+
 # Parse a trace matrix into a long-format tibble.
 # Returns: channel (int), x (dbl), intensity.mV (dbl).
 parse_isodat_traces <- function(x, traces) {
@@ -142,14 +149,34 @@ parse_isodat_cycles <- function(json_path, root_ptr) {
     cli_abort("expected 1 initial pre-analysis but found {length(pre_row)}")
   }
 
-  #  standards and samples
+  # locate standard and sample blocks by their p/v label
+  std_idx <- find_json_block_idx_by_value(
+    json_path,
+    sprintf("%s/CBlockData", base),
+    "DualInlet RawData Standard Block"
+  )
+  sample_idx <- find_json_block_idx_by_value(
+    json_path,
+    sprintf("%s/CBlockData", base),
+    "DualInlet RawData Sample Block"
+  )
+
+  # pull out data
   std_rows <-
-    sprintf("%s/CBlockData/0/objects/CIntegrationUnitTransferPart", base) |>
+    sprintf(
+      "%s/CBlockData/%d/objects/CIntegrationUnitTransferPart",
+      base,
+      std_idx
+    ) |>
     query_json(json_path = json_path, list_as_tibble = TRUE) |>
     dplyr::pull(.data$CIntensityData) |>
     purrr::map(~ .x$values)
   sample_rows <-
-    sprintf("%s/CBlockData/1/objects/CIntegrationUnitTransferPart", base) |>
+    sprintf(
+      "%s/CBlockData/%d/objects/CIntegrationUnitTransferPart",
+      base,
+      sample_idx
+    ) |>
     query_json(json_path = json_path, list_as_tibble = TRUE) |>
     dplyr::pull(.data$CIntensityData) |>
     purrr::map(~ .x$values)
@@ -245,6 +272,43 @@ match_channels_to_masses <- function(data, resistors) {
   data_w_masses |> dplyr::filter(!is.na(.data$..id)) |> dplyr::select(-"..id")
 }
 
+# Read the "Sequence Line Information" CBlockData from an isodat JSON file.
+# Used by .dxf and .didf files.
+# Each entry is a CData row with v = field name and l = value. Returns a one-row
+# tibble with one column per field, names taken verbatim from the v field.
+# @param block_query base JSON pointer to the CBlockData array.
+read_isodat_seq_line_info <- function(json_path, block_query) {
+  seq_idx <- find_json_block_idx_by_value(
+    json_path,
+    block_query,
+    "Sequence Line Information"
+  )
+  entries <- query_json(
+    json_path,
+    sprintf("%s/%d/objects/CData", block_query, seq_idx),
+    list_as_tibble = TRUE
+  )
+  keep <- !duplicated(entries$v)
+  tibble::as_tibble_row(as.list(setNames(
+    as.character(entries$l[keep]),
+    entries$v[keep]
+  )))
+}
+
+# Read sequence line information from a CSequenceLineInformationGridStorage node.
+# Used by .cf and .caf files where the data is in a 2-row character matrix:
+# cells[1,] = column headers, cells[2,] = values.
+# Returns a one-row tibble with verbatim header names, or NULL when absent.
+# @param grid_ptr JSON pointer to the CSequenceLineInformationGridStorage/.../cells node.
+read_isodat_seq_line_grid <- function(json_path, grid_ptr) {
+  cells <- query_json(json_path, grid_ptr, required = FALSE)
+  if (json_missing(cells)) {
+    return(NULL)
+  }
+  keep <- !duplicated(cells[1L, ])
+  tibble::as_tibble_row(as.list(setNames(cells[2L, keep], cells[1L, keep])))
+}
+
 # file type specific readers ==========
 
 ## dxf =====================
@@ -252,6 +316,16 @@ match_channels_to_masses <- function(data, resistors) {
 # .dxf — continuous-flow file (CContiniousFlowBlockData root).
 # Gas name may be under CGasConfiguration or CNumericValue/CGasConfiguration.
 read_dxf_json <- function(json_path) {
+  # file-level metadata (datetime from CFileHeader)
+  file_info <- read_isodat_file_info(json_path) |> try_catch_cnds()
+
+  # sequence line information (sample metadata)
+  seq_info <- json_path |>
+    read_isodat_seq_line_info(
+      "/CContiniousFlowBlockData/p/objects/CBlockData"
+    ) |>
+    try_catch_cnds()
+
   # gas names
   gas_names <- read_isodat_gas_names(
     json_path,
@@ -280,6 +354,8 @@ read_dxf_json <- function(json_path) {
   # problems
   problems <- dplyr::bind_rows(
     empty_cnds_tibble(),
+    file_info$conditions,
+    seq_info$conditions,
     gas_names$conditions,
     resistors$conditions,
     raw_data$conditions
@@ -287,6 +363,8 @@ read_dxf_json <- function(json_path) {
 
   # return value
   tibble(
+    file_info = list(file_info$result),
+    seq_info = list(seq_info$result),
     resistors = list(resistors$result),
     traces = list(raw_data$result),
     problems = list(problems)
@@ -301,9 +379,9 @@ read_isodat_dxf_raw_data <- function(json_path, gas_names) {
   # search for correct CBlockData object
   raw_idx <-
     json_path |>
-    find_json_block_idx_by_label(
+    find_json_block_idx_by_value(
       "/CContiniousFlowBlockData/p/objects/CBlockData",
-      label = "RawDataBlock"
+      value = "RawDataBlock"
     )
   craw <- json_path |>
     query_json(
@@ -341,6 +419,16 @@ read_isodat_dxf_raw_data <- function(json_path, gas_names) {
 
 # .cf — continuous-flow file (CMethod root, simpler structure than .dxf).
 read_cf_json <- function(json_path) {
+  # file-level metadata (datetime from CFileHeader)
+  file_info <- read_isodat_file_info(json_path) |> try_catch_cnds()
+
+  # sequence line information (sample metadata, absent in some files)
+  seq_info <- json_path |>
+    read_isodat_seq_line_grid(
+      grid_ptr = "/CBlockData/1/objects/CSequenceLineInformationGridStorage/p/CGridCtrl/cells"
+    ) |>
+    try_catch_cnds()
+
   # gas names
   gas_names <- read_isodat_gas_names(
     json_path,
@@ -365,6 +453,8 @@ read_cf_json <- function(json_path) {
   # problems
   problems <- dplyr::bind_rows(
     empty_cnds_tibble(),
+    file_info$conditions,
+    seq_info$conditions,
     gas_names$conditions,
     resistors$conditions,
     raw_data$conditions
@@ -372,6 +462,8 @@ read_cf_json <- function(json_path) {
 
   # return value
   tibble(
+    file_info = list(file_info$result),
+    seq_info = list(seq_info$result),
     resistors = list(resistors$result),
     traces = list(raw_data$result),
     problems = list(problems)
@@ -432,6 +524,15 @@ read_isodat_cf_raw_data <- function(json_path, gas_names) {
 # .did — dual-inlet file (CDualInletBlockData root).
 # HW info store may be directly under CMethod or wrapped in CNumericValue.
 read_did_json <- function(json_path) {
+  # file-level metadata (datetime from CFileHeader)
+  file_info <- read_isodat_file_info(json_path) |> try_catch_cnds()
+
+  # sequence line information (sample metadata)
+  seq_info <-
+    json_path |>
+    read_isodat_seq_line_info("/CDualInletBlockData/p/objects/CBlockData") |>
+    try_catch_cnds()
+
   # gas names
   gas_name <- read_isodat_gas_names(
     json_path,
@@ -463,6 +564,8 @@ read_did_json <- function(json_path) {
   # problems
   problems <- dplyr::bind_rows(
     empty_cnds_tibble(),
+    file_info$conditions,
+    seq_info$conditions,
     gas_name$conditions,
     resistors$conditions,
     cycles$conditions
@@ -470,6 +573,8 @@ read_did_json <- function(json_path) {
 
   # return value
   tibble(
+    file_info = list(file_info$result),
+    seq_info = list(seq_info$result),
     resistors = list(resistors$result),
     cycles = list(cycles$result),
     problems = list(problems)
@@ -481,6 +586,17 @@ read_did_json <- function(json_path) {
 
 # .caf — dual-inlet file (CBlockDataContext root).
 read_caf_json <- function(json_path) {
+  # file-level metadata (datetime from CFileHeader)
+  file_info <- read_isodat_file_info(json_path) |> try_catch_cnds()
+
+  # sequence line information (sample metadata, absent in some files)
+  seq_info <-
+    json_path |>
+    read_isodat_seq_line_grid(
+      "/CBlockDataContext/p/objects/CSequenceLineInformationGridStorage/p/CGridCtrl/cells"
+    ) |>
+    try_catch_cnds()
+
   # gas names
   gas_name <- read_isodat_gas_names(
     json_path,
@@ -507,6 +623,8 @@ read_caf_json <- function(json_path) {
   # problems
   problems <- dplyr::bind_rows(
     empty_cnds_tibble(),
+    file_info$conditions,
+    seq_info$conditions,
     gas_name$conditions,
     resistors$conditions,
     cycles$conditions
@@ -514,6 +632,8 @@ read_caf_json <- function(json_path) {
 
   # return value
   tibble(
+    file_info = list(file_info$result),
+    seq_info = list(seq_info$result),
     resistors = list(resistors$result),
     cycles = list(cycles$result),
     problems = list(problems)
@@ -611,10 +731,10 @@ read_isodat_scn_file_info <- function(json_path) {
   }
   ts <- query_json(json_path, "/CScanStorage/timestamp_start")
   tibble::tibble(
+    file_datetime = parse_isodat_datetime(ts),
     type = type_info$scan_type,
     x_units = type_info$x_unit,
-    comment = comment,
-    file_datetime = parse_isodat_datetime(ts)
+    comment = comment
   )
 }
 
