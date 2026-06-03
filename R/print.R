@@ -17,6 +17,16 @@ print.isofiles <- function(x, ...) {
       filename_spacers = max(nchar(basename(.data$file_path))) -
         nchar(basename(.data$file_path)),
       ext = tools::file_ext(.data$file_path),
+      seq_line_info = purrr::pmap_chr(
+        list(
+          seq_info = if ("seq_info" %in% names(x)) {
+            .data$seq_info
+          } else {
+            list(NULL)
+          }
+        ),
+        get_seq_line_info
+      ),
       trace_info = purrr::pmap_chr(
         list(
           ext = .data$ext,
@@ -57,7 +67,7 @@ print.isofiles <- function(x, ...) {
         strrep("\u00a0", .data$idx_spacers),
         format_inline("{idx}. {cli::col_blue(basename(file_path))}: "),
         strrep("\u00a0", .data$filename_spacers),
-        if_else(
+        dplyr::if_else(
           .data$n_problems > 0,
           format_inline("encountered {problems_text}; "),
           ""
@@ -66,7 +76,9 @@ print.isofiles <- function(x, ...) {
           .data$cycle_info
         } else {
           .data$trace_info
-        }
+        },
+        "; ",
+        .data$seq_line_info
       )
     ) |>
     dplyr::pull(.data$label) |>
@@ -86,20 +98,24 @@ get_trace_info <- function(ext, file_info, traces) {
   }
   traces |>
     dplyr::summarize(
-      .by = dplyr::any_of(c("analyte", "channel", "mass")),
+      .by = c("species", "channel", "mass"),
       n = dplyr::n()
     ) |>
     dplyr::summarize(
-      .by = dplyr::any_of("analyte"),
-      info = if (ext == "scn") {
-        format_inline(
-          "{col_yellow(numbers_to_text(max(n)))} {file_info$type} steps (masses {.field {mass}})"
-        )
+      .by = "species",
+      masses = if (all(is.na(mass))) {
+        format_inline("channels {.field {channel}}")
       } else {
-        format_inline(
-          "{col_yellow(numbers_to_text(max(n)))} time points for {col_magenta(analyte[1])} (masses {.field {mass}})"
-        )
-      }
+        format_inline("masses {.field {mass}}")
+      },
+      data_point_type = if (ext == "scn") {
+        format_inline("{file_info$type} steps")
+      } else {
+        "time points"
+      },
+      info = format_inline(
+        "{col_cyan(numbers_to_text(max(n)))} {data_point_type} for {col_magenta(species[1])} ({masses})"
+      )
     ) |>
     dplyr::pull(.data$info) |>
     paste(collapse = "; ")
@@ -112,11 +128,19 @@ get_cycle_info <- function(ext, file_info, cycles) {
   }
   cycles |>
     dplyr::summarize(
-      .by = "analyte",
+      .by = "species",
       info = format_inline(
-        "{col_yellow(max(.data$cycle))} sample/standard cycles for {col_magenta(analyte[1])} (masses {.field {unique(mass)}})"
+        "{col_cyan(max(.data$cycle))} sample/standard cycles for {col_magenta(species[1])} (masses {.field {unique(mass)}})"
       )
     ) |>
     dplyr::pull(.data$info) |>
     paste(collapse = "; ")
+}
+
+# helper function to summarize information about seq_line info
+get_seq_line_info <- function(seq_info) {
+  if (!is.data.frame(seq_info)) {
+    return("no seq. info available")
+  }
+  format_inline("{col_cyan(ncol(seq_info))} seq. line entries")
 }
