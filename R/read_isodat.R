@@ -50,6 +50,15 @@ read_isodat_resistors <- function(json_path, hw_list_ptr, gas_names) {
     purrr::list_rbind()
 }
 
+# empty resistors tibble
+.empy_resistors <- tibble(
+  analyte = factor(),
+  mass = factor(),
+  channel = integer(),
+  cup = integer(),
+  resistor = double()
+)
+
 # Extract a tibble of cups from the p (parent) node of a CEvalIntegrationUnitHWInfoList entry.
 # Each row is one Faraday cup: analyte (gas label), m/z mass, hardware channel, cup position, resistor value.
 extract_resistor_info <- function(parent_node, gas) {
@@ -134,6 +143,7 @@ read_isodat_dxf_raw_data <- function(json_path, gas_names, resistors = NULL) {
     cli_warn(
       "resistors unavailable; {.field analyte} and {.field mass} set to NA for all channels"
     )
+    resistors <- .empy_resistors
   }
   # search for correct CBlockData object
   raw_idx <-
@@ -168,17 +178,22 @@ read_isodat_dxf_raw_data <- function(json_path, gas_names, resistors = NULL) {
         } else {
           NULL
         }
-        expand_cf_and_dxf_traces(gas, eval_pp$x, eval_pp$traces, res_for_gas)
+        parse_isodat_continuous_flow_traces(
+          gas,
+          eval_pp$x,
+          eval_pp$traces,
+          res_for_gas
+        )
       }
     ) |>
     purrr::list_rbind()
 }
 
-# Expand one gas's trace matrix into a long-format tibble.
+# Parse one gas's trace matrix into a long-format tibble.
 # Trace row i corresponds to res_for_gas row i (same JSON order).
 # Returns: analyte (fct), channel (int), mass (fct), time.s (dbl), intensity.mV (dbl).
 # res_for_gas is NULL when resistors are unavailable; analyte/mass are NA in that case.
-expand_cf_and_dxf_traces <- function(gas, x, traces, res_for_gas) {
+parse_isodat_continuous_flow_traces <- function(gas, x, traces, res_for_gas) {
   n_channels <- nrow(traces)
   purrr::map(seq_len(n_channels), function(i) {
     if (is.null(res_for_gas)) {
@@ -258,67 +273,59 @@ read_cf_json <- function(json_path) {
 # Returns a long-format tibble: analyte (fct), channel (int), mass (fct), time.s (dbl), intensity.mV (dbl).
 # @param resistors tibble from read_isodat_resistors(); if NULL warns and sets analyte/mass to NA.
 read_isodat_cf_raw_data <- function(json_path, gas_names, resistors = NULL) {
-  if (is.null(gas_names) || length(gas_names) == 0L) {
+  if (length(gas_names) == 0L) {
     cli_abort("gas names must be known to read raw data from .cf files")
   }
   if (is.null(resistors)) {
     cli_warn(
       "resistors unavailable; {.field analyte} and {.field mass} set to NA for all channels"
     )
+    resistors <- .empy_resistors
   }
   ctx_base <- "/CBlockData/0/objects/CBlockDataContext"
 
-  expand_gas <- function(gas, x, traces) {
-    res_for_gas <- if (!is.null(resistors)) {
-      dplyr::filter(resistors, analyte == gas)
-    } else {
-      NULL
-    }
-    expand_cf_and_dxf_traces(gas, x, traces, res_for_gas)
-  }
-
-  if (length(gas_names) > 1L) {
-    # multi-gas (case C): CBlockDataContext is an array, one entry per gas
-    purrr::map2(
-      seq_along(gas_names) - 1L,
-      gas_names,
-      function(i, gas) {
-        scan <- query_json(
-          json_path,
-          paste0(
-            ctx_base,
-            "/",
-            i,
-            "/p/objects/CBlockData/objects/CRawDataScanStorage"
-          )
-        )
-        binary <- scan$p$CBinary
-        expand_gas(gas, binary$x, binary$traces)
-      }
-    ) |>
-      purrr::list_rbind()
-  } else {
-    # single gas: try CRawData first (case A), fall back to CRawDataScanStorage (case B)
-    craw <- query_json(
-      json_path,
-      paste0(
-        ctx_base,
-        "/p/objects/CBlockDataContext/p/objects/CBlockData/objects/CRawData"
-      ),
-      required = FALSE
-    )
-    if (!json_missing(craw)) {
-      eval_pp <- craw$p$CEvalGCData$p$p
-      expand_gas(gas_names[[1L]], eval_pp$x, eval_pp$traces)
-    } else {
-      scan <- query_json(
+  # For each gas at 0-based index i, try the three structural variants in order:
+  #   C) multi-gas:   ctx_base/{i}/p/objects/CBlockData/objects/CRawDataScanStorage/p/CBinary
+  #   B) single-gas ScanStorage: ctx_base/p/objects/CBlockData/objects/CRawDataScanStorage/p/CBinary
+  #   A) single-gas CRawData:    ctx_base/p/objects/CBlockDataContext/.../CRawData/p/CEvalGCData/p/p
+  # All three variants resolve to a node with {x, traces}; list_as_tibble normalises to a tibble.
+  purrr::map2(
+    seq_along(gas_names) - 1L,
+    gas_names,
+    function(i, gas) {
+      binary <- query_json(
         json_path,
-        paste0(ctx_base, "/p/objects/CBlockData/objects/CRawDataScanStorage")
+        c(
+          sprintf(
+            "%s/%d/p/objects/CBlockData/objects/CRawDataScanStorage/p/CBinary",
+            ctx_base,
+            i
+          ),
+          sprintf(
+            "%s/p/objects/CBlockData/objects/CRawDataScanStorage/p/CBinary",
+            ctx_base
+          ),
+          sprintf(
+            "%s/p/objects/CBlockDataContext/p/objects/CBlockData/objects/CRawData/p/CEvalGCData/p/p",
+            ctx_base
+          )
+        ),
+        list_as_tibble = TRUE
       )
-      binary <- scan$p$CBinary
-      expand_gas(gas_names[[1L]], binary$x, binary$traces)
+      res_for_gas <- if (!is.null(resistors)) {
+        dplyr::filter(resistors, .data$analyte == !!gas)
+      } else {
+        NULL
+      }
+      parse_isodat_continuous_flow_traces(
+        gas,
+        binary$x[[1L]],
+        binary$traces[[1L]],
+        res_for_gas
+      )
     }
-  }
+  ) |>
+    purrr::list_rbind()
 }
 
 ## did ===========
@@ -377,11 +384,15 @@ read_did_json <- function(json_path) {
 # @param root_ptr "/CDualInletBlockData" for .did, "/CBlockDataContext" for .caf.
 # @param resistors tibble from read_isodat_resistors(); analyte/mass are NA for all rows if NULL.
 read_isodat_di_cycles <- function(json_path, root_ptr, resistors = NULL) {
-  base <- paste0(root_ptr, "/p/objects/CDualInletRawData/p/objects")
+  base <- sprintf("%s/p/objects/CDualInletRawData/p/objects", root_ptr)
 
   # helper: extract list of numeric intensity vectors; list_as_tibble normalises single/multi
   extract_rows <- function(ptr) {
-    iut <- query_json(json_path, paste0(base, ptr), list_as_tibble = TRUE)
+    iut <- query_json(
+      json_path,
+      sprintf("%s%s", base, ptr),
+      list_as_tibble = TRUE
+    )
     purrr::map(iut$CIntensityData, function(cid) as.numeric(unlist(cid$values)))
   }
 

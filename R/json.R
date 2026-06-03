@@ -27,9 +27,10 @@ query_json <- function(
         # already a data frame -> just make it a tibble
         return(tibble::as_tibble(result))
       } else if (list_as_tibble && is.list(result)) {
-        # still a list, list elements needs an extra nesting for as_tibble_row() to work
-        list_fields <- purrr::map_lgl(result, is.list)
-        result[list_fields] <- result[list_fields] |> purrr::map(list)
+        # still a list, all non-scalar element sneeds an extra nesting for as_tibble_row() to work
+        non_scalar_fields <- purrr::map_int(result, length) != 1L
+        result[non_scalar_fields] <- result[non_scalar_fields] |>
+          purrr::map(list)
         return(tibble::as_tibble_row(result))
       } else {
         # just return plain result
@@ -57,7 +58,7 @@ diagnose_json_path <- function(json_path, query) {
   last_valid <- "(root)/"
   missing_idx <- 1L
   for (i in rev(seq_len(length(segments) - 1L))) {
-    path <- paste0("/", paste(segments[seq_len(i)], collapse = "/"))
+    path <- sprintf("/%s", paste(segments[seq_len(i)], collapse = "/"))
     parent <- RcppSimdJson::fload(
       json_path,
       query = path,
@@ -71,7 +72,7 @@ diagnose_json_path <- function(json_path, query) {
     }
   }
   missing_path <- paste(segments[missing_idx:length(segments)], collapse = "/")
-  paste0(col_green(last_valid), col_red(missing_path))
+  sprintf("%s%s", col_green(last_valid), col_red(missing_path))
 }
 
 # Find the integer index of a named CBlockData object
@@ -86,7 +87,7 @@ find_json_block_idx_by_label <- function(
   while (i < max_idx) {
     label_i <- query_json(
       json_path,
-      paste0(block_query, "/", i, "/p/l"),
+      sprintf("%s/%d/p/l", block_query, i),
       required = FALSE
     )
     # no more blocks
