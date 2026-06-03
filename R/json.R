@@ -11,6 +11,7 @@ query_json <- function(
   json_path,
   query,
   required = TRUE,
+  list_as_tibble = FALSE,
   .call = caller_call()
 ) {
   for (q in query) {
@@ -20,7 +21,21 @@ query_json <- function(
       query_error_ok = TRUE,
       on_query_error = NA_complex_
     )
-    if (!json_missing(result)) return(result)
+    if (!json_missing(result)) {
+      # check if we always want lists as tibble
+      if (list_as_tibble && is.data.frame(result)) {
+        # already a data frame -> just make it a tibble
+        return(tibble::as_tibble(result))
+      } else if (list_as_tibble && is.list(result)) {
+        # still a list, list elements needs an extra nesting for as_tibble_row() to work
+        list_fields <- purrr::map_lgl(result, is.list)
+        result[list_fields] <- result[list_fields] |> purrr::map(list)
+        return(tibble::as_tibble_row(result))
+      } else {
+        # just return plain result
+        return(result)
+      }
+    }
   }
   if (!required) {
     return(NA_complex_)
@@ -57,4 +72,34 @@ diagnose_json_path <- function(json_path, query) {
   }
   missing_path <- paste(segments[missing_idx:length(segments)], collapse = "/")
   paste0(col_green(last_valid), col_red(missing_path))
+}
+
+# Find the integer index of a named CBlockData object
+# Aborts if the label is not found.
+find_json_block_idx_by_label <- function(
+  json_path,
+  block_query,
+  label,
+  max_idx = 100L
+) {
+  i <- 0L
+  while (i < max_idx) {
+    label_i <- query_json(
+      json_path,
+      paste0(block_query, "/", i, "/p/l"),
+      required = FALSE
+    )
+    # no more blocks
+    if (json_missing(label_i)) {
+      break
+    }
+    # found the right one?
+    if (identical(label_i, label)) {
+      return(i)
+    }
+    i <- i + 1L
+  }
+  cli_abort(
+    "searched {i+1} CBlockData entr{?y/ies} but one with label {.val {label}} was not found in {col_green{block_query}}"
+  )
 }

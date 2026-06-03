@@ -10,18 +10,21 @@
 # @return character vector: top-level gas name first, then one entry per sub-method.
 read_isodat_gas_names <- function(json_path, gas_name_ptr, sub_methods_ptr) {
   top_gas <- query_json(json_path, gas_name_ptr)
-  # sub-methods only present in multi-gas files; absent ones return NA_complex_
-  subs <- query_json(json_path, sub_methods_ptr, required = FALSE)
-  sub_gas_names <- if (is.data.frame(subs)) {
-    # multiple sub-methods: one row each
+  # sub-methods only present in multi-gas files; list_as_tibble normalises single/multi uniformly
+  subs <- query_json(
+    json_path,
+    sub_methods_ptr,
+    required = FALSE,
+    list_as_tibble = TRUE
+  )
+  sub_gas_names <- if (!json_missing(subs)) {
     vapply(subs$p, function(p) p$objects$CGasConfiguration$p$p$v, character(1))
-  } else if (is.list(subs) && !is.null(subs$p)) {
-    # single sub-method: plain list
-    subs$p$objects$CGasConfiguration$p$p$v
   } else {
     character(0)
   }
-  c(top_gas, sub_gas_names)
+  # should this be unique? probably yes, sometimes the same gas appears multiple
+  # times in submethods but only one data block is generated for it
+  c(top_gas, sub_gas_names) |> unique()
 }
 
 # Read calibrated Faraday cup resistors from an isodat JSON file.
@@ -34,25 +37,17 @@ read_isodat_gas_names <- function(json_path, gas_name_ptr, sub_methods_ptr) {
 # @param gas_names character vector of gas names from read_isodat_gas_names().
 # @return A tibble with columns gas, mass, channel, cup, resistor.
 read_isodat_resistors <- function(json_path, hw_list_ptr, gas_names) {
-  resistors <- query_json(json_path, hw_list_ptr)
-  n_resistors <- if (is.data.frame(resistors)) nrow(resistors) else 1L
-  if (length(gas_names) < n_resistors) {
+  resistors <- query_json(json_path, hw_list_ptr, list_as_tibble = TRUE)
+  # safety checks
+  if (length(gas_names) != nrow(resistors)) {
     cli_abort(
-      "found {n_resistors} {.field resistor set{?s}} but only {length(gas_names)} {.field gas name{?s}} ({.emph {gas_names}})"
+      "found {nrow(resistors)} {.field resistor set{?s}} but {length(gas_names)} {.field gas configurations{?s}} in the methods ({.emph {gas_names}})"
     )
   }
-  if (is.data.frame(resistors)) {
-    # multi-gas: one resistor set per row; slice gas_names to match
-    purrr::map2(
-      resistors$p,
-      gas_names[seq_len(n_resistors)],
-      extract_resistor_info
-    ) |>
-      purrr::list_rbind()
-  } else {
-    # single resistor set: applies to the primary (first) gas
-    extract_resistor_info(resistors$p, gas_names[[1L]])
-  }
+  # extra resistor info
+  resistors$p |>
+    purrr::map2(gas_names, extract_resistor_info) |>
+    purrr::list_rbind()
 }
 
 # Extract a tibble of cups from the p (parent) node of a CEvalIntegrationUnitHWInfoList entry.
@@ -104,8 +99,12 @@ read_dxf_json <- function(json_path) {
   ) |>
     try_catch_cnds()
 
-  # raw trace data from RawDataBlock (resistors passed in to join analyte/mass by channel row)
-  raw_data <- read_isodat_dxf_raw_data(json_path, resistors$result) |>
+  # raw trace data from RawDataBlock; gas_names and resistors matched positionally by gas index
+  raw_data <- read_isodat_dxf_raw_data(
+    json_path,
+    gas_names$result,
+    resistors$result
+  ) |>
     try_catch_cnds()
 
   # problems
@@ -124,71 +123,62 @@ read_dxf_json <- function(json_path) {
   )
 }
 
-# Find the integer index of a named CBlockData block in a .dxf JSON file.
-# Scans /CContiniousFlowBlockData/p/objects/CBlockData/N/p/l for N = 0..max_idx.
-# Aborts if the label is not found.
-find_dxf_block_idx <- function(json_path, label, max_idx = 9L) {
-  base <- "/CContiniousFlowBlockData/p/objects/CBlockData"
-  for (i in seq(0L, max_idx)) {
-    l <- query_json(json_path, paste0(base, "/", i, "/p/l"), required = FALSE)
-    if (!json_missing(l) && identical(l, label)) return(i)
-  }
-  cli_abort(
-    "no CBlockData entry with label {.val {label}} found in {.path {json_path}}"
-  )
-}
-
 # Read raw trace data from the RawDataBlock of a .dxf JSON file.
+# gas_names and resistors are matched positionally: gas_names[[i]] and its rows in resistors
+# correspond to the i-th CRawData entry, regardless of what complete_formula says.
 # Returns a long-format tibble: analyte (fct), channel (int), mass (fct), time.s (dbl), intensity.mV (dbl).
+# @param gas_names character vector from read_isodat_gas_names(); length must equal n raw data sets.
 # @param resistors tibble from read_isodat_resistors(); if NULL warns and sets analyte/mass to NA.
-read_isodat_dxf_raw_data <- function(json_path, resistors = NULL) {
+read_isodat_dxf_raw_data <- function(json_path, gas_names, resistors = NULL) {
   if (is.null(resistors)) {
     cli_warn(
       "resistors unavailable; {.field analyte} and {.field mass} set to NA for all channels"
     )
   }
-  raw_idx <- find_dxf_block_idx(json_path, "RawDataBlock")
-  raw_data_ptr <- paste0(
-    "/CContiniousFlowBlockData/p/objects/CBlockData/",
-    raw_idx,
-    "/objects/CRawData"
-  )
-  craw <- query_json(json_path, raw_data_ptr)
+  # search for correct CBlockData object
+  raw_idx <-
+    json_path |>
+    find_json_block_idx_by_label(
+      "/CContiniousFlowBlockData/p/objects/CBlockData",
+      label = "RawDataBlock"
+    )
+  craw <- json_path |>
+    query_json(
+      sprintf(
+        "/CContiniousFlowBlockData/p/objects/CBlockData/%d/objects/CRawData",
+        raw_idx
+      ),
+      list_as_tibble = TRUE
+    )
 
-  if (is.data.frame(craw)) {
-    # multi-gas: CRawData is an array, one row per gas
+  # safety checks
+  if (length(gas_names) != nrow(craw)) {
+    cli_abort(
+      "found {nrow(craw)} {.field raw data set{?s}} but {length(gas_names)} {.field gas configurations{?s}} in the methods ({.emph {gas_names}})"
+    )
+  }
+
+  craw$p |>
     purrr::map2(
-      craw$complete_formula,
-      craw$p,
-      function(gas, p) {
+      gas_names,
+      function(p, gas) {
         eval_pp <- p$CEvalGCData$p$p
         res_for_gas <- if (!is.null(resistors)) {
-          dplyr::filter(resistors, analyte == gas)
+          dplyr::filter(resistors, .data$analyte == !!gas)
         } else {
           NULL
         }
-        expand_cf_dxf_traces(gas, eval_pp$x, eval_pp$traces, res_for_gas)
+        expand_cf_and_dxf_traces(gas, eval_pp$x, eval_pp$traces, res_for_gas)
       }
     ) |>
-      purrr::list_rbind()
-  } else {
-    # single gas: CRawData is a plain list
-    eval_pp <- craw$p$CEvalGCData$p$p
-    gas <- craw$complete_formula
-    res_for_gas <- if (!is.null(resistors)) {
-      dplyr::filter(resistors, analyte == gas)
-    } else {
-      NULL
-    }
-    expand_cf_dxf_traces(gas, eval_pp$x, eval_pp$traces, res_for_gas)
-  }
+    purrr::list_rbind()
 }
 
 # Expand one gas's trace matrix into a long-format tibble.
 # Trace row i corresponds to res_for_gas row i (same JSON order).
 # Returns: analyte (fct), channel (int), mass (fct), time.s (dbl), intensity.mV (dbl).
 # res_for_gas is NULL when resistors are unavailable; analyte/mass are NA in that case.
-expand_cf_dxf_traces <- function(gas, x, traces, res_for_gas) {
+expand_cf_and_dxf_traces <- function(gas, x, traces, res_for_gas) {
   n_channels <- nrow(traces)
   purrr::map(seq_len(n_channels), function(i) {
     if (is.null(res_for_gas)) {
@@ -202,7 +192,7 @@ expand_cf_dxf_traces <- function(gas, x, traces, res_for_gas) {
     } else {
       tibble::tibble(
         analyte = res_for_gas$analyte[i],
-        channel = res_for_gas$channel[i],
+        channel = i,
         mass = res_for_gas$mass[i],
         time.s = as.numeric(x),
         intensity.mV = as.numeric(traces[i, ])
@@ -284,7 +274,7 @@ read_isodat_cf_raw_data <- function(json_path, gas_names, resistors = NULL) {
     } else {
       NULL
     }
-    expand_cf_dxf_traces(gas, x, traces, res_for_gas)
+    expand_cf_and_dxf_traces(gas, x, traces, res_for_gas)
   }
 
   if (length(gas_names) > 1L) {
@@ -382,46 +372,33 @@ read_did_json <- function(json_path) {
 
 # Read dual-inlet cycle data from a .did or .caf JSON file.
 # Both file types share the same CDualInletRawData structure; only the root_ptr differs.
-# Returns a long-format tibble: type (chr), cycle (int), mass (fct), intensity.mV (dbl).
+# Returns a long-format tibble: type (chr), cycle (int), analyte (fct), mass (fct), intensity.mV (dbl).
 # Cycle 0 is the standard pre-cycle; subsequent cycles are 1-indexed per type.
 # @param root_ptr "/CDualInletBlockData" for .did, "/CBlockDataContext" for .caf.
-# @param resistors tibble from read_isodat_resistors(); mass is NA for all rows if NULL.
+# @param resistors tibble from read_isodat_resistors(); analyte/mass are NA for all rows if NULL.
 read_isodat_di_cycles <- function(json_path, root_ptr, resistors = NULL) {
   base <- paste0(root_ptr, "/p/objects/CDualInletRawData/p/objects")
 
-  # pre-cycle: single top-level CIntegrationUnitTransferPart (always standard)
-  pre <- query_json(json_path, paste0(base, "/CIntegrationUnitTransferPart"))
-  pre_row <- as.numeric(unlist(pre$CIntensityData$values))
-
-  # helper: extract list of numeric intensity vectors from a CIntegrationUnitTransferPart result
-  extract_rows <- function(iut) {
-    if (is.data.frame(iut)) {
-      purrr::map(iut$CIntensityData, function(cid) {
-        as.numeric(unlist(cid$values))
-      })
-    } else {
-      list(as.numeric(unlist(iut$CIntensityData$values)))
-    }
+  # helper: extract list of numeric intensity vectors; list_as_tibble normalises single/multi
+  extract_rows <- function(ptr) {
+    iut <- query_json(json_path, paste0(base, ptr), list_as_tibble = TRUE)
+    purrr::map(iut$CIntensityData, function(cid) as.numeric(unlist(cid$values)))
   }
 
-  std_rows <- extract_rows(
-    query_json(
-      json_path,
-      paste0(base, "/CBlockData/0/objects/CIntegrationUnitTransferPart")
-    )
-  )
-  smp_rows <- extract_rows(
-    query_json(
-      json_path,
-      paste0(base, "/CBlockData/1/objects/CIntegrationUnitTransferPart")
-    )
-  )
+  pre_rows <- extract_rows("/CIntegrationUnitTransferPart")
+  pre_row <- pre_rows[[1L]]
+  std_rows <- extract_rows("/CBlockData/0/objects/CIntegrationUnitTransferPart")
+  smp_rows <- extract_rows("/CBlockData/1/objects/CIntegrationUnitTransferPart")
 
-  # mass labels: from resistors (in channel order) or NA fallback
+  # analyte and mass labels: from resistors (in channel order) or NA fallback
   if (is.null(resistors)) {
-    cli_warn("resistors unavailable; {.field mass} set to NA for all channels")
+    cli_warn(
+      "resistors unavailable; {.field analyte} and {.field mass} set to NA for all channels"
+    )
+    analyte_vals <- as.factor(rep(NA_character_, length(pre_row)))
     mass_vals <- as.factor(rep(NA_character_, length(pre_row)))
   } else {
+    analyte_vals <- resistors$analyte
     mass_vals <- resistors$mass
   }
 
@@ -437,6 +414,7 @@ read_isodat_di_cycles <- function(json_path, root_ptr, resistors = NULL) {
     seq_along(all_types),
     function(type, i) {
       tibble::tibble(
+        analyte = analyte_vals,
         type = type,
         cycle = all_cycles[i],
         mass = mass_vals,
