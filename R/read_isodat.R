@@ -49,7 +49,11 @@ read_isodat_gas_names <- function(
 # @param hw_list_ptr JSON pointer(s) to the CEvalIntegrationUnitHWInfoList node.
 # @param gas_names character vector of gas names from read_isodat_gas_names().
 # @return A tibble with columns gas, mass, channel, cup, resistor.
-read_isodat_resistors <- function(json_path, hw_list_ptr, gas_names) {
+read_isodat_calibrated_resistors <- function(
+  json_path,
+  hw_list_ptr,
+  gas_names
+) {
   resistors <- query_json(json_path, hw_list_ptr, list_as_tibble = TRUE)
   # safety checks
   if (length(gas_names) != nrow(resistors)) {
@@ -72,14 +76,13 @@ read_isodat_resistors <- function(json_path, hw_list_ptr, gas_names) {
     purrr::list_rbind()
 }
 
-# Read nominal Faraday cup resistors (this is used for a .scn file because
-# they store no calibrated resistor table; nominal values come from CCupHardwarePart)
-# but could also be used for other files.
-# Active cups and their mass/channel assignments are taken from CChannelGasConfPart;
+# Read nominal Faraday cup resistors from CCupHardwarePart - this is NOT gas specific.
+# Active cups and their mass/channel assignments come from CChannelGasConfPart;
 # resistor values are looked up by matching cup position to CCupHardwarePart$idx.
+# For .scn files this is the only resistor source; other file types should
+# always use read_isodat_calibrated_resistors() instaed.
 read_isodat_nominal_resistors <- function(
   json_path,
-  species,
   cup_hw_ptr,
   channel_gas_ptr
 ) {
@@ -87,9 +90,8 @@ read_isodat_nominal_resistors <- function(
   channels <- query_json(json_path, channel_gas_ptr)
   # resistor info
   tibble::tibble(
-    species = species,
     mass = as.character(channels$mass),
-    channel = as.integer(channels$idx),
+    channel = as.integer(channels$idx) - 1L, # switch to 0 based to match nominal resistors
     cup = as.integer(channels$cup),
     resistor = as.numeric(hw$resistor[match(channels$cup, hw$idx)])
   )
@@ -133,7 +135,7 @@ read_dxf_json <- function(json_path) {
     try_catch_cnds()
 
   # resistors
-  resistors <- read_isodat_resistors(
+  resistors <- read_isodat_calibrated_resistors(
     json_path,
     hw_list_ptr = "/CContiniousFlowBlockData/p/objects/CBlockData/5/objects/CMethod/p/objects/CEvalIntegrationUnitHWInfoStore/p/objects/CEvalIntegrationUnitHWInfoList",
     gas_names = gas_names$result
@@ -169,7 +171,7 @@ read_dxf_json <- function(json_path) {
 # correspond to the i-th CRawData entry, regardless of what complete_formula says.
 # Returns a long-format tibble: species (fct), channel (int), mass (fct), time.s (dbl), intensity.mV (dbl).
 # @param gas_names character vector from read_isodat_gas_names(); length must equal n raw data sets.
-# @param resistors tibble from read_isodat_resistors(); if NULL warns and sets species/mass to NA.
+# @param resistors tibble from read_isodat_calibrated_resistors(); if NULL warns and sets species/mass to NA.
 read_isodat_dxf_raw_data <- function(json_path, gas_names, resistors = NULL) {
   if (is.null(resistors)) {
     cli_warn(
@@ -252,7 +254,7 @@ read_cf_json <- function(json_path) {
     try_catch_cnds()
 
   # resistors
-  resistors <- read_isodat_resistors(
+  resistors <- read_isodat_calibrated_resistors(
     json_path,
     hw_list_ptr = "/CMethod/p/objects/CEvalIntegrationUnitHWInfoStore/p/objects/CEvalIntegrationUnitHWInfoList",
     gas_names = gas_names$result
@@ -293,7 +295,7 @@ read_cf_json <- function(json_path) {
 #      same CBinary data path, one entry per gas matching gas_names order
 # gas_names must be provided (from read_isodat_gas_names); .cf files do not embed formula in the data block.
 # Returns a long-format tibble: species (fct), channel (int), mass (fct), time.s (dbl), intensity.mV (dbl).
-# @param resistors tibble from read_isodat_resistors(); if NULL warns and sets species/mass to NA.
+# @param resistors tibble from read_isodat_calibrated_resistors(); if NULL warns and sets species/mass to NA.
 read_isodat_cf_raw_data <- function(json_path, gas_names, resistors = NULL) {
   if (length(gas_names) == 0L) {
     cli_abort("gas names must be known to read raw data from .cf files")
@@ -365,7 +367,7 @@ read_did_json <- function(json_path) {
     try_catch_cnds()
 
   # resistors
-  resistors <- read_isodat_resistors(
+  resistors <- read_isodat_calibrated_resistors(
     json_path,
     # two variants: direct path tried first, CNumericValue-wrapped as fallback
     hw_list_ptr = c(
@@ -405,7 +407,7 @@ read_did_json <- function(json_path) {
 # Returns a long-format tibble: type (chr), cycle (int), species (fct), mass (fct), intensity.mV (dbl).
 # Cycle 0 is the standard pre-cycle; subsequent cycles are 1-indexed per type.
 # @param root_ptr "/CDualInletBlockData" for .did, "/CBlockDataContext" for .caf.
-# @param resistors tibble from read_isodat_resistors(); species/mass are NA for all rows if NULL.
+# @param resistors tibble from read_isodat_calibrated_resistors(); species/mass are NA for all rows if NULL.
 read_isodat_dual_inlet_cycles <- function(
   json_path,
   root_ptr,
@@ -478,7 +480,7 @@ read_caf_json <- function(json_path) {
     try_catch_cnds()
 
   # resistors
-  resistors <- read_isodat_resistors(
+  resistors <- read_isodat_calibrated_resistors(
     json_path,
     hw_list_ptr = "/CBlockDataContext/p/objects/CMethod/p/objects/CEvalIntegrationUnitHWInfoStore/p/objects/CEvalIntegrationUnitHWInfoList",
     gas_names = gas_names$result
@@ -521,35 +523,39 @@ read_scn_json <- function(json_path) {
   ) |>
     try_catch_cnds()
 
-  # resistors (nominal, from CCupHardwarePart joined to active cups via CChannelGasConfPart)
-  resistors <- read_isodat_nominal_resistors(
+  # nominal resistors (all physical cups, from CCupHardwarePart)
+  nominal_resistors <- read_isodat_nominal_resistors(
     json_path,
-    species = gas_names$result[1L] %||% NA_character_,
     cup_hw_ptr = "/CScanStorage/CIntegrationUnitScanPart/p/CIntegrationUnitHardwarePart/CCupHardwarePart",
     channel_gas_ptr = "/CScanStorage/CGasConfiguration/p/objects/CIntegrationUnitGasConfPart/CChannelGasConfPart"
   ) |>
+    # add species since nominal resistors are not species specific
+    dplyr::mutate(
+      species = gas_names$result[1L] %||% NA_character_,
+      .before = 1L
+    ) |>
     try_catch_cnds()
 
   # file-level metadata: scan type, x unit, comment, timestamps
   file_info <- read_isodat_scn_file_info(json_path) |>
     try_catch_cnds()
 
-  # raw scan data (resistors passed in to join mass by channel)
-  raw_data <- read_isodat_scn_raw_data(json_path, resistors$result) |>
+  # raw scan data (nominal_resistors passed in to join mass by channel)
+  raw_data <- read_isodat_scn_raw_data(json_path, nominal_resistors$result) |>
     try_catch_cnds()
 
   # problems
   problems <- dplyr::bind_rows(
     empty_cnds_tibble(),
     gas_names$conditions,
-    resistors$conditions,
+    nominal_resistors$conditions,
     file_info$conditions,
     raw_data$conditions
   )
 
   # return value
   tibble(
-    resistors = list(resistors$result),
+    resistors = list(nominal_resistors$result),
     file_info = list(file_info$result),
     traces = list(raw_data$result),
     problems = list(problems)
@@ -634,7 +640,7 @@ read_isodat_scn_raw_data <- function(json_path, resistors = NULL) {
   n_traces <- nrow(binary$traces)
   out <- purrr::map(seq_len(n_traces), function(ch) {
     tibble::tibble(
-      channel = ch,
+      channel = ch - 1L, # channel is 0 based
       x = x,
       intensity.mV = binary$traces[ch, ]
     )
