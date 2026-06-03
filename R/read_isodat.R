@@ -1,13 +1,7 @@
 # general isodat readers ===================
 
-# Read gas names from an isodat JSON file.
-# Returns a character vector with the top-level gas first, followed by one entry
-# per sub-method for multi-gas files (sub_methods_ptr is optional; single-gas
-# files that lack sub-methods return just the one top-level name).
-#
-# @param gas_name_ptr JSON pointer(s) to the top-level CGasConfiguration gas name.
-# @param sub_methods_ptr JSON pointer to the CMethod sub-method array (multi-gas files).
-# @return character vector: top-level gas name first, then one entry per sub-method.
+# Read gas names from CGasConfiguration/p/p/v. For multi-gas files, also reads
+# each sub-method's gas name and de-duplicates.
 read_isodat_gas_names <- function(
   json_path,
   gas_name_ptr,
@@ -40,15 +34,8 @@ read_isodat_gas_names <- function(
   c(top_gas, sub_gas_names) |> unique()
 }
 
-# Read calibrated Faraday cup resistors from an isodat JSON file.
-# Dispatches to single-gas or multi-gas extraction depending on whether the
-# hw_list_ptr resolves to a single list (one gas config) or a data.frame (multiple).
-# gas_names must have at least as many entries as resistor sets; extra gas names
-# (e.g. sub-methods without their own resistor set) are silently ignored.
-#
-# @param hw_list_ptr JSON pointer(s) to the CEvalIntegrationUnitHWInfoList node.
-# @param gas_names character vector of gas names from read_isodat_gas_names().
-# @return A tibble with columns gas, mass, channel, cup, resistor.
+# Read calibrated Faraday cup resistors from CEvalIntegrationUnitHWInfoList.
+# Returns a tibble with columns: species, mass, channel (1-based), cup, resistor.
 read_isodat_calibrated_resistors <- function(
   json_path,
   hw_list_ptr,
@@ -76,11 +63,10 @@ read_isodat_calibrated_resistors <- function(
     purrr::list_rbind()
 }
 
-# Read nominal Faraday cup resistors from CCupHardwarePart - this is NOT gas specific.
+# Read nominal Faraday cup resistors from CCupHardwarePart (.scn only).
 # Active cups and their mass/channel assignments come from CChannelGasConfPart;
-# resistor values are looked up by matching cup position to CCupHardwarePart$idx.
-# For .scn files this is the only resistor source; other file types should
-# always use read_isodat_calibrated_resistors() instaed.
+# resistor values are matched to cups by position index.
+# Returns a tibble with columns: mass, channel (1-based), cup, resistor.
 read_isodat_nominal_resistors <- function(
   json_path,
   cup_hw_ptr,
@@ -129,9 +115,9 @@ parse_isodat_traces <- function(x, traces) {
     purrr::list_rbind()
 }
 
-# Read dual-inlet cycle data from a .did or .caf JSON file.
-# Both file types share the same CDualInletRawData structure; only the root_ptr differs.
+# Read dual-inlet cycle data from CDualInletRawData (.did and .caf share this structure).
 # Cycle 0 is the standard pre-cycle; subsequent cycles are 1-indexed per type.
+# Standard and sample CBlockData children are located by their p/v label.
 # @param root_ptr "/CDualInletBlockData" for .did, "/CBlockDataContext" for .caf.
 parse_isodat_cycles <- function(json_path, root_ptr) {
   # base query path
@@ -215,7 +201,8 @@ parse_isodat_cycles <- function(json_path, root_ptr) {
     dplyr::arrange(.data$cycle, .data$type, .data$channel)
 }
 
-# use resistor values to match the channels to masses
+# Join long-format data with resistors on (species, channel) to add the mass column.
+# Warns if any data channels lack a resistor entry or any resistor channels have no data.
 match_channels_to_masses <- function(data, resistors) {
   # is there data?
   if (is.null(data)) {
@@ -272,11 +259,9 @@ match_channels_to_masses <- function(data, resistors) {
   data_w_masses |> dplyr::filter(!is.na(.data$..id)) |> dplyr::select(-"..id")
 }
 
-# Read the "Sequence Line Information" CBlockData from an isodat JSON file.
-# Used by .dxf and .didf files.
-# Each entry is a CData row with v = field name and l = value. Returns a one-row
-# tibble with one column per field, names taken verbatim from the v field.
-# @param block_query base JSON pointer to the CBlockData array.
+# Read sequence line information from the "Sequence Line Information" CBlockData (.dxf, .did).
+# CData rows supply field names (v) and values (l). Returns a one-row tibble with verbatim
+# field names; duplicate names are dropped (first kept). Aborts if the block is absent.
 read_isodat_seq_line_info <- function(json_path, block_query) {
   seq_idx <- find_json_block_idx_by_value(
     json_path,
@@ -295,11 +280,10 @@ read_isodat_seq_line_info <- function(json_path, block_query) {
   )))
 }
 
-# Read sequence line information from a CSequenceLineInformationGridStorage node.
-# Used by .cf and .caf files where the data is in a 2-row character matrix:
-# cells[1,] = column headers, cells[2,] = values.
-# Returns a one-row tibble with verbatim header names, or NULL when absent.
-# @param grid_ptr JSON pointer to the CSequenceLineInformationGridStorage/.../cells node.
+# Read sequence line information from CSequenceLineInformationGridStorage/p/CGridCtrl/cells (.cf, .caf).
+# cells is a 2-row character matrix: row 1 = headers, row 2 = values.
+# Returns a one-row tibble with verbatim header names; duplicate names are dropped (first kept).
+# Returns NULL when the node is absent.
 read_isodat_seq_line_grid <- function(json_path, grid_ptr) {
   cells <- query_json(json_path, grid_ptr, required = FALSE)
   if (json_missing(cells)) {
@@ -314,7 +298,7 @@ read_isodat_seq_line_grid <- function(json_path, grid_ptr) {
 ## dxf =====================
 
 # .dxf — continuous-flow file (CContiniousFlowBlockData root).
-# Gas name may be under CGasConfiguration or CNumericValue/CGasConfiguration.
+# Returns file_info, seq_info, resistors (calibrated), traces.
 read_dxf_json <- function(json_path) {
   # file-level metadata (datetime from CFileHeader)
   file_info <- read_isodat_file_info(json_path) |> try_catch_cnds()
@@ -371,10 +355,9 @@ read_dxf_json <- function(json_path) {
   )
 }
 
-# Read raw trace data from the RawDataBlock of a .dxf JSON file.
-# gas_names and are matched positionally: gas_names[[i]] correspond to the i-th CRawData entry, regardless of what complete_formula says.
-# Returns a long-format tibble: species (fct), channel (int), mass (fct), time.s (dbl), intensity.mV (dbl).
-# @param gas_names character vector from read_isodat_gas_names(); length must equal n raw data sets.
+# Read raw trace data from the "RawDataBlock" CBlockData of a .dxf JSON file.
+# gas_names[i] is assigned to the i-th CRawData entry. Returns a long-format tibble:
+# species (chr), channel (int), time.s (dbl), intensity.mV (dbl).
 read_isodat_dxf_raw_data <- function(json_path, gas_names) {
   # search for correct CBlockData object
   raw_idx <-
@@ -417,7 +400,8 @@ read_isodat_dxf_raw_data <- function(json_path, gas_names) {
 
 ## cf ===============
 
-# .cf — continuous-flow file (CMethod root, simpler structure than .dxf).
+# .cf — continuous-flow file (CMethod root).
+# Returns file_info, seq_info, resistors (calibrated), traces.
 read_cf_json <- function(json_path) {
   # file-level metadata (datetime from CFileHeader)
   file_info <- read_isodat_file_info(json_path) |> try_catch_cnds()
@@ -470,8 +454,9 @@ read_cf_json <- function(json_path) {
   )
 }
 
-# Read raw trace data from a .cf JSON file.
-# gas_names must be provided (from read_isodat_gas_names); .cf files do not embed gas information in the data block.
+# Read raw trace data from a .cf JSON file. Gas names must be supplied externally;
+# the data blocks carry no gas identity. Tries three structural variants in order
+# (multi-gas indexed, single-gas ScanStorage, single-gas CRawData).
 read_isodat_cf_raw_data <- function(json_path, gas_names) {
   # safety checks
   if (length(gas_names) == 0L) {
@@ -522,7 +507,8 @@ read_isodat_cf_raw_data <- function(json_path, gas_names) {
 ## did ===========
 
 # .did — dual-inlet file (CDualInletBlockData root).
-# HW info store may be directly under CMethod or wrapped in CNumericValue.
+# Returns file_info, seq_info, resistors (calibrated), cycles.
+# CEvalIntegrationUnitHWInfoStore may be wrapped in CNumericValue (version-dependent).
 read_did_json <- function(json_path) {
   # file-level metadata (datetime from CFileHeader)
   file_info <- read_isodat_file_info(json_path) |> try_catch_cnds()
@@ -585,6 +571,7 @@ read_did_json <- function(json_path) {
 ## caf ===================
 
 # .caf — dual-inlet file (CBlockDataContext root).
+# Returns file_info, seq_info, resistors (calibrated), cycles.
 read_caf_json <- function(json_path) {
   # file-level metadata (datetime from CFileHeader)
   file_info <- read_isodat_file_info(json_path) |> try_catch_cnds()
@@ -642,7 +629,8 @@ read_caf_json <- function(json_path) {
 
 ## scn =====================
 
-# .scn — scan file. No calibrated resistors; nominal values from CCupHardwarePart.
+# .scn — scan file (CScanStorage root). No calibrated resistors; uses nominal values from CCupHardwarePart.
+# Returns file_info (type, x_units, comment, file_datetime), resistors (nominal), traces.
 read_scn_json <- function(json_path) {
   # file-level metadata: scan type, x unit, comment, timestamps
   file_info <- read_isodat_scn_file_info(json_path) |>
@@ -691,9 +679,9 @@ read_scn_json <- function(json_path) {
 }
 
 
-# Detect which scan part is present and return its type label, x unit, and raw part object.
+# Detect the scan type from CScanStorage. Returns list(scan_type, x_unit, part).
 # Tries CScaleHvScanPart ("high voltage"), CMagnetCurrentScanPart ("magnet current"),
-# CClockScanPart ("time"). Aborts if none is found.
+# CClockScanPart ("time") in order; aborts if none is present.
 read_isodat_scn_type <- function(json_path) {
   hv <-
     json_path |>
@@ -717,9 +705,8 @@ read_isodat_scn_type <- function(json_path) {
   cli_abort("unrecognized scan type in {.path {json_path}}")
 }
 
-# Read scan file metadata: scan type, x axis unit, comment, and start/end timestamps.
-# Returns a one-row tibble with columns type (fct), x_unit (chr), comment (chr),
-# file_start (POSIXct UTC), file_end (POSIXct UTC).
+# Read .scn file metadata from CScanStorage. Returns a one-row tibble:
+# file_datetime (POSIXct UTC), type (chr), x_units (chr), comment (chr).
 read_isodat_scn_file_info <- function(json_path) {
   type_info <- read_isodat_scn_type(json_path)
   comment_raw <- json_path |>
@@ -738,7 +725,9 @@ read_isodat_scn_file_info <- function(json_path) {
   )
 }
 
-# Read raw scan data from a .scn JSON file.
+# Read raw scan data from CScanStorage/CBinary. Converts x from raw steps to physical units
+# (kV for high-voltage, steps for magnet current, s for time).
+# Returns a long-format tibble: channel (int), x (dbl), intensity.mV (dbl).
 read_isodat_scn_raw_data <- function(json_path) {
   binary <- query_json(json_path, "/CScanStorage/CBinary")
   type_info <- read_isodat_scn_type(json_path)
