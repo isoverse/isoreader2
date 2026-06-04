@@ -331,7 +331,7 @@ read_dxf_json <- function(json_path) {
     try_catch_cnds()
 
   # raw trace data from RawDataBlock; gas_names and resistors matched positionally by gas index
-  raw_data <- read_isodat_dxf_raw_data(json_path, gas_names$result) |>
+  raw_data <- read_isodat_dxf_traces(json_path, gas_names$result) |>
     match_channels_to_masses(resistors$result) |>
     try_catch_cnds()
 
@@ -358,7 +358,7 @@ read_dxf_json <- function(json_path) {
 # Read raw trace data from the "RawDataBlock" CBlockData of a .dxf JSON file.
 # gas_names[i] is assigned to the i-th CRawData entry. Returns a long-format tibble:
 # species (chr), channel (int), time.s (dbl), intensity.mV (dbl).
-read_isodat_dxf_raw_data <- function(json_path, gas_names) {
+read_isodat_dxf_traces <- function(json_path, gas_names) {
   # search for correct CBlockData object
   raw_idx <-
     json_path |>
@@ -430,7 +430,7 @@ read_cf_json <- function(json_path) {
     try_catch_cnds()
 
   # raw trace data (resistors passed in to join species/mass by channel row)
-  raw_data <- read_isodat_cf_raw_data(json_path, gas_names$result) |>
+  raw_data <- read_isodat_cf_traces(json_path, gas_names$result) |>
     match_channels_to_masses(resistors$result) |>
     try_catch_cnds()
 
@@ -457,7 +457,7 @@ read_cf_json <- function(json_path) {
 # Read raw trace data from a .cf JSON file. Gas names must be supplied externally;
 # the data blocks carry no gas identity. Tries three structural variants in order
 # (multi-gas indexed, single-gas ScanStorage, single-gas CRawData).
-read_isodat_cf_raw_data <- function(json_path, gas_names) {
+read_isodat_cf_traces <- function(json_path, gas_names) {
   # safety checks
   if (length(gas_names) == 0L) {
     cli_abort("gas names must be known to read raw data from .cf files")
@@ -654,7 +654,7 @@ read_scn_json <- function(json_path) {
     try_catch_cnds()
 
   # raw scan data (nominal_resistors passed in to join mass by channel)
-  raw_data <- read_isodat_scn_raw_data(json_path) |>
+  raw_data <- read_isodat_scn_traces(json_path) |>
     # add species since nominal raw data is not species specific
     dplyr::mutate(species = gas_name$result, .before = 1L) |>
     match_channels_to_masses(nominal_resistors$result) |>
@@ -728,7 +728,7 @@ read_isodat_scn_file_info <- function(json_path) {
 # Read raw scan data from CScanStorage/CBinary. Converts x from raw steps to physical units
 # (kV for high-voltage, steps for magnet current, s for time).
 # Returns a long-format tibble: channel (int), x (dbl), intensity.mV (dbl).
-read_isodat_scn_raw_data <- function(json_path) {
+read_isodat_scn_traces <- function(json_path) {
   binary <- query_json(json_path, "/CScanStorage/CBinary")
   type_info <- read_isodat_scn_type(json_path)
   x_raw <- binary$x
