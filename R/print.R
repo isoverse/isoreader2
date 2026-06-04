@@ -2,15 +2,16 @@
 
 #' @export
 print.isofiles <- function(x, ...) {
-  cli_rule(
-    center = "{.strong {length(x$file_path)} isofile{?s} - {?process/combine} with ir_aggregate_isofiles()}"
-  )
-
   n_digits <- function(x) {
     ifelse(x == 0, 1, floor(log10(abs(x))) + 1)
   }
 
-  x |>
+  if (nrow(x) == 0) {
+    cli_rule(center = "{.strong 0 isofiles}")
+    return()
+  }
+
+  lines <- x |>
     dplyr::mutate(
       idx = dplyr::row_number(),
       idx_spacers = max(n_digits(.data$idx)) - n_digits(.data$idx),
@@ -89,10 +90,12 @@ print.isofiles <- function(x, ...) {
         "; ",
         .data$seq_line_info
       )
-    ) |>
-    dplyr::pull(.data$label) |>
-    cli_bullets_raw() |>
-    cli()
+    )
+  # output
+  cli_rule(
+    center = "{.strong {nrow(x)} isofile{?s} with {sum(lines$n_analyses)} analys{?is/es} - {?process/combine} with ir_aggregate_isofiles()}"
+  )
+  lines$label |> cli_bullets_raw() |> cli()
 }
 
 #' @export
