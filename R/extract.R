@@ -186,25 +186,28 @@ check_file_paths <- function(file_paths) {
     "must be at least one file path"
   )
 
-  # all directories?
-  if (all(dir.exists(file_paths))) {
+  # .bch paths are directories by design; all others must be files
+  is_bch <- grepl("\\.bch$", file_paths, ignore.case = TRUE)
+
+  # all non-bch paths are directories?
+  if (any(!is_bch) && all(dir.exists(file_paths[!is_bch]))) {
     cli_abort(
       c(
-        "{?this/these} path{?s} ({.file {file_paths}}) {?is a/are} director{?y/ies}, not {?a /}raw file{?s}",
+        "{?this/these} path{?s} ({.file {file_paths[!is_bch]}}) {?is a/are} director{?y/ies}, not {?a /}raw file{?s}",
         "i" = "did you mean to run {.strong ir_find_continuous_flow()} instead?"
       )
     )
   }
 
-  # check which files exist
-  files_exist <- file.exists(file_paths)
+  # check which paths exist (.bch dirs use dir.exists, all others use file.exists)
+  paths_exist <- ifelse(is_bch, dir.exists(file_paths), file.exists(file_paths))
 
-  if (any(!files_exist)) {
+  if (any(!paths_exist)) {
     cli_warn(
-      "{sum(!files_exist)} files do{?es/} not exist and will be skipped"
+      "{sum(!paths_exist)} file{?s} do{?es/} not exist and will be skipped"
     )
-    file_paths <- file_paths[files_exist]
-    if (is_empty(file_path) == 0) {
+    file_paths <- file_paths[paths_exist]
+    if (length(file_paths) == 0) {
       cli_abort("none of the file paths exist")
     }
   }
@@ -304,7 +307,7 @@ ir_extract_isofiles <- function(
 
   # finish
   finish_info(
-    "finished extracting {length(file_paths)} file{?s} ",
+    "finished extracting {length(file_paths)} file{?s}/archive{?s} ",
     conditions = problems,
     show_conditions = show_problems,
     summary_error_symbol = "!",
