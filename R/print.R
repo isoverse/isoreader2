@@ -14,19 +14,22 @@ print.isofiles <- function(x, ...) {
     dplyr::mutate(
       idx = dplyr::row_number(),
       idx_spacers = max(n_digits(.data$idx)) - n_digits(.data$idx),
+      n_analyses = if (!"seq_info" %in% names(x)) {
+        1L
+      } else {
+        purrr::map_int(
+          .data$seq_info,
+          ~ if (!is.data.frame(.x)) 1L else nrow(.x)
+        )
+      },
       filename_spacers = max(nchar(basename(.data$file_path))) -
         nchar(basename(.data$file_path)),
       ext = tools::file_ext(.data$file_path),
-      seq_line_info = purrr::pmap_chr(
-        list(
-          seq_info = if ("seq_info" %in% names(x)) {
-            .data$seq_info
-          } else {
-            list(NULL)
-          }
-        ),
-        get_seq_line_info
-      ),
+      seq_line_info = if (!"seq_info" %in% names(x)) {
+        get_seq_line_info(NULL)
+      } else {
+        purrr::map_chr(.data$seq_info, get_seq_line_info)
+      },
       trace_info = purrr::pmap_chr(
         list(
           ext = .data$ext,
@@ -60,6 +63,7 @@ print.isofiles <- function(x, ...) {
       )
     ) |>
     dplyr::left_join(.file_type_specs, by = c("ext" = "file_type")) |>
+    dplyr::mutate(all_single = all(.data$n_analyses == 1)) |>
     dplyr::mutate(
       .by = "idx",
       # format_inline needs a single line
@@ -72,6 +76,11 @@ print.isofiles <- function(x, ...) {
           format_inline("encountered {problems_text}; "),
           ""
         ),
+        if (!.data$all_single[1]) {
+          format_inline(
+            "{col_cyan(n_analyses)} {qty(n_analyses)}analys{?is/es} with "
+          )
+        },
         if (.data$analysis_type[1] == "dual inlet") {
           .data$cycle_info
         } else {
@@ -142,5 +151,5 @@ get_seq_line_info <- function(seq_info) {
   if (!is.data.frame(seq_info)) {
     return("no seq. info available")
   }
-  format_inline("{col_cyan(ncol(seq_info))} seq. line entries")
+  format_inline("{col_cyan(ncol(seq_info))} seq. line columns")
 }
