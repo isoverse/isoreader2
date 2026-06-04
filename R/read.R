@@ -64,7 +64,20 @@ ir_read_isofiles <- function(
       dplyr::mutate(
         version_ok = numeric_version(.data$isoextract_version) >=
           numeric_version(.data$min_isoextract_version),
-        file_size = file.size(file_path),
+        file_size = purrr::map_int(
+          file_path,
+          function(fp) {
+            if (grepl("\\.bch$", fp, ignore.case = TRUE)) {
+              sum(file.size(list.files(
+                fp,
+                recursive = TRUE,
+                full.names = TRUE
+              )))
+            } else {
+              file.size(fp)
+            }
+          }
+        ),
         size_identical = .data$file_size == .data$previous_file_size,
         # (re-) extract flag
         extract = !.data$has_json | !.data$version_ok | !.data$size_identical
@@ -166,7 +179,7 @@ ir_read_isofiles <- function(
         show_cnds(
           include_call = FALSE,
           summary_format = "{message}: {issues}",
-          summary_indent = 1,
+          summary_indent = 0,
           message = format_inline("{.file {file_path}}"),
           collapse_single_line_cnd = TRUE
         )
@@ -196,7 +209,7 @@ ir_read_isofiles <- function(
   # wrap up
   problems <- all_files$problems |> dplyr::bind_rows()
   finish_info(
-    "read {nrow(file_paths_info)} isotope data file{?s}",
+    "finished reading {nrow(file_paths_info)} isotope data file{?s}/archive{?s}",
     start = start,
     conditions = problems,
     show_conditions = FALSE,
