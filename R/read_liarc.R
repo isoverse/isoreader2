@@ -1,23 +1,23 @@
-# .iarc — Elementar IonOS/LyticOS archive
-read_iarc_json <- function(json_path) {
+# .iarc / .larc — Elementar IonOS/LyticOS archive
+read_liarc_json <- function(json_path) {
   # metadata
   metadata <- json_path |>
-    read_iarc_metadata() |>
+    read_liarc_metadata() |>
     try_catch_cnds()
 
   # species
   species <- json_path |>
-    read_iarc_species() |>
+    read_liarc_species() |>
     try_catch_cnds()
 
   # method species
   method_species <- json_path |>
-    read_iarc_method_species() |>
+    read_liarc_method_species() |>
     try_catch_cnds()
 
   # traces
   traces <- json_path |>
-    read_iarc_traces(
+    read_liarc_traces(
       global_species = species$result,
       method_species = method_species$result
     ) |>
@@ -25,7 +25,7 @@ read_iarc_json <- function(json_path) {
 
   # resistors
   resistors <- json_path |>
-    read_iarc_resistors(traces = traces$result) |>
+    read_liarc_resistors(traces = traces$result) |>
     try_catch_cnds()
 
   # problems
@@ -49,7 +49,7 @@ read_iarc_json <- function(json_path) {
 
 # Parses ISO 8601 datetime with timezone offset (e.g. "+01:00") to POSIXct UTC.
 # %z in strptime requires the compact "+HHMM" form, so the colon must be stripped.
-parse_iarc_datetime <- function(x) {
+parse_liarc_datetime <- function(x) {
   x <- sub("\\.[0-9]+([+-])", "\\1", x)
   x <- sub("([+-][0-9]{2}):([0-9]{2})$", "\\1\\2", x)
   as.POSIXct(x, format = "%Y-%m-%dT%H:%M:%S%z", tz = "UTC")
@@ -58,15 +58,19 @@ parse_iarc_datetime <- function(x) {
 # Reads h3_correction_value from systems/species across all systems.
 # Drops zero and missing values; returns NA_real_ if none remain.
 # Warns when multiple distinct values are found and uses the first.
-read_iarc_h3_factor <- function(json_path) {
+read_liarc_h3_factor <- function(json_path) {
   systems <- query_json(
     json_path,
     "/systems",
     list_as_tibble = TRUE,
     required = FALSE
   )
-  if (is.null(systems) || json_missing(systems) || nrow(systems) == 0 ||
-      !"species" %in% names(systems)) {
+  if (
+    is.null(systems) ||
+      json_missing(systems) ||
+      nrow(systems) == 0 ||
+      !"species" %in% names(systems)
+  ) {
     return(NA_real_)
   }
   all_species <- systems |>
@@ -97,7 +101,7 @@ read_iarc_h3_factor <- function(json_path) {
 # Reads per-task sequence metadata from /tasks. sample_type and system_description
 # are included when present. Key/value pairs from tasks/values are widened between
 # Method and the timing columns.
-read_iarc_metadata <- function(json_path) {
+read_liarc_metadata <- function(json_path) {
   tasks <- query_json(json_path, "/tasks", list_as_tibble = TRUE)
 
   # processing list name lookup (guid → Sequence)
@@ -114,8 +118,8 @@ read_iarc_metadata <- function(json_path) {
   # base: system, sequence, id, name, sample type, method
   result <- tibble::tibble(
     analysis = seq_len(nrow(tasks)),
-    timestamp = parse_iarc_datetime(ts),
-    h3_factor = read_iarc_h3_factor(json_path),
+    timestamp = parse_liarc_datetime(ts),
+    h3_factor = read_liarc_h3_factor(json_path),
     System = if ("system_description" %in% names(tasks)) {
       as.character(tasks$system_description)
     } else {
@@ -167,7 +171,7 @@ read_iarc_metadata <- function(json_path) {
 # Reads species from processing_lists[0]/species. Returns a flat tibble
 # (species, channel, mass) with one row per beam assignment.
 # beam_masses here are derived from ratio labels — incomplete for some species.
-read_iarc_species <- function(json_path) {
+read_liarc_species <- function(json_path) {
   species <- query_json(
     json_path,
     "/processing_lists/0/species",
@@ -187,7 +191,7 @@ read_iarc_species <- function(json_path) {
 # Only present in V3-nested archives (IRMSAcquisitionDisplaySettings).
 # Returns a flat tibble (method_id, species, beam, mass), or NULL if absent.
 # Method-level beam_masses supersede processing-list-derived values.
-read_iarc_method_species <- function(json_path) {
+read_liarc_method_species <- function(json_path) {
   methods <- query_json(json_path, "/methods", list_as_tibble = TRUE)
   if (!"beam_masses" %in% names(methods)) {
     return(NULL)
@@ -210,7 +214,7 @@ read_iarc_method_species <- function(json_path) {
 # Reads IRMS beam traces from tasks/datasets. Only datasets with Scan + Beam*
 # columns are included. time.s is computed from Scan index scaled by the
 # dataset's (end - start) duration.
-read_iarc_traces <- function(json_path, global_species, method_species) {
+read_liarc_traces <- function(json_path, global_species, method_species) {
   tasks <- query_json(json_path, "/tasks", list_as_tibble = TRUE)
   traces <- tibble(
     analysis = seq_len(nrow(tasks)),
@@ -290,7 +294,7 @@ read_iarc_traces <- function(json_path, global_species, method_species) {
 
 # Reads resistors from /systems/beams. Filters out beams with no inuse_R_ohm
 # (unused channels). Returns NULL if no systems are present (V2 archives).
-read_iarc_resistors <- function(json_path, traces) {
+read_liarc_resistors <- function(json_path, traces) {
   systems <- query_json(
     json_path,
     "/systems",
