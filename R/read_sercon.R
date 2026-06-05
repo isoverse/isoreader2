@@ -1,13 +1,8 @@
 # .bch — Sercon batch. Orchestrates all sub-readers and collects conditions.
 read_bch_json <- function(json_path) {
-  # file info
-  file_info <- json_path |>
-    read_bch_file_info() |>
-    try_catch_cnds()
-
-  # sequence info
-  seq_info <- json_path |>
-    read_bch_seq_info() |>
+  # metadata
+  metadata <- json_path |>
+    read_bch_metadata() |>
     try_catch_cnds()
 
   # resistors
@@ -24,7 +19,7 @@ read_bch_json <- function(json_path) {
   traces <- json_path |>
     read_bch_traces() |>
     map_bch_traces(
-      seq_info = seq_info$result,
+      metadata = metadata$result,
       timings = timings$result,
       resistors = resistors$result
     ) |>
@@ -33,8 +28,7 @@ read_bch_json <- function(json_path) {
   # problems
   problems <- dplyr::bind_rows(
     empty_cnds_tibble(),
-    file_info$conditions,
-    seq_info$conditions,
+    metadata$conditions,
     resistors$conditions,
     timings$conditions,
     traces$conditions
@@ -42,19 +36,10 @@ read_bch_json <- function(json_path) {
 
   # return value
   tibble(
-    file_info = list(file_info$result),
-    seq_info = list(seq_info$result),
+    metadata = list(metadata),
     resistors = list(resistors$result),
     traces = list(traces$result),
     problems = list(problems)
-  )
-}
-
-# Reads /header/timestamp. The timestamp is stored as "HH:MM:SS\tMM-DD-YYYY", not ISO 8601.
-read_bch_file_info <- function(json_path) {
-  ts <- query_json(json_path, "/header/timestamp")
-  tibble::tibble(
-    file_datetime = as.POSIXct(ts, format = "%H:%M:%S\t%m-%d-%Y", tz = "UTC")
   )
 }
 
@@ -65,10 +50,12 @@ read_bch_file_info <- function(json_path) {
 )
 
 # Reads per-block sequence metadata from /data/blocks.
-read_bch_seq_info <- function(json_path) {
+read_bch_metadata <- function(json_path) {
+  ts <- query_json(json_path, "/header/timestamp")
   blocks <- query_json(json_path, "/data/blocks")
   tibble::tibble(
     analysis = seq_len(nrow(blocks)),
+    timestamp = as.POSIXct(ts, format = "%H:%M:%S\t%m-%d-%Y", tz = "UTC"),
     Number = analysis,
     `Sample Name` = as.character(blocks$name),
     Type = as.character(blocks$type),
@@ -110,7 +97,10 @@ read_bch_resistors <- function(json_path) {
     "/collectors/beams",
     list_as_tibble = TRUE
   ) |>
-    dplyr::select("channel" = "beam_num", "resistor" = "active_resistance_ohm")
+    dplyr::select(
+      "channel" = "beam_num",
+      "resistance.Ohm" = "active_resistance_ohm"
+    )
   tibble(species = gases) |>
     dplyr::left_join(.bch_gas_channel_masses, by = "species") |>
     dplyr::left_join(resistors, by = "channel")
@@ -162,11 +152,11 @@ read_bch_traces <- function(json_path) {
     tidyr::unnest(.data$traces)
 }
 
-# Assigns species to traces via timing windows (per-method from seq_info/timings),
+# Assigns species to traces via timing windows (per-method from metadata/timings),
 # then fills mass from resistors.
-map_bch_traces <- function(traces, seq_info, timings, resistors) {
+map_bch_traces <- function(traces, metadata, timings, resistors) {
   # safety checks
-  if (is.null(seq_info)) {
+  if (is.null(metadata)) {
     cli_warn(
       "without sequence information, we don't know which methods to use to map time windows to gas species"
     )
@@ -185,7 +175,7 @@ map_bch_traces <- function(traces, seq_info, timings, resistors) {
       end_time_s = dplyr::lead(as.double(.data$at_time_s), 1, default = Inf)
     )
 
-  analysis_windows <- seq_info |>
+  analysis_windows <- metadata |>
     dplyr::select("analysis", "Method") |>
     dplyr::left_join(
       windows,

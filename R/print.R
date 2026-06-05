@@ -15,21 +15,21 @@ print.isofiles <- function(x, ...) {
     dplyr::mutate(
       idx = dplyr::row_number(),
       idx_spacers = max(n_digits(.data$idx)) - n_digits(.data$idx),
-      n_analyses = if (!"seq_info" %in% names(x)) {
+      n_analyses = if (!"metadata" %in% names(x)) {
         1L
       } else {
         purrr::map_int(
-          .data$seq_info,
+          .data$metadata,
           ~ if (!is.data.frame(.x)) 1L else nrow(.x)
         )
       },
       filename_spacers = max(nchar(basename(.data$file_path))) -
         nchar(basename(.data$file_path)),
       ext = tools::file_ext(.data$file_path),
-      seq_line_info = if (!"seq_info" %in% names(x)) {
-        get_seq_line_info(NULL)
+      metadata_info = if (!"metadata" %in% names(x)) {
+        get_metadata_info(NULL)
       } else {
-        purrr::map_chr(.data$seq_info, get_seq_line_info)
+        purrr::map_chr(.data$metadata, get_metadata_info)
       },
       trace_info = purrr::pmap_chr(
         list(
@@ -88,7 +88,7 @@ print.isofiles <- function(x, ...) {
           .data$trace_info
         },
         "; ",
-        .data$seq_line_info
+        .data$metadata_info
       )
     )
   # output
@@ -149,10 +149,10 @@ get_cycle_info <- function(ext, file_info, cycles) {
     paste(collapse = "; ")
 }
 
-# helper function to summarize information about seq_line info
-get_seq_line_info <- function(seq_info) {
-  if (!is.data.frame(seq_info)) {
-    return("no seq. info available")
+# helper function to summarize information about the metadata
+get_metadata_info <- function(metadata) {
+  if (!is.data.frame(metadata)) {
+    return("no metadata available")
   }
-  format_inline("{col_cyan(ncol(seq_info))} seq. line columns")
+  format_inline("{col_cyan(ncol(metadata))} metadata columns")
 }
