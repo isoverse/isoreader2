@@ -15,6 +15,9 @@ ir_read_isofiles <- function(
   # keep track of current env to anchor progress bars
   root_env <- current_env()
 
+  # FIXME: because imexp cannot be extracted from the files themselves yet
+  file_paths <- gsub("\\.imexp$", ".imexp.zip", file_paths)
+
   # safety checks
   file_paths <- check_file_paths(file_paths)
   show_progress |>
@@ -41,16 +44,20 @@ ir_read_isofiles <- function(
     # fetch metadata from json files to determine if any need reextraction
     file_paths_info <- file_paths_info |>
       dplyr::mutate(
-        has_json = file.exists(file_path |> paste0(".json")),
+        json_path = .data$file_path |>
+          paste0(".json") |>
+          # FIXME: because imexp cannot be extracted from the files themselves yet
+          gsub(pattern = "\\.imexp.zip.json$", replacement = ".imexp.json"),
+        has_json = file.exists(.data$json_path),
         meta = purrr::map2(
-          .data$file_path,
+          .data$json_path,
           .data$has_json,
           function(fp, has_json) {
             if (!has_json) {
               # no json file
               return(empty_meta)
             }
-            out <- read_json_meta(paste0(fp, ".json")) |> try_catch_cnds()
+            out <- read_json_meta(fp) |> try_catch_cnds()
             if (is.null(out$result)) {
               # something went wrong reading the metadata --> re-extract
               return(empty_meta)
@@ -80,7 +87,10 @@ ir_read_isofiles <- function(
         ),
         size_identical = .data$file_size == .data$previous_file_size,
         # (re-) extract flag
-        extract = !.data$has_json | !.data$version_ok | !.data$size_identical
+        extract = !.data$has_json |
+          is.na(.data$min_isoextract_version) |
+          !.data$version_ok |
+          !.data$size_identical
       )
   }
 
@@ -130,8 +140,12 @@ ir_read_isofiles <- function(
         dplyr::mutate(call = "ir_extract_isofiles")
     }
 
+    # FIXME: because imexp cannot be extracted from the files themselves yet
+    file_path <- gsub("\\.imexp.zip$", ".imexp", file_path)
+
     # work on json path
     json_path <- file_path |> paste0(".json")
+
     if (!file.exists(json_path)) {
       # json file does not exist
       if (nrow(isoextract_problems) == 0) {
