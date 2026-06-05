@@ -36,7 +36,7 @@ read_bch_json <- function(json_path) {
 
   # return value
   tibble(
-    metadata = list(metadata),
+    metadata = list(metadata$result),
     resistors = list(resistors$result),
     traces = list(traces$result),
     problems = list(problems)
