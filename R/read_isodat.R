@@ -84,7 +84,10 @@ read_isodat_nominal_resistors <- function(
 }
 
 # Parse an ISO 8601 datetime string (with optional timezone offset) to POSIXct UTC.
-parse_isodat_datetime <- function(x) {
+parse_iso8601_datetime <- function(x) {
+  if (is_empty(x)) {
+    return(as.POSIXct(NA))
+  }
   as.POSIXct(
     sub("[+-]\\d{2}:\\d{2}$", "", x),
     format = "%Y-%m-%dT%H:%M:%OS",
@@ -95,7 +98,7 @@ parse_isodat_datetime <- function(x) {
 # Read datetime (POSIXct UTC).
 read_isodat_timestamp <- function(json_path) {
   ts <- query_json(json_path, "/CFileHeader/p/objects/CTimeObject/datetime")
-  parse_isodat_datetime(ts)
+  parse_iso8601_datetime(ts)
 }
 
 # Reads h3_factor from CH3FactorResult under any of the supplied CGasConfiguration paths.
@@ -769,7 +772,7 @@ read_scn_metadata <- function(json_path) {
   ts <- query_json(json_path, "/CScanStorage/timestamp_start")
   tibble::tibble(
     analysis = 1L, # always a single analysis
-    timestamp = parse_isodat_datetime(ts),
+    timestamp = parse_iso8601_datetime(ts),
     type = type_info$scan_type,
     x_units = type_info$x_unit,
     comment = comment
