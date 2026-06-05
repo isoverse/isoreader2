@@ -55,6 +55,22 @@ parse_iarc_datetime <- function(x) {
   as.POSIXct(x, format = "%Y-%m-%dT%H:%M:%S%z", tz = "UTC")
 }
 
+# Reads h3_correction_factor for the H2 species from processing_lists[0]/species.
+# Returns NA_real_ when H2 is absent or the field is not present.
+read_iarc_h3_factor <- function(json_path) {
+  species <- query_json(
+    json_path,
+    "/processing_lists/0/species",
+    list_as_tibble = TRUE,
+    required = FALSE
+  )
+  if (json_missing(species) || !"h3_correction_factor" %in% names(species)) {
+    return(NA_real_)
+  }
+  h2 <- species$h3_correction_factor[species$name == "H2"]
+  if (length(h2) == 0 || is.na(h2[1])) NA_real_ else as.numeric(h2[1])
+}
+
 # Reads per-task sequence metadata from /tasks. sample_type and system_description
 # are included when present. Key/value pairs from tasks/values are widened between
 # Method and the timing columns.
@@ -76,6 +92,7 @@ read_iarc_metadata <- function(json_path) {
   result <- tibble::tibble(
     analysis = seq_len(nrow(tasks)),
     timestamp = parse_iarc_datetime(ts),
+    h3_factor = read_iarc_h3_factor(json_path),
     System = if ("system_description" %in% names(tasks)) {
       as.character(tasks$system_description)
     } else {
