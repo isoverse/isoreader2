@@ -98,17 +98,33 @@ read_isodat_timestamp <- function(json_path) {
   parse_isodat_datetime(ts)
 }
 
+# Reads h3_factor from CH3FactorResult under any of the supplied CGasConfiguration paths.
+# Returns NA_real_ when absent (non-H2 measurement).
+read_isodat_h3_factor <- function(json_path, gas_config_ptrs) {
+  for (ptr in gas_config_ptrs) {
+    h3 <- query_json(
+      json_path,
+      paste0(ptr, "/p/objects/CH3FactorResult/h3_factor"),
+      required = FALSE
+    )
+    if (!json_missing(h3)) {
+      return(as.numeric(h3))
+    }
+  }
+  NA_real_
+}
+
 # Parse a trace matrix into a long-format tibble.
-# Returns: channel (int), x (dbl), intensity.mV (dbl).
 parse_isodat_traces <- function(x, traces) {
   traces |>
     nrow() |>
     seq_len() |>
     purrr::map(function(i) {
       tibble::tibble(
+        analysis = 1L, # always a single analysis
         channel = i,
         x = as.numeric(x),
-        intensity.mV = as.numeric(traces[i, ])
+        intensity.V = as.numeric(traces[i, ]) / 1000.
       )
     }) |>
     purrr::list_rbind()
@@ -189,10 +205,11 @@ parse_isodat_cycles <- function(json_path, root_ptr) {
     purrr::pmap(
       function(type, cycle, values) {
         tibble::tibble(
+          analysis = 1L, # always a single analysis
           cycle = cycle,
           type = type,
           channel = seq_along(values),
-          intensity.mV = values
+          intensity.V = values / 1000.
         )
       }
     ) |>
@@ -356,13 +373,20 @@ read_dxf_metadata <- function(json_path) {
     ) |>
     dplyr::mutate(
       timestamp = read_isodat_timestamp(json_path),
+      h3_factor = read_isodat_h3_factor(
+        json_path,
+        c(
+          "/CContiniousFlowBlockData/p/objects/CBlockData/5/objects/CMethod/p/objects/CGasConfiguration",
+          "/CContiniousFlowBlockData/p/objects/CBlockData/5/objects/CMethod/p/objects/CNumericValue/CGasConfiguration"
+        )
+      ),
       .after = "analysis"
     )
 }
 
 # Read raw trace data from the "RawDataBlock" CBlockData of a .dxf JSON file.
 # gas_names[i] is assigned to the i-th CRawData entry. Returns a long-format tibble:
-# species (chr), channel (int), time.s (dbl), intensity.mV (dbl).
+# species (chr), channel (int), time.s (dbl), intensity.V (dbl).
 read_dxf_traces <- function(json_path, gas_names) {
   # search for correct CBlockData object
   raw_idx <-
@@ -397,7 +421,7 @@ read_dxf_traces <- function(json_path, gas_names) {
           craw_parent$CEvalGCData$p$p$traces
         ) |>
           dplyr::rename("time.s" = "x") |>
-          dplyr::mutate(species = !!gas, .before = 1L)
+          dplyr::mutate(species = !!gas, .after = "analysis")
       }
     ) |>
     purrr::list_rbind()
@@ -459,6 +483,10 @@ read_cf_metadata <- function(json_path) {
     ) |>
     dplyr::mutate(
       timestamp = read_isodat_timestamp(json_path),
+      h3_factor = read_isodat_h3_factor(
+        json_path,
+        "/CMethod/p/objects/CGasConfiguration"
+      ),
       .after = "analysis"
     )
 }
@@ -507,7 +535,7 @@ read_cf_traces <- function(json_path, gas_names) {
           binary$traces[[1L]]
         ) |>
           dplyr::rename("time.s" = "x") |>
-          dplyr::mutate(species = !!gas, .before = 1L)
+          dplyr::mutate(species = !!gas, .after = "analysis")
       }
     ) |>
     purrr::list_rbind()
@@ -549,7 +577,7 @@ read_did_json <- function(json_path) {
   # cycle data
   cycles <-
     parse_isodat_cycles(json_path, root_ptr = "/CDualInletBlockData") |>
-    dplyr::mutate(species = gas_name$result, .before = 1L) |>
+    dplyr::mutate(species = gas_name$result, .after = "analysis") |>
     match_channels_to_masses(resistors$result) |>
     try_catch_cnds()
 
@@ -576,6 +604,10 @@ read_did_metadata <- function(json_path) {
     read_isodat_seq_line_info("/CDualInletBlockData/p/objects/CBlockData") |>
     dplyr::mutate(
       timestamp = read_isodat_timestamp(json_path),
+      h3_factor = read_isodat_h3_factor(
+        json_path,
+        "/CDualInletBlockData/p/objects/CMethod/p/objects/CGasConfiguration"
+      ),
       .after = "analysis"
     )
 }
@@ -610,7 +642,7 @@ read_caf_json <- function(json_path) {
   # cycle data
   cycles <-
     parse_isodat_cycles(json_path, root_ptr = "/CBlockDataContext") |>
-    dplyr::mutate(species = gas_name$result, .before = 1L) |>
+    dplyr::mutate(species = gas_name$result, .after = "analysis") |>
     match_channels_to_masses(resistors$result) |>
     try_catch_cnds()
 
@@ -639,6 +671,10 @@ read_caf_metadata <- function(json_path) {
     ) |>
     dplyr::mutate(
       timestamp = read_isodat_timestamp(json_path),
+      h3_factor = read_isodat_h3_factor(
+        json_path,
+        "/CBlockDataContext/p/objects/CMethod/p/objects/CGasConfiguration"
+      ),
       .after = "analysis"
     )
 }
@@ -671,7 +707,7 @@ read_scn_json <- function(json_path) {
   # raw scan data (nominal_resistors passed in to join mass by channel)
   traces <- read_scn_traces(json_path) |>
     # add species since nominal raw data is not species specific
-    dplyr::mutate(species = gas_name$result, .before = 1L) |>
+    dplyr::mutate(species = gas_name$result, .after = "analysis") |>
     match_channels_to_masses(nominal_resistors$result) |>
     try_catch_cnds()
 
@@ -742,7 +778,7 @@ read_scn_metadata <- function(json_path) {
 
 # Read raw scan data from CScanStorage/CBinary. Converts x from raw steps to physical units
 # (kV for high-voltage, steps for magnet current, s for time).
-# Returns a long-format tibble: channel (int), x (dbl), intensity.mV (dbl).
+# Returns a long-format tibble: channel (int), x (dbl), intensity.V (dbl).
 read_scn_traces <- function(json_path) {
   binary <- query_json(json_path, "/CScanStorage/CBinary")
   type_info <- read_scn_type(json_path)
