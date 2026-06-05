@@ -178,7 +178,7 @@ read_iarc_species <- function(json_path) {
     tidyr::unnest("beam_masses") |>
     dplyr::mutate(
       channel = readr::parse_number(.data$beam) |> as.integer(),
-      mass = as.character(.data$mass)
+      mass = as.character(signif(as.numeric(.data$mass), digits = 3))
     ) |>
     dplyr::select("species", "channel", "mass")
 }
@@ -201,7 +201,7 @@ read_iarc_method_species <- function(json_path) {
     tidyr::unnest("beams") |>
     dplyr::mutate(
       channel = readr::parse_number(.data$beam) |> as.integer(),
-      mass = as.character(.data$mass)
+      mass = as.character(signif(as.numeric(.data$mass), digits = 3))
     ) |>
     dplyr::select("method_id", "species", "channel", "mass")
 }

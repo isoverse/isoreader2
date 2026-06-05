@@ -82,7 +82,7 @@ read_bch_metadata <- function(json_path) {
   purrr::imap(~ .x |> dplyr::mutate(species = .y)) |>
   purrr::list_rbind() |>
   dplyr::relocate("species", .before = 1L) |>
-  dplyr::mutate(mass = as.character(.data$mass))
+  dplyr::mutate(mass = as.character(signif(as.numeric(.data$mass), digits = 3)))
 
 # Reads active gas species from /timings peaks and collector resistances from
 # /collectors/beams, joined via .bch_gas_channel_masses.

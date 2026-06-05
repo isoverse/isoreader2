@@ -35,7 +35,7 @@ read_isodat_gas_names <- function(
 }
 
 # Read calibrated Faraday cup resistors from CEvalIntegrationUnitHWInfoList.
-# Returns a tibble with columns: species, mass, channel (1-based), cup, resistance.Ohm.
+# Returns a tibble with columns: species, channel (1-based), cup, mass, resistance.Ohm.
 read_isodat_calibrated_resistors <- function(
   json_path,
   hw_list_ptr,
@@ -55,7 +55,7 @@ read_isodat_calibrated_resistors <- function(
       tibble::tibble(
         species = as.character(gas),
         channel = as.integer(hw$channel) + 1L, # 0-based, make 1-based as is customary in R
-        mass = as.character(hw$mass),
+        mass = as.character(signif(as.numeric(hw$mass), digits = 3)),
         cup = as.integer(hw$cup),
         resistance.Ohm = as.numeric(hw$resistor)
       )
@@ -66,7 +66,7 @@ read_isodat_calibrated_resistors <- function(
 # Read nominal Faraday cup resistors from CCupHardwarePart (.scn only).
 # Active cups and their mass/channel assignments come from CChannelGasConfPart;
 # resistor values are matched to cups by position index.
-# Returns a tibble with columns: mass, channel (1-based), cup, resistance.Ohm.
+# Returns a tibble with columns: channel (1-based), cup, mass, resistance.Ohm.
 read_isodat_nominal_resistors <- function(
   json_path,
   cup_hw_ptr,
@@ -77,7 +77,7 @@ read_isodat_nominal_resistors <- function(
   # resistor info
   tibble::tibble(
     channel = as.integer(channels$idx), # already 1-based (as is customary in R)
-    mass = as.character(channels$mass),
+    mass = as.character(signif(as.numeric(channels$mass), digits = 3)),
     cup = as.integer(channels$cup),
     resistance.Ohm = as.numeric(hw$resistor[match(channels$cup, hw$idx)])
   )
