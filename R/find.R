@@ -1,14 +1,14 @@
 #' Find isodat files
 #' @description Finds isodat files with the specified extensions in one or more folders.
 #' @param folder path to a folder with isodat files, or a character vector of folder paths
-#' @param types file extensions to include (without leading dot), default is all supported types: `c("dxf", "cf", "iarc", "bch", "imexp", "caf", "did", "scn")`
+#' @param types file extensions to include (without leading dot), default is all supported types: `c("dxf", "cf", "iarc", "larc", "bch", "imexp", "caf", "did", "scn")`
 #' @param pattern provide a name pattern to find only specific files
 #' @param recursive whether to find files recursively
 #' @return a sorted character vector of unique paths that correspond to the original data files (without `.json` suffixes if those are the versions of the files that are present)
 #' @export
 ir_find_isofiles <- function(
   folder,
-  types = c("dxf", "cf", "iarc", "bch", "imexp", "caf", "did", "scn"),
+  types = c("dxf", "cf", "iarc", "larc", "bch", "imexp", "caf", "did", "scn"),
   pattern = NULL,
   recursive = TRUE
 ) {
@@ -106,7 +106,7 @@ ir_find_isofiles <- function(
 ir_find_continuous_flow <- function(folder, pattern = NULL, recursive = TRUE) {
   ir_find_isofiles(
     folder,
-    types = c("dxf", "cf", "iarc", "bch", "imexp"),
+    types = c("dxf", "cf", "iarc", "larc", "bch", "imexp"),
     pattern = pattern,
     recursive = recursive
   )
