@@ -31,6 +31,11 @@ print.isofiles <- function(x, ...) {
       } else {
         purrr::map_chr(.data$metadata, get_metadata_info)
       },
+      has_traces = if ("traces" %in% names(x)) {
+        !purrr::map_lgl(.data$traces, is.null)
+      } else {
+        FALSE
+      },
       trace_info = purrr::pmap_chr(
         list(
           ext = .data$ext,
@@ -43,6 +48,11 @@ print.isofiles <- function(x, ...) {
         ),
         get_trace_info
       ),
+      has_cycles = if ("cycles" %in% names(x)) {
+        !purrr::map_lgl(.data$cycles, is.null)
+      } else {
+        FALSE
+      },
       cycle_info = purrr::pmap_chr(
         list(
           ext = .data$ext,
@@ -79,15 +89,20 @@ print.isofiles <- function(x, ...) {
         ),
         if (!.data$all_single[1]) {
           format_inline(
-            "{col_cyan(n_analyses)} {qty(n_analyses)}analys{?is/es} with "
+            "{col_cyan(n_analyses)} {qty(n_analyses)}analys{?is/es}"
           )
         },
-        if (.data$analysis_type[1] == "dual inlet") {
-          .data$cycle_info
+        if (.data$has_cycles[1] || .data$has_traces[1]) {
+          " with "
         } else {
-          .data$trace_info
+          "; no data available; "
         },
-        "; ",
+        if (.data$has_cycles[1]) {
+          .data$cycle_info |> paste0("; ")
+        },
+        if (.data$has_traces[1]) {
+          .data$trace_info |> paste0("; ")
+        },
         .data$metadata_info
       )
     )

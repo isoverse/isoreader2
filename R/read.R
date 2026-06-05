@@ -26,8 +26,17 @@ ir_read_isofiles <- function(
     check_arg(is_scalar_logical(show_problems), "must be TRUE OR FALSE")
   reextract |> check_arg(is_scalar_logical(reextract), "must be TRUE OR FALSE")
 
+  # any paths?
+  if (is_empty(file_paths)) {
+    start <- start_info("is starting", show_progress = FALSE)
+    finish_info("is finished, 0 isofiles provided", start = start)
+    return(NULL)
+  }
+
   # file paths info (strip the json for purposes of what the original files were)
-  file_paths_info <- tibble(file_path = gsub("\\.json$", "", file_paths))
+  file_paths_info <- tibble(
+    file_path = gsub("\\.json$", "", file_paths, ignore.case = TRUE)
+  )
 
   # check if need to reextract
   if (reextract) {
@@ -47,7 +56,11 @@ ir_read_isofiles <- function(
         json_path = .data$file_path |>
           paste0(".json") |>
           # FIXME: because imexp cannot be extracted from the files themselves yet
-          gsub(pattern = "\\.imexp.zip.json$", replacement = ".imexp.json"),
+          gsub(
+            pattern = "\\.imexp.zip.json$",
+            replacement = ".imexp.json",
+            ignore.case = TRUE
+          ),
         has_json = file.exists(.data$json_path),
         meta = purrr::map2(
           .data$json_path,
@@ -95,15 +108,13 @@ ir_read_isofiles <- function(
   }
 
   # (re-)extract
-  if (any(file_paths_info$extract)) {
-    file_paths_info |>
-      dplyr::filter(.data$extract) |>
-      dplyr::pull("file_path") |>
-      ir_extract_isofiles(
-        show_progress = show_progress,
-        show_problems = FALSE # show total errors later during file read
-      )
-  }
+  file_paths_info |>
+    dplyr::filter(.data$extract) |>
+    dplyr::pull("file_path") |>
+    ir_extract_isofiles(
+      show_progress = show_progress,
+      show_problems = FALSE # show total errors later during file read
+    )
 
   # read files safely
   read_safely <- function(file_path) {
@@ -164,7 +175,7 @@ ir_read_isofiles <- function(
     } else {
       # file exsists!
       # function (so traceback is informative)
-      func <- sprintf("read_%s_json", tools::file_ext(file_path))
+      func <- sprintf("read_%s_json", tolower(tools::file_ext(file_path)))
       func_quo <- expr((!!func)(json_path))
 
       # call with error handling
@@ -193,7 +204,7 @@ ir_read_isofiles <- function(
         show_cnds(
           include_call = FALSE,
           summary_format = "{message}: {issues}",
-          summary_indent = 0,
+          summary_indent = 1,
           message = format_inline("{.file {file_path}}"),
           collapse_single_line_cnd = TRUE
         )

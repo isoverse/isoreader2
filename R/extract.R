@@ -181,10 +181,12 @@ check_file_paths <- function(file_paths) {
   check_arg(
     file_paths,
     !missing(file_paths) &&
-      is_character(file_paths) &&
-      length(file_paths) > 0,
-    "must be at least one file path"
+      is_character(file_paths),
+    "must be file paths"
   )
+  if (is_empty(file_paths)) {
+    return(character())
+  }
 
   # .bch paths are directories by design; all others must be files
   is_bch <- grepl("\\.bch$", file_paths, ignore.case = TRUE)
@@ -227,6 +229,16 @@ ir_extract_isofiles <- function(
     check_arg(is_scalar_logical(show_progress), "must be TRUE OR FALSE")
   show_problems |>
     check_arg(is_scalar_logical(show_problems), "must be TRUE OR FALSE")
+
+  # any paths?
+  if (is_empty(file_paths)) {
+    start <- start_info("is starting", show_progress = FALSE)
+    finish_info(
+      "is finished, 0 files/archives required (re-)extraction",
+      start = start
+    )
+    return()
+  }
 
   # info / progress
   start <- start_info(
