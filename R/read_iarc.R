@@ -1,0 +1,309 @@
+# .iarc — Elementar IonOS/LyticOS archive
+read_iarc_json <- function(json_path) {
+  # metadata
+  metadata <- json_path |>
+    read_iarc_metadata() |>
+    try_catch_cnds()
+
+  # species
+  species <- json_path |>
+    read_iarc_species() |>
+    try_catch_cnds()
+
+  # method species
+  method_species <- json_path |>
+    read_iarc_method_species() |>
+    try_catch_cnds()
+
+  # traces
+  traces <- json_path |>
+    read_iarc_traces(
+      global_species = species$result,
+      method_species = method_species$result
+    ) |>
+    try_catch_cnds()
+
+  # resistors
+  resistors <- json_path |>
+    read_iarc_resistors(traces = traces$result) |>
+    try_catch_cnds()
+
+  # problems
+  problems <- dplyr::bind_rows(
+    empty_cnds_tibble(),
+    metadata$conditions,
+    species$conditions,
+    method_species$conditions,
+    traces$conditions,
+    resistors$conditions
+  )
+
+  # return value
+  tibble(
+    metadata = list(metadata$result),
+    resistors = list(resistors$result),
+    traces = list(traces$result),
+    problems = list(problems)
+  )
+}
+
+# Parses ISO 8601 datetime with timezone offset (e.g. "+01:00") to POSIXct UTC.
+# %z in strptime requires the compact "+HHMM" form, so the colon must be stripped.
+parse_iarc_datetime <- function(x) {
+  x <- sub("\\.[0-9]+([+-])", "\\1", x)
+  x <- sub("([+-][0-9]{2}):([0-9]{2})$", "\\1\\2", x)
+  as.POSIXct(x, format = "%Y-%m-%dT%H:%M:%S%z", tz = "UTC")
+}
+
+# Reads per-task sequence metadata from /tasks. sample_type and system_description
+# are included when present. Key/value pairs from tasks/values are widened between
+# Method and the timing columns.
+read_iarc_metadata <- function(json_path) {
+  tasks <- query_json(json_path, "/tasks", list_as_tibble = TRUE)
+
+  # processing list name lookup (guid → Sequence)
+  pl <- query_json(json_path, "/processing_lists", list_as_tibble = TRUE) |>
+    dplyr::select("processing_list_guid" = "guid", "Sequence" = "name")
+
+  # method name lookup (id → Method)
+  methods <- query_json(json_path, "/methods", list_as_tibble = TRUE) |>
+    dplyr::select("method_id" = "id", "Method" = "name")
+
+  # timestamp
+  ts <- query_json(json_path, "/created_date")
+
+  # base: system, sequence, id, name, sample type, method
+  result <- tibble::tibble(
+    analysis = seq_len(nrow(tasks)),
+    timestamp = parse_iarc_datetime(ts),
+    System = if ("system_description" %in% names(tasks)) {
+      as.character(tasks$system_description)
+    } else {
+      NA_character_
+    },
+    Id = as.integer(tasks$id),
+    Name = as.character(tasks$name),
+    `Sample Type` = if ("sample_type" %in% names(tasks)) {
+      as.character(tasks$sample_type)
+    } else {
+      NA_character_
+    },
+    method_id = as.integer(tasks$method_id),
+    processing_list_guid = as.character(tasks$processing_list_guid)
+  ) |>
+    dplyr::left_join(pl, by = "processing_list_guid") |>
+    dplyr::left_join(methods, by = "method_id") |>
+    dplyr::relocate("Sequence", .after = "System") |>
+    dplyr::relocate("Method", .after = "Sample Type") |>
+    dplyr::select(-"processing_list_guid", -"method_id")
+
+  # values: widened key/value pairs inserted after Method
+  if ("values" %in% names(tasks)) {
+    values_list <- purrr::map(tasks$values, function(v) {
+      if (is.list(v) && length(v) > 0) v else NULL
+    })
+    all_keys <- unique(unlist(purrr::map(values_list, names)))
+    for (key in all_keys) {
+      result[[key]] <- purrr::map_chr(
+        values_list,
+        ~ if (is.null(.x) || !key %in% names(.x)) {
+          NA_character_
+        } else {
+          as.character(.x[[key]])
+        }
+      )
+    }
+  }
+
+  # timing and completion at the end
+  result |>
+    dplyr::mutate(
+      Start = parse_isodat_datetime(tasks$acquisition_start),
+      End = parse_isodat_datetime(tasks$acquisition_end),
+      Completion = as.character(tasks$completion_state)
+    )
+}
+
+# Reads species from processing_lists[0]/species. Returns a flat tibble
+# (species, channel, mass) with one row per beam assignment.
+# beam_masses here are derived from ratio labels — incomplete for some species.
+read_iarc_species <- function(json_path) {
+  species <- query_json(
+    json_path,
+    "/processing_lists/0/species",
+    list_as_tibble = TRUE
+  )
+  species |>
+    dplyr::select("species" = "name", "beam_masses") |>
+    tidyr::unnest("beam_masses") |>
+    dplyr::mutate(
+      channel = readr::parse_number(.data$beam) |> as.integer(),
+      mass = as.character(.data$mass)
+    ) |>
+    dplyr::select("species", "channel", "mass")
+}
+
+# Reads per-method beam-mass assignments from methods[]/beam_masses.
+# Only present in V3-nested archives (IRMSAcquisitionDisplaySettings).
+# Returns a flat tibble (method_id, species, beam, mass), or NULL if absent.
+# Method-level beam_masses supersede processing-list-derived values.
+read_iarc_method_species <- function(json_path) {
+  methods <- query_json(json_path, "/methods", list_as_tibble = TRUE)
+  if (!"beam_masses" %in% names(methods)) {
+    return(NULL)
+  }
+  methods |>
+    dplyr::filter(
+      !purrr::map_lgl(.data$beam_masses, ~ length(.x) == 1 && is.na(.x))
+    ) |>
+    dplyr::select("method_id" = "id", "beam_masses") |>
+    tidyr::unnest("beam_masses") |>
+    tidyr::unnest("beams") |>
+    dplyr::mutate(
+      channel = readr::parse_number(.data$beam) |> as.integer(),
+      mass = as.character(.data$mass)
+    ) |>
+    dplyr::select("method_id", "species", "channel", "mass")
+}
+
+
+# Reads IRMS beam traces from tasks/datasets. Only datasets with Scan + Beam*
+# columns are included. time.s is computed from Scan index scaled by the
+# dataset's (end - start) duration.
+read_iarc_traces <- function(json_path, global_species, method_species) {
+  tasks <- query_json(json_path, "/tasks", list_as_tibble = TRUE)
+  traces <- tibble(
+    analysis = seq_len(nrow(tasks)),
+    method_id = tasks$method_id,
+    traces = tasks$datasets |>
+      purrr::map(function(ds) {
+        list(data = ds$data, start = ds$start, end = ds$end) |>
+          purrr::pmap(function(data, start, end) {
+            # safety check
+            if (is_empty(data) || !is_list(data)) {
+              return(NULL)
+            }
+            beam_cols <- names(data)[startsWith(names(data), "beam")]
+            if (length(beam_cols) == 0) {
+              return(NULL)
+            }
+
+            # figure out run duration
+            dur_s <- as.numeric(difftime(
+              parse_isodat_datetime(end),
+              parse_isodat_datetime(start),
+              units = "secs"
+            ))
+
+            # make tibble
+            data[c("scan", beam_cols)] |>
+              tibble::as_tibble() |>
+              dplyr::mutate(
+                species = if (!is_empty(data$species) > 0) {
+                  as.character(data$species)
+                } else {
+                  NA_character_
+                },
+                time.s = .data$scan / max(.data$scan) * dur_s
+              ) |>
+              tidyr::pivot_longer(
+                cols = dplyr::all_of(beam_cols),
+                names_to = "channel",
+                values_to = "intensity.A"
+              ) |>
+              dplyr::mutate(
+                channel = readr::parse_number(.data$channel) |> as.integer()
+              )
+          }) |>
+          dplyr::bind_rows()
+      })
+  ) |>
+    tidyr::unnest(.data$traces)
+
+  # add species
+  if (!is.null(method_species)) {
+    traces <- traces |>
+      dplyr::inner_join(
+        method_species,
+        by = c("method_id", "species", "channel")
+      )
+  } else if (!is.null(global_species)) {
+    traces <- traces |>
+      dplyr::inner_join(global_species, by = c("species", "channel"))
+  } else {
+    cli_warn(
+      "channel to mass mappings unavailable; traces {.field mass} set to NA for all channels"
+    )
+    traces <- traces |> dplyr::mutate(mass = NA_character_)
+  }
+  # final selection
+  traces |>
+    dplyr::select(
+      "analysis",
+      "species",
+      "channel",
+      "mass",
+      "time.s",
+      "intensity.A"
+    )
+}
+
+# Reads resistors from /systems/beams. Filters out beams with no inuse_R_ohm
+# (unused channels). Returns NULL if no systems are present (V2 archives).
+read_iarc_resistors <- function(json_path, traces) {
+  systems <- query_json(
+    json_path,
+    "/systems",
+    list_as_tibble = TRUE,
+    required = FALSE
+  )
+  if (is.null(systems) || json_missing(systems)) {
+    return(NULL)
+  }
+
+  # pull out all resistors (stored in every system)
+  resistors <- systems |>
+    dplyr::select("system_id" = "id", "beams") |>
+    tidyr::unnest("beams") |>
+    dplyr::filter(!is.na(.data$inuse_R_ohm)) |>
+    dplyr::mutate(channel = readr::parse_number(.data$beam) |> as.integer()) |>
+    dplyr::select(
+      "system_id",
+      "channel",
+      "nominal.Ohm" = "nominal_R_ohm",
+      "resistance.Ohm" = "inuse_R_ohm"
+    )
+
+  # check for inconsistencies in the resistors
+  multiple_resistances <-
+    resistors |>
+    dplyr::count(.data$channel, .data$nominal.Ohm, .data$resistance.Ohm) |>
+    dplyr::count(.data$channel) |>
+    dplyr::filter(.data$n > 1)
+  if (nrow(multiple_resistances) > 0) {
+    cli_warn(
+      "encountered multiple resistance values for collector{?s} {multiple_resistances$channel} - storing the first value only"
+    )
+  }
+
+  # use only the first system resistors
+  resistors <-
+    resistors |>
+    dplyr::filter(.data$system_id == .data$system_id[1]) |>
+    dplyr::select(-"system_id")
+
+  # add gas configuration and trace information
+  if (!is.null(traces)) {
+    resistors <- traces |>
+      dplyr::select("species", "channel", "mass") |>
+      dplyr::distinct() |>
+      dplyr::left_join(resistors, by = "channel")
+  } else {
+    cli_warn(
+      "traces unavailable; resistor {.field species} and {.field mass} set to NA for all channels"
+    )
+    resistors <- resistors |>
+      dplyr::mutate(species = NA_character_, mass = NA_character_)
+  }
+  resistors |> dplyr::select("species", "channel", "mass", dplyr::everything())
+}
