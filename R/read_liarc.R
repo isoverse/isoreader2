@@ -1,5 +1,5 @@
 # .iarc / .larc — Elementar IonOS/LyticOS archive
-read_liarc_json <- function(json_path) {
+read_iarc_json <- function(json_path) {
   # metadata
   metadata <- json_path |>
     read_liarc_metadata() |>
@@ -46,6 +46,9 @@ read_liarc_json <- function(json_path) {
     problems = list(problems)
   )
 }
+
+# reader is the same
+read_larc_json <- read_iarc_json
 
 # Parses ISO 8601 datetime with timezone offset (e.g. "+01:00") to POSIXct UTC.
 # %z in strptime requires the compact "+HHMM" form, so the colon must be stripped.
@@ -102,15 +105,17 @@ read_liarc_h3_factor <- function(json_path) {
 # are included when present. Key/value pairs from tasks/values are widened between
 # Method and the timing columns.
 read_liarc_metadata <- function(json_path) {
+  # pull out tasks
   tasks <- query_json(json_path, "/tasks", list_as_tibble = TRUE)
+  if (is_empty(tasks) || nrow(tasks) == 0) {
+    cli::cli_abort("no analyses (tasks) found")
+  }
 
   # processing list name lookup (guid → Sequence)
-  pl <- query_json(json_path, "/processing_lists", list_as_tibble = TRUE) |>
-    dplyr::select("processing_list_guid" = "guid", "Sequence" = "name")
+  pl <- query_json(json_path, "/processing_lists", list_as_tibble = TRUE)
 
   # method name lookup (id → Method)
-  methods <- query_json(json_path, "/methods", list_as_tibble = TRUE) |>
-    dplyr::select("method_id" = "id", "Method" = "name")
+  methods <- query_json(json_path, "/methods", list_as_tibble = TRUE)
 
   # timestamp
   ts <- query_json(json_path, "/created_date")
@@ -120,26 +125,37 @@ read_liarc_metadata <- function(json_path) {
     analysis = seq_len(nrow(tasks)),
     timestamp = parse_liarc_datetime(ts),
     h3_factor = read_liarc_h3_factor(json_path),
-    System = if ("system_description" %in% names(tasks)) {
-      as.character(tasks$system_description)
-    } else {
-      NA_character_
-    },
-    Id = as.integer(tasks$id),
-    Name = as.character(tasks$name),
-    `Sample Type` = if ("sample_type" %in% names(tasks)) {
-      as.character(tasks$sample_type)
-    } else {
-      NA_character_
-    },
-    method_id = as.integer(tasks$method_id),
-    processing_list_guid = as.character(tasks$processing_list_guid)
-  ) |>
-    dplyr::left_join(pl, by = "processing_list_guid") |>
-    dplyr::left_join(methods, by = "method_id") |>
-    dplyr::relocate("Sequence", .after = "System") |>
-    dplyr::relocate("Method", .after = "Sample Type") |>
-    dplyr::select(-"processing_list_guid", -"method_id")
+    System = (tasks[["system_description"]] %||% NA) |> as.character(),
+    processing_list_guid = (tasks[["processing_list_guid"]] %||% NA) |>
+      as.character()
+  )
+
+  # is there processing list info?
+  if (!is_empty(pl) && nrow(pl) > 0) {
+    result <- result |>
+      dplyr::left_join(
+        pl |>
+          dplyr::select("processing_list_guid" = "guid", "Sequence" = "name"),
+        by = "processing_list_guid"
+      )
+  }
+
+  result <- result |>
+    dplyr::mutate(
+      Id = (tasks[["id"]] %||% NA) |> as.integer(),
+      Name = (tasks[["name"]] %||% NA) |> as.character(),
+      `Sample Type` = (tasks[["sample_type"]] %||% NA) |> as.character(),
+      method_id = (tasks[["method_id"]] %||% NA) |> as.integer()
+    )
+
+  # is there methods info?
+  if (!is_empty(methods) && nrow(methods) > 0) {
+    result <- result |>
+      dplyr::left_join(
+        methods |> dplyr::select("method_id" = "id", "Method" = "name"),
+        by = "method_id"
+      )
+  }
 
   # values: widened key/value pairs inserted after Method
   if ("values" %in% names(tasks)) {
@@ -161,10 +177,11 @@ read_liarc_metadata <- function(json_path) {
 
   # timing and completion at the end
   result |>
+    dplyr::select(-dplyr::any_of(c("processing_list_guid", "method_id"))) |>
     dplyr::mutate(
-      Start = parse_isodat_datetime(tasks$acquisition_start),
-      End = parse_isodat_datetime(tasks$acquisition_end),
-      Completion = as.character(tasks$completion_state)
+      Start = parse_iso8601_datetime(tasks$acquisition_start),
+      End = parse_iso8601_datetime(tasks$acquisition_end),
+      Completion = (tasks[["completion_state"]] %||% NA) |> as.character()
     )
 }
 
@@ -218,9 +235,12 @@ read_liarc_traces <- function(json_path, global_species, method_species) {
   tasks <- query_json(json_path, "/tasks", list_as_tibble = TRUE)
   traces <- tibble(
     analysis = seq_len(nrow(tasks)),
-    method_id = tasks$method_id,
+    method_id = (tasks[["method_id"]] %||% NA) |> as.integer(),
     traces = tasks$datasets |>
       purrr::map(function(ds) {
+        if (is_empty(ds$data)) {
+          return(NULL)
+        }
         list(data = ds$data, start = ds$start, end = ds$end) |>
           purrr::pmap(function(data, start, end) {
             # safety check
@@ -234,8 +254,8 @@ read_liarc_traces <- function(json_path, global_species, method_species) {
 
             # figure out run duration
             dur_s <- as.numeric(difftime(
-              parse_isodat_datetime(end),
-              parse_isodat_datetime(start),
+              parse_iso8601_datetime(end),
+              parse_iso8601_datetime(start),
               units = "secs"
             ))
 
@@ -263,6 +283,11 @@ read_liarc_traces <- function(json_path, global_species, method_species) {
       })
   ) |>
     tidyr::unnest(.data$traces)
+
+  # safety check
+  if (nrow(traces) == 0L) {
+    return(NULL)
+  }
 
   # add species
   if (!is.null(method_species)) {
