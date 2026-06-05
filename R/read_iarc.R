@@ -55,20 +55,43 @@ parse_iarc_datetime <- function(x) {
   as.POSIXct(x, format = "%Y-%m-%dT%H:%M:%S%z", tz = "UTC")
 }
 
-# Reads h3_correction_factor for the H2 species from processing_lists[0]/species.
-# Returns NA_real_ when H2 is absent or the field is not present.
+# Reads h3_correction_value from systems/species across all systems.
+# Drops zero and missing values; returns NA_real_ if none remain.
+# Warns when multiple distinct values are found and uses the first.
 read_iarc_h3_factor <- function(json_path) {
-  species <- query_json(
+  systems <- query_json(
     json_path,
-    "/processing_lists/0/species",
+    "/systems",
     list_as_tibble = TRUE,
     required = FALSE
   )
-  if (json_missing(species) || !"h3_correction_factor" %in% names(species)) {
+  if (is.null(systems) || json_missing(systems) || nrow(systems) == 0 ||
+      !"species" %in% names(systems)) {
     return(NA_real_)
   }
-  h2 <- species$h3_correction_factor[species$name == "H2"]
-  if (length(h2) == 0 || is.na(h2[1])) NA_real_ else as.numeric(h2[1])
+  all_species <- systems |>
+    dplyr::select("system_id" = "id", "species") |>
+    tidyr::unnest("species")
+  if (!"h3_correction_value" %in% names(all_species)) {
+    return(NA_real_)
+  }
+  vals <- all_species |>
+    dplyr::filter(
+      !is.na(.data$h3_correction_value),
+      .data$h3_correction_value != 0
+    ) |>
+    dplyr::pull("h3_correction_value") |>
+    as.numeric() |>
+    unique()
+  if (length(vals) == 0) {
+    return(NA_real_)
+  }
+  if (length(vals) > 1) {
+    cli_warn(
+      "multiple h3 factor values found ({.val {vals}}), only the first will be used"
+    )
+  }
+  vals[1]
 }
 
 # Reads per-task sequence metadata from /tasks. sample_type and system_description
