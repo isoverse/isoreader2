@@ -18,8 +18,8 @@ ir_read_isofiles <- function(
   # FIXME: because imexp cannot be extracted from the files themselves yet
   file_paths <- gsub("\\.imexp$", ".imexp.zip", file_paths)
 
-  # safety checks
-  file_paths <- check_file_paths(file_paths)
+  # safety checks (file existence checks happen later for these)
+  file_paths <- check_file_paths(file_paths, check_if_exists = FALSE)
   show_progress |>
     check_arg(is_scalar_logical(show_progress), "must be TRUE OR FALSE")
   show_problems |>
