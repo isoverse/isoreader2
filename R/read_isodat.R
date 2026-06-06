@@ -712,7 +712,7 @@ read_scn_json <- function(json_path) {
     try_catch_cnds()
 
   # raw scan data (nominal_resistors passed in to join mass by channel)
-  traces <- read_scn_traces(json_path) |>
+  scans <- read_scn_scans(json_path) |>
     # add species since nominal raw data is not species specific
     dplyr::mutate(species = gas_name$result, .after = "analysis") |>
     match_channels_to_masses(nominal_resistors$result) |>
@@ -724,14 +724,14 @@ read_scn_json <- function(json_path) {
     metadata$conditions,
     gas_name$conditions,
     nominal_resistors$conditions,
-    traces$conditions
+    scans$conditions
   )
 
   # return value
   tibble(
     metadata = list(metadata$result),
     resistors = list(nominal_resistors$result),
-    traces = list(traces$result),
+    scans = list(scans$result),
     problems = list(problems)
   )
 }
@@ -787,7 +787,7 @@ read_scn_metadata <- function(json_path) {
 # Read raw scan data from CScanStorage/CBinary. Converts x from raw steps to physical units
 # (kV for high-voltage, steps for magnet current, s for time).
 # Returns a long-format tibble: channel (int), x (dbl), intensity.V (dbl).
-read_scn_traces <- function(json_path) {
+read_scn_scans <- function(json_path) {
   binary <- query_json(json_path, "/CScanStorage/CBinary")
   type_info <- read_scn_type(json_path)
   x_raw <- binary$x

@@ -36,35 +36,29 @@ print.ir_isofiles <- function(x, ...) {
       } else {
         FALSE
       },
-      trace_info = purrr::pmap_chr(
-        list(
-          ext = .data$ext,
-          metadata = if ("metadata" %in% names(x)) {
-            .data$metadata
-          } else {
-            list(NULL)
-          },
-          traces = if ("traces" %in% names(x)) .data$traces else list(NULL)
-        ),
-        get_trace_info
-      ),
+      trace_info = (if ("traces" %in% names(x)) .data$traces else list(NULL)) |>
+        purrr::map_chr(get_trace_info),
       has_cycles = if ("cycles" %in% names(x)) {
         !purrr::map_lgl(.data$cycles, is.null)
       } else {
         FALSE
       },
-      cycle_info = purrr::pmap_chr(
-        list(
-          ext = .data$ext,
-          metadata = if ("metadata" %in% names(x)) {
+      cycle_info = (if ("cycles" %in% names(x)) .data$cycles else list(NULL)) |>
+        purrr::map_chr(get_cycle_info),
+      has_scans = if ("scans" %in% names(x)) {
+        !purrr::map_lgl(.data$scans, is.null)
+      } else {
+        FALSE
+      },
+      scans_info = (if ("scans" %in% names(x)) .data$scans else list(NULL)) |>
+        purrr::map2_chr(
+          (if ("metadata" %in% names(x)) {
             .data$metadata
           } else {
             list(NULL)
-          },
-          cycles = if ("cycles" %in% names(x)) .data$cycles else list(NULL)
+          }),
+          get_scans_info
         ),
-        get_cycle_info
-      ),
       n_problems = purrr::map_int(.data$problems, nrow),
       problems_text = purrr::map_chr(
         .data$problems,
@@ -92,7 +86,7 @@ print.ir_isofiles <- function(x, ...) {
             "{col_cyan(n_analyses)} {qty(n_analyses)}analys{?is/es}"
           )
         },
-        if (.data$has_cycles[1] || .data$has_traces[1]) {
+        if (.data$has_cycles[1] || .data$has_traces[1] || .data$has_scans[1]) {
           " with "
         } else {
           "; no data available; "
@@ -102,6 +96,9 @@ print.ir_isofiles <- function(x, ...) {
         },
         if (.data$has_traces[1]) {
           .data$trace_info |> paste0("; ")
+        },
+        if (.data$has_scans[1]) {
+          .data$scans_info |> paste0("; ")
         },
         .data$metadata_info
       )
@@ -119,7 +116,7 @@ knit_print.ir_isofiles <- function(x, ...) {
 }
 
 # helper function to summarize information about a set of traces
-get_trace_info <- function(ext, metadata, traces) {
+get_trace_info <- function(traces) {
   if (!is.data.frame(traces)) {
     return("no data available")
   }
@@ -135,13 +132,8 @@ get_trace_info <- function(ext, metadata, traces) {
       } else {
         format_inline("masses {.field {mass}}")
       },
-      data_point_type = if (ext == "scn") {
-        format_inline("{metadata$scan_type} steps")
-      } else {
-        "time points"
-      },
       info = format_inline(
-        "{col_cyan(numbers_to_text(max(n)))} {data_point_type} for {col_magenta(species[1])} ({masses})"
+        "{col_cyan(numbers_to_text(max(n)))} time points for {col_magenta(species[1])} ({masses})"
       )
     ) |>
     dplyr::pull(.data$info) |>
@@ -149,15 +141,45 @@ get_trace_info <- function(ext, metadata, traces) {
 }
 
 # helper function to summarize information about a set of cycles
-get_cycle_info <- function(ext, metadata, cycles) {
+get_cycle_info <- function(cycles) {
   if (!is.data.frame(cycles)) {
     return("no data available")
   }
   cycles |>
     dplyr::summarize(
       .by = "species",
+      masses = if (all(is.na(.data$mass))) {
+        format_inline("channels {.field {channel}}")
+      } else {
+        format_inline("masses {.field {mass}}")
+      },
       info = format_inline(
-        "{col_cyan(max(.data$cycle))} sample/standard cycles for {col_magenta(species[1])} (masses {.field {unique(mass)}})"
+        "{col_cyan(max(.data$cycle))} sample/standard cycles for {col_magenta(species[1])} ({masses})"
+      )
+    ) |>
+    dplyr::pull(.data$info) |>
+    paste(collapse = "; ")
+}
+
+# helper function to summarize information about a set of scans
+get_scans_info <- function(scans, metadata = NULL) {
+  if (!is.data.frame(scans)) {
+    return("no data available")
+  }
+  scans |>
+    dplyr::summarize(
+      .by = c("species", "channel", "mass"),
+      n = dplyr::n()
+    ) |>
+    dplyr::summarize(
+      .by = "species",
+      masses = if (all(is.na(.data$mass))) {
+        format_inline("channels {.field {channel}}")
+      } else {
+        format_inline("masses {.field {mass}}")
+      },
+      info = format_inline(
+        "{col_cyan(numbers_to_text(max(n)))} {metadata$scan_type} steps for {col_magenta(species[1])} ({masses})"
       )
     ) |>
     dplyr::pull(.data$info) |>
