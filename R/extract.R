@@ -17,6 +17,7 @@ ir_check_isoextract <- function(
   reinstall_if_outdated = !on_cran(),
   reinstall_always = FALSE,
   min_version = "0.2.0",
+  show_version = TRUE,
   source = paste0(
     "https://github.com/isoverse/IsofileExtractor/releases/download/isoextract-v",
     min_version
@@ -108,6 +109,7 @@ ir_check_isoextract <- function(
         "successfully installed isoextract version {isoextract_version}",
         start = start
       )
+      return(invisible(NULL))
     }
   }
 
@@ -119,6 +121,11 @@ ir_check_isoextract <- function(
   ) {
     cli_abort(
       "cannot proceed, the required isoextract version {numeric_version(min_version)} is missing or does not work"
+    )
+  } else if (show_version) {
+    finish_info(
+      "found isoextract version {isoextract_version} ready for use",
+      start = start
     )
   }
 }
@@ -218,6 +225,9 @@ ir_extract_isofiles <- function(
     check_arg(is_scalar_logical(show_progress), "must be TRUE OR FALSE")
   show_problems |>
     check_arg(is_scalar_logical(show_problems), "must be TRUE OR FALSE")
+
+  # check for isoextract
+  ir_check_isoextract(show_version = FALSE)
 
   # any paths?
   if (is_empty(file_paths)) {
