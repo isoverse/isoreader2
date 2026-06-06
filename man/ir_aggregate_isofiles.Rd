@@ -6,6 +6,9 @@
 \usage{
 ir_aggregate_isofiles(isofiles)
 }
+\arguments{
+\item{isofiles}{isofiles data object returned by \code{\link[=ir_read_isofiles]{ir_read_isofiles()}}}
+}
 \description{
 Aggregate the data from isofiles
 }

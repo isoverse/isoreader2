@@ -56,7 +56,7 @@ read_bch_metadata <- function(json_path) {
   tibble::tibble(
     analysis = seq_len(nrow(blocks)),
     timestamp = as.POSIXct(ts, format = "%H:%M:%S\t%m-%d-%Y", tz = "UTC"),
-    Number = analysis,
+    Number = .data$analysis,
     `Sample Name` = as.character(blocks$name),
     Type = as.character(blocks$type),
     Weight = as.numeric(blocks$weight),
@@ -88,7 +88,7 @@ read_bch_metadata <- function(json_path) {
 # /collectors/beams, joined via .bch_gas_channel_masses.
 read_bch_resistors <- function(json_path) {
   gases <- query_json(json_path, "/timings", list_as_tibble = TRUE) |>
-    tidyr::unnest(peaks) |>
+    tidyr::unnest("peaks") |>
     dplyr::select("gas_species") |>
     dplyr::pull("gas_species") |>
     unique()
@@ -115,7 +115,7 @@ read_bch_timings <- function(json_path) {
     ) |>
     dplyr::select("method", "timing")
   timings <- query_json(json_path, "/timings", list_as_tibble = TRUE) |>
-    tidyr::unnest(peaks) |>
+    tidyr::unnest("peaks") |>
     dplyr::filter(.data$active) |>
     dplyr::select("timing", "species" = "gas_species", "at_time_s")
   methods |> dplyr::left_join(timings, by = "timing") |> dplyr::distinct()

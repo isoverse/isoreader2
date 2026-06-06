@@ -13,7 +13,7 @@ bytes_to_text <- function(bytes) {
 }
 
 # predefined metric prefixes for number formatting
-.metric_prefixes <- rlang::set_names(
+.metric_prefixes <- set_names(
   c(1e-15, 1e-12, 1e-9, 1e-6, 1e-3, 1, 1e3, 1e6, 1e9, 1e12),
   c("f", "p", "n", stringi::stri_encode("\U00B5"), "m", "", "k", "M", "G", "T")
 )

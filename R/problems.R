@@ -18,7 +18,7 @@ ir_get_problems <- function(obj, strip_ansi = TRUE) {
   )
 
   # what type of data is it?
-  if (is(obj, "ir_aggregated_data")) {
+  if (methods::is(obj, "ir_aggregated_data")) {
     # FIXME
     # # aggregated data
     # probs <-
@@ -29,7 +29,7 @@ ir_get_problems <- function(obj, strip_ansi = TRUE) {
     #   ) |>
     #   dplyr::mutate(file = basename(.data$file)) |>
     #   suppressMessages()
-  } else if (is(obj, "ir_isofiles")) {
+  } else if (methods::is(obj, "ir_isofiles")) {
     # raw file data
     probs <-
       obj |>

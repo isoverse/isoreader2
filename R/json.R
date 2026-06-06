@@ -46,7 +46,7 @@ query_json <- function(
   cli_abort(
     c(
       "missing node in JSON {qty(diags)}path{?s}",
-      setNames(diags, rep("i", length(diags)))
+      set_names(diags, rep("i", length(diags)))
     ),
     call = .call
   )

@@ -10,7 +10,7 @@ Authors@R:
         comment = c(ORCID = "0000-0002-2044-0201"))
     )
 Description: Interface to the raw data file formats commonly encountered in scientific disciplines that make use of stable isotopes.
-License: AGPL (>= 3)
+License: AGPL (>= 3) + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 URL: https://isoreader2.isoverse.org/, https://github.com/isoverse/isoreader2
@@ -19,6 +19,8 @@ Depends:
     R (>= 4.5.0)
 Imports:
     tools,
+    utils,
+    methods,
     rlang (>= 1.1.0),
     cli (>= 3.6.0),
     processx,
@@ -26,8 +28,9 @@ Imports:
     tibble,
     dplyr,
     tidyr,
-    ggplot2,
-    scales
+    purrr,
+    withr,
+    RcppSimdJson
 Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

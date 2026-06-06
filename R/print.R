@@ -113,7 +113,7 @@ print.ir_isofiles <- function(x, ...) {
   lines$label |> cli_bullets_raw() |> cli()
 }
 
-#' @export
+#' @exportS3Method knitr::knit_print
 knit_print.ir_isofiles <- function(x, ...) {
   print(x, ...)
 }
@@ -130,7 +130,7 @@ get_trace_info <- function(ext, file_info, traces) {
     ) |>
     dplyr::summarize(
       .by = "species",
-      masses = if (all(is.na(mass))) {
+      masses = if (all(is.na(.data$mass))) {
         format_inline("channels {.field {channel}}")
       } else {
         format_inline("masses {.field {mass}}")

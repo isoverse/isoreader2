@@ -75,7 +75,7 @@ ir_read_isofiles <- function(
         version_ok = numeric_version(.data$isoextract_version) >=
           numeric_version(.data$min_isoextract_version),
         file_size = purrr::map_int(
-          file_path,
+          .data$file_path,
           function(fp) {
             if (grepl("\\.bch$", fp, ignore.case = TRUE)) {
               sum(file.size(list.files(
@@ -189,7 +189,7 @@ ir_read_isofiles <- function(
 
     # add file path
     out$result <- out$result |>
-      dplyr::mutate(file_path = !!file_path, .before = 1L)
+      dplyr::mutate(file_path = .env$file_path, .before = 1L)
 
     # show problems?
     if (show_problems) {

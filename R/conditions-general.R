@@ -52,7 +52,7 @@ try_catch_cnds <- function(
 
   # deal with non rlang errors efficienctly
   augment_non_rlang_error <- function(cnd) {
-    if (is(cnd, "rlang_error")) {
+    if (methods::is(cnd, "rlang_error")) {
       # always keep rlang error the same
       cnd_signal(cnd)
     }
@@ -176,7 +176,7 @@ truncate_shiny_call_stack <- function(cnd, recursive = TRUE) {
       cnd$trace |>
       # correct parent references
       dplyr::mutate(
-        parent = case_when(
+        parent = dplyr::case_when(
           dplyr::row_number() == last_call + 1L ~ 0L, # new root
           .data$parent > last_call ~ .data$parent - last_call,
           TRUE ~ .data$parent

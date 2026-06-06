@@ -293,7 +293,7 @@ read_isodat_seq_line_info <- function(json_path, block_query) {
     list_as_tibble = TRUE
   )
   keep <- !duplicated(entries$v)
-  tibble::as_tibble_row(as.list(setNames(
+  tibble::as_tibble_row(as.list(set_names(
     as.character(entries$l[keep]),
     entries$v[keep]
   ))) |>
@@ -310,7 +310,7 @@ read_isodat_seq_line_grid <- function(json_path, grid_ptr) {
     return(NULL)
   }
   keep <- !duplicated(cells[1L, ])
-  tibble::as_tibble_row(as.list(setNames(cells[2L, keep], cells[1L, keep]))) |>
+  tibble::as_tibble_row(as.list(set_names(cells[2L, keep], cells[1L, keep]))) |>
     dplyr::mutate(analysis = 1L, .before = 1L) # always a single analysis
 }
 

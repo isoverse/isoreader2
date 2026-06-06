@@ -4,6 +4,10 @@
 ^\.vscode$
 ^LICENSE\.md$
 ^README\.Rmd$
+^README\.html$
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
+^\.github$
+^cache$
+^tmp$
