@@ -9,7 +9,7 @@
 \usage{
 ir_find_isofiles(
   folder,
-  types = c("dxf", "cf", "caf", "did", "scn"),
+  types = c("dxf", "cf", "iarc", "larc", "bch", "imexp", "caf", "did", "scn"),
   pattern = NULL,
   recursive = TRUE
 )
@@ -23,14 +23,14 @@ ir_find_scans(folder, pattern = NULL, recursive = TRUE)
 \arguments{
 \item{folder}{path to a folder with isodat files, or a character vector of folder paths}
 
-\item{types}{file extensions to include (without leading dot), default is all supported types: \code{c("dxf", "cf", "caf", "did", "scn")}}
+\item{types}{file extensions to include (without leading dot), default is all supported types: \code{c("dxf", "cf", "iarc", "larc", "bch", "imexp", "caf", "did", "scn")}}
 
 \item{pattern}{provide a name pattern to find only specific files}
 
 \item{recursive}{whether to find files recursively}
 }
 \value{
-a sorted character vector of unique file paths (\code{.json} sidecar suffixes are stripped so each file appears once regardless of whether a sidecar exists)
+a sorted character vector of unique paths that correspond to the original data files (without \code{.json} suffixes if those are the versions of the files that are present)
 }
 \description{
 Finds isodat files with the specified extensions in one or more folders.
