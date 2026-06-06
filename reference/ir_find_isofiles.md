@@ -59,9 +59,11 @@ of the files that are present)
 
 ``` r
 ir_find_continuous_flow(system.file("extdata", package = "isoreader2"))
-#> Error in ir_find_isofiles(folder, types = c("dxf", "cf", "iarc", "larc",     "bch", "imexp"), pattern = pattern, recursive = recursive): argument folder ("") must point to an existing directory
+#> character(0)
 ir_find_dual_inlet(system.file("extdata", package = "isoreader2"))
-#> Error in ir_find_isofiles(folder, types = c("did", "caf"), pattern = pattern,     recursive = recursive): argument folder ("") must point to an existing directory
+#> character(0)
 ir_find_scans(system.file("extdata", package = "isoreader2"))
-#> Error in ir_find_isofiles(folder, types = "scn", pattern = pattern, recursive = recursive): argument folder ("") must point to an existing directory
+#> [1] "/home/runner/work/_temp/Library/isoreader2/extdata/full_scan_example.scn"      
+#> [2] "/home/runner/work/_temp/Library/isoreader2/extdata/peak_shape_scan_example.scn"
+#> [3] "/home/runner/work/_temp/Library/isoreader2/extdata/time_scan_example.scn"      
 ```
