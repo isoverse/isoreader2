@@ -6,6 +6,8 @@
 \alias{isoreader2-package}
 \title{isoreader2: Read Stable Isotope Data Files}
 \description{
+\if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
+
 Interface to the raw data file formats commonly encountered in scientific disciplines that make use of stable isotopes.
 }
 \details{
