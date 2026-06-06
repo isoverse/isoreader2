@@ -39,8 +39,8 @@ print.ir_isofiles <- function(x, ...) {
       trace_info = purrr::pmap_chr(
         list(
           ext = .data$ext,
-          file_info = if ("file_info" %in% names(x)) {
-            .data$file_info
+          metadata = if ("metadata" %in% names(x)) {
+            .data$metadata
           } else {
             list(NULL)
           },
@@ -56,8 +56,8 @@ print.ir_isofiles <- function(x, ...) {
       cycle_info = purrr::pmap_chr(
         list(
           ext = .data$ext,
-          file_info = if ("file_info" %in% names(x)) {
-            .data$file_info
+          metadata = if ("metadata" %in% names(x)) {
+            .data$metadata
           } else {
             list(NULL)
           },
@@ -119,7 +119,7 @@ knit_print.ir_isofiles <- function(x, ...) {
 }
 
 # helper function to summarize information about a set of traces
-get_trace_info <- function(ext, file_info, traces) {
+get_trace_info <- function(ext, metadata, traces) {
   if (!is.data.frame(traces)) {
     return("no data available")
   }
@@ -136,7 +136,7 @@ get_trace_info <- function(ext, file_info, traces) {
         format_inline("masses {.field {mass}}")
       },
       data_point_type = if (ext == "scn") {
-        format_inline("{file_info$type} steps")
+        format_inline("{metadata$scan_type} steps")
       } else {
         "time points"
       },
@@ -149,7 +149,7 @@ get_trace_info <- function(ext, file_info, traces) {
 }
 
 # helper function to summarize information about a set of cycles
-get_cycle_info <- function(ext, file_info, cycles) {
+get_cycle_info <- function(ext, metadata, cycles) {
   if (!is.data.frame(cycles)) {
     return("no data available")
   }

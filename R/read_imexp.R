@@ -163,7 +163,8 @@ read_imexp_metadata <- function(json_path) {
     dplyr::inner_join(entry_data, by = "guid") |>
     dplyr::select(-"type") |>
     dplyr::mutate(analysis = dplyr::row_number(), .before = 1L) |>
-    dplyr::relocate("timestamp", "config", "h3_factor", .after = "analysis")
+    dplyr::mutate(type = "cf", .after = "analysis") |>
+    dplyr::relocate("timestamp", "config", "h3_factor", .after = "type")
 }
 
 # Reads raw entry traces. Returns a flat tibble:

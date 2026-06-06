@@ -55,6 +55,7 @@ read_bch_metadata <- function(json_path) {
   blocks <- query_json(json_path, "/data/blocks")
   tibble::tibble(
     analysis = seq_len(nrow(blocks)),
+    type = "cf",
     timestamp = as.POSIXct(ts, format = "%H:%M:%S\t%m-%d-%Y", tz = "UTC"),
     Number = .data$analysis,
     `Sample Name` = as.character(blocks$name),

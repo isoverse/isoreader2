@@ -375,6 +375,7 @@ read_dxf_metadata <- function(json_path) {
       "/CContiniousFlowBlockData/p/objects/CBlockData"
     ) |>
     dplyr::mutate(
+      type = "cf",
       timestamp = read_isodat_timestamp(json_path),
       h3_factor = read_isodat_h3_factor(
         json_path,
@@ -485,6 +486,7 @@ read_cf_metadata <- function(json_path) {
       grid_ptr = "/CBlockData/1/objects/CSequenceLineInformationGridStorage/p/CGridCtrl/cells"
     ) |>
     dplyr::mutate(
+      type = "cf",
       timestamp = read_isodat_timestamp(json_path),
       h3_factor = read_isodat_h3_factor(
         json_path,
@@ -606,6 +608,7 @@ read_did_metadata <- function(json_path) {
   json_path |>
     read_isodat_seq_line_info("/CDualInletBlockData/p/objects/CBlockData") |>
     dplyr::mutate(
+      type = "di",
       timestamp = read_isodat_timestamp(json_path),
       h3_factor = read_isodat_h3_factor(
         json_path,
@@ -673,6 +676,7 @@ read_caf_metadata <- function(json_path) {
       "/CBlockDataContext/p/objects/CSequenceLineInformationGridStorage/p/CGridCtrl/cells"
     ) |>
     dplyr::mutate(
+      type = "di",
       timestamp = read_isodat_timestamp(json_path),
       h3_factor = read_isodat_h3_factor(
         json_path,
@@ -772,8 +776,9 @@ read_scn_metadata <- function(json_path) {
   ts <- query_json(json_path, "/CScanStorage/timestamp_start")
   tibble::tibble(
     analysis = 1L, # always a single analysis
+    type = "scan",
     timestamp = parse_iso8601_datetime(ts),
-    type = type_info$scan_type,
+    scan_type = type_info$scan_type,
     x_units = type_info$x_unit,
     comment = comment
   )
