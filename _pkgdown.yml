@@ -1,0 +1,55 @@
+title: isoreader2
+url: https://isoreader2.isoverse.org
+template:
+  bootstrap: 5
+  bootswatch: litera
+  bslib:
+    base_font: {google: "Inter"}
+    heading_font: {google: "Plus Jakarta Sans"}
+    code_font: {google: "JetBrains Mono"}
+
+development:
+  mode: auto
+
+navbar:
+  title: isoreader2
+  type: default
+  left:
+  - text: Reference
+    href: reference/index.html
+  right:
+  - icon: fa-github fa-lg
+    href: https://github.com/isoverse/isoreader2
+    aria-label: View on GitHub
+
+reference:
+- title: Read isofiles
+  desc: >
+    These functions allows reading of stable isotope data files/archives
+  contents:
+  - ir_find_isofiles
+  - ir_find_continuous_flow
+  - ir_find_dual_inlet
+  - ir_find_scans
+  - ir_read_isofiles
+  - ir_check_isoextract
+  - ir_extract_isofiles
+  - ir_get_supported_file_types
+  - ir_get_problems
+  
+- title: Aggregate isofiles data
+  desc: >
+    These functions combine the data from multiple isofiles for combined use
+  contents:
+  - ir_aggregate_isofiles
+  
+- title: Package options
+  desc: >
+    These functions are available to simplify or customize the data analysis.
+  contents:
+  - isoreader2-package
+  - ir_options
+  - ir_get_options
+  - ir_get_option
+
+
