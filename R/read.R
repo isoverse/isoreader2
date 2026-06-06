@@ -236,7 +236,7 @@ ir_read_isofiles <- function(
   )
 
   # return
-  class(all_files) <- unique(c("isofiles", class(all_files)))
+  class(all_files) <- unique(c("ir_isofiles", class(all_files)))
   return(all_files)
 }
 

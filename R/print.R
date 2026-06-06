@@ -1,7 +1,7 @@
-# print.isofiles ========
+# print.ir_isofiles ========
 
 #' @export
-print.isofiles <- function(x, ...) {
+print.ir_isofiles <- function(x, ...) {
   n_digits <- function(x) {
     ifelse(x == 0, 1, floor(log10(abs(x))) + 1)
   }
@@ -114,7 +114,7 @@ print.isofiles <- function(x, ...) {
 }
 
 #' @export
-knit_print.isofiles <- function(x, ...) {
+knit_print.ir_isofiles <- function(x, ...) {
   print(x, ...)
 }
 
