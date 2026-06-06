@@ -32,7 +32,7 @@ This package provides easy access to common IRMS (isotope ratio mass spectrometr
 
 
 | Extension | Measurement type | Produced by | 
-|-----------|-----------------|-------------|-------------|
+|-----------|-----------------|-------------|
 | [`.dxf`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/isodat_structure.md)     | Continuous flow          | Thermo Fisher Isodat |
 | [`.cf`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/isodat_structure.md)      | Continuous flow (legacy) | Thermo Fisher Isodat |
 | [`.bch`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/bch_structure.md)        | Continuous flow          | SerCon Callisto      |
