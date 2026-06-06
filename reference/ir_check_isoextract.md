@@ -12,6 +12,7 @@ ir_check_isoextract(
   reinstall_if_outdated = !on_cran(),
   reinstall_always = FALSE,
   min_version = "0.2.0",
+  show_version = TRUE,
   source =
     paste0("https://github.com/isoverse/IsofileExtractor/releases/download/isoextract-v",
     min_version),
