@@ -1,3 +1,41 @@
+# .imexp — Qtegra notebook
+read_imexp_json <- function(json_path) {
+  # metadata
+  metadata <- json_path |>
+    read_imexp_metadata() |>
+    try_catch_cnds()
+
+  # resistors
+  resistors <- json_path |>
+    read_imexp_resistors() |>
+    try_catch_cnds()
+
+  # traces
+  traces <- json_path |>
+    read_imexp_traces() |>
+    map_imexp_traces(
+      metadata = metadata$result,
+      resistors = resistors$result
+    ) |>
+    try_catch_cnds()
+
+  # problems
+  problems <- dplyr::bind_rows(
+    empty_cnds_tibble(),
+    metadata$conditions,
+    resistors$conditions,
+    traces$conditions
+  )
+
+  # return value (drop guid from metadata now that traces are mapped)
+  tibble(
+    metadata = list(metadata$result |> dplyr::select(-dplyr::any_of("guid"))),
+    resistors = list(resistors$result),
+    traces = list(traces$result),
+    problems = list(problems)
+  )
+}
+
 # Reads Faraday cup resistors from settings/amplifiers joined with gas configurations
 # via cup_configurations/amplifier_identifier. channel is the 1-based position within
 # each gas configuration's cup list; cup is the physical cup number from the display_name.
@@ -49,7 +87,8 @@ read_imexp_resistors <- function(json_path) {
 # (1-based integer index of the settings snapshot used), h3_factor from
 # entries/additional_data/linearity_correction (ratio "3H.H/2H.H", factor × conversion),
 # and params columns (label → column name, value type-enforced as string/int/double).
-# Returns a tibble: analysis, timestamp, config, h3_factor, guid, Identifier, Comment, <params...>.
+# Only rows with a matching entry (i.e. that have been run) are returned.
+# Returns a tibble: analysis, timestamp, config, h3_factor, type, guid, Identifier, Comment, <params...>.
 read_imexp_metadata <- function(json_path) {
   # settings_id → config integer mapping (ordered as in the archive)
   settings <- query_json(json_path, "/settings", list_as_tibble = TRUE)
@@ -58,7 +97,7 @@ read_imexp_metadata <- function(json_path) {
     config = seq_len(nrow(settings))
   )
 
-  # TFS253Plus sample list (body rows only)
+  # TFS253Plus sample list
   sample_lists <- query_json(json_path, "/sample_lists", list_as_tibble = TRUE)
   tfs_idx <- which(grepl(
     "TFS253Plus\\.samples",
@@ -68,20 +107,19 @@ read_imexp_metadata <- function(json_path) {
   if (length(tfs_idx) == 0) {
     cli_abort("no TFS253Plus.samples found in {.path {json_path}}")
   }
-  body_rows <- sample_lists$rows[[tfs_idx[1]]] |>
-    dplyr::filter(.data$sample_line_region == "Body")
+  all_rows <- sample_lists$rows[[tfs_idx[1]]] |> tibble::as_tibble()
 
-  samples <- body_rows |>
-    dplyr::mutate(analysis = dplyr::row_number(), .before = 1L) |>
+  samples <- all_rows |>
     dplyr::select(
-      "analysis",
+      "type" = "sample_line_region",
+      "Number" = "run_id",
       "guid",
       "Identifier" = "identifier",
       "Comment" = "comment"
     )
 
   # params: pivot each row's label/type/value into typed columns
-  params_wide <- purrr::map(body_rows$params, function(p) {
+  params_wide <- purrr::map(all_rows$params, function(p) {
     if (is.null(p) || nrow(p) == 0L) {
       return(tibble::tibble(.rows = 1L))
     }
@@ -120,14 +158,16 @@ read_imexp_metadata <- function(json_path) {
     dplyr::left_join(config_map, by = "settings_id") |>
     dplyr::select(-"settings_id")
 
-  # left join: all sample rows kept; unrun samples get NA timestamp/config/h3_factor
+  # inner join: keep only samples that have been run (guid kept for downstream joins)
   samples |>
-    dplyr::left_join(entry_data, by = "guid") |>
+    dplyr::inner_join(entry_data, by = "guid") |>
+    dplyr::select(-"type") |>
+    dplyr::mutate(analysis = dplyr::row_number(), .before = 1L) |>
     dplyr::relocate("timestamp", "config", "h3_factor", .after = "analysis")
 }
 
 # Reads raw entry traces. Returns a flat tibble:
-# entry_id, settings_id, mass (char), time.s (dbl), intensity.V (dbl).
+# entry_id, settings_id, mass (char), time.s (dbl), intensity.cps (dbl).
 read_imexp_traces <- function(json_path) {
   entries <- query_json(json_path, "/entries", list_as_tibble = TRUE)
 
@@ -153,9 +193,9 @@ read_imexp_traces <- function(json_path) {
     tidyr::unnest("data")
 }
 
-# Assigns analysis numbers and species/channel/cup to raw traces.
-# metadata must have columns: analysis (int), guid (chr).
-# resistors must have columns: settings_id, species, channel, cup, mass.
+# Assigns analysis numbers and species/channel to raw traces.
+# metadata must have columns: analysis (int), guid (chr), config (int).
+# resistors must have columns: config, species, channel, mass.
 map_imexp_traces <- function(traces, metadata, resistors) {
   if (is.null(traces)) {
     return(traces)
@@ -172,7 +212,7 @@ map_imexp_traces <- function(traces, metadata, resistors) {
   } else {
     guid_map <- metadata |> dplyr::select("analysis", "config", "guid")
     traces <- traces |>
-      dplyr::left_join(guid_map, by = c("entry_id" = "guid")) |>
+      dplyr::inner_join(guid_map, by = c("entry_id" = "guid")) |>
       dplyr::select(-"entry_id", -"settings_id")
   }
 
@@ -201,42 +241,4 @@ map_imexp_traces <- function(traces, metadata, resistors) {
       "time.s",
       "intensity.cps"
     )
-}
-
-# .imexp — Qtegra notebook
-read_imexp_json <- function(json_path) {
-  # metadata
-  metadata <- json_path |>
-    read_imexp_metadata() |>
-    try_catch_cnds()
-
-  # resistors
-  resistors <- json_path |>
-    read_imexp_resistors() |>
-    try_catch_cnds()
-
-  # traces
-  traces <- json_path |>
-    read_imexp_traces() |>
-    map_imexp_traces(
-      metadata = metadata$result,
-      resistors = resistors$result
-    ) |>
-    try_catch_cnds()
-
-  # problems
-  problems <- dplyr::bind_rows(
-    empty_cnds_tibble(),
-    metadata$conditions,
-    resistors$conditions,
-    traces$conditions
-  )
-
-  # return value
-  tibble(
-    metadata = list(metadata$result),
-    resistors = list(resistors$result),
-    traces = list(traces$result),
-    problems = list(problems)
-  )
 }
