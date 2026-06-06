@@ -25,7 +25,7 @@ NULL
     "caf",
     "scn"
   ),
-  min_isoextract_version = "0.1.5",
+  min_isoextract_version = "0.2.0",
   vendor_software = c(
     "Isodat",
     "Isodat",
