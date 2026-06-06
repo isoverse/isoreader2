@@ -15,11 +15,8 @@ ir_read_isofiles <- function(
   # keep track of current env to anchor progress bars
   root_env <- current_env()
 
-  # FIXME: because imexp cannot be extracted from the files themselves yet
-  file_paths <- gsub("\\.imexp$", ".imexp.zip", file_paths)
-
   # safety checks (file existence checks happen later for these)
-  file_paths <- check_file_paths(file_paths, check_if_exists = FALSE)
+  file_paths <- check_file_paths_parameter(file_paths)
   show_progress |>
     check_arg(is_scalar_logical(show_progress), "must be TRUE OR FALSE")
   show_problems |>
@@ -53,14 +50,7 @@ ir_read_isofiles <- function(
     # fetch metadata from json files to determine if any need reextraction
     file_paths_info <- file_paths_info |>
       dplyr::mutate(
-        json_path = .data$file_path |>
-          paste0(".json") |>
-          # FIXME: because imexp cannot be extracted from the files themselves yet
-          gsub(
-            pattern = "\\.imexp.zip.json$",
-            replacement = ".imexp.json",
-            ignore.case = TRUE
-          ),
+        json_path = .data$file_path |> paste0(".json"),
         has_json = file.exists(.data$json_path),
         meta = purrr::map2(
           .data$json_path,
@@ -93,6 +83,11 @@ ir_read_isofiles <- function(
                 recursive = TRUE,
                 full.names = TRUE
               )))
+            } else if (
+              grepl("\\.imexp$", fp, ignore.case = TRUE) && !file.exists(fp)
+            ) {
+              # FIXME: shouldn't need this anymore when we don't use the zip intermediate
+              file.size(paste0(fp, ".zip"))
             } else {
               file.size(fp)
             }
@@ -101,8 +96,9 @@ ir_read_isofiles <- function(
         size_identical = .data$file_size == .data$previous_file_size,
         # (re-) extract flag
         extract = !.data$has_json |
-          is.na(.data$min_isoextract_version) |
+          is.na(.data$version_ok) |
           !.data$version_ok |
+          is.na(.data$size_identical) |
           !.data$size_identical
       )
   }
@@ -150,9 +146,6 @@ ir_read_isofiles <- function(
         dplyr::bind_rows() |>
         dplyr::mutate(call = "ir_extract_isofiles")
     }
-
-    # FIXME: because imexp cannot be extracted from the files themselves yet
-    file_path <- gsub("\\.imexp.zip$", ".imexp", file_path)
 
     # work on json path
     json_path <- file_path |> paste0(".json")

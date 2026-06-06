@@ -176,7 +176,7 @@ get_isoextract_version <- function() {
 }
 
 # check isofile paths before reading
-check_file_paths <- function(file_paths, check_if_exists = FALSE) {
+check_file_paths_parameter <- function(file_paths) {
   # safety checks
   check_arg(
     file_paths,
@@ -195,30 +195,10 @@ check_file_paths <- function(file_paths, check_if_exists = FALSE) {
   if (any(!is_bch) && all(dir.exists(file_paths[!is_bch]))) {
     cli_abort(
       c(
-        "{?this/these} path{?s} ({.file {file_paths[!is_bch]}}) {?is a/are} director{?y/ies}, not {?a /}raw file{?s}",
+        "{?this/these} path{?s} ({.file {file_paths[!is_bch]}}) {?is a/are} director{?y/ies}, not {?an /}isofile{?s}/archive{?s}",
         "i" = "did you mean to run {.strong ir_find_continuous_flow()} instead?"
       )
     )
-  }
-
-  if (check_if_exists) {
-    # check which paths exist (.bch dirs use dir.exists, all others use file.exists)
-    paths_exist <- ifelse(
-      is_bch,
-      dir.exists(file_paths),
-      file.exists(file_paths)
-    )
-
-    if (any(!paths_exist)) {
-      if (all(!paths_exist)) {
-        cli_abort("none of the file paths exist")
-      }
-      cli_warn(
-        "{sum(!paths_exist)} file{?s} do{?es/} not exist and will be skipped:",
-        basename(file_paths[!paths_exist]) |> set_names("i")
-      )
-      file_paths <- file_paths[paths_exist]
-    }
   }
   return(file_paths)
 }
@@ -231,10 +211,7 @@ ir_extract_isofiles <- function(
   show_problems = TRUE
 ) {
   # safety checks
-  out <- check_file_paths(file_paths, check_if_exists = TRUE) |>
-    try_catch_cnds()
-  out |> show_cnds()
-  file_paths <- out$result
+  file_paths <- check_file_paths_parameter(file_paths)
   show_progress |>
     check_arg(is_scalar_logical(show_progress), "must be TRUE OR FALSE")
   show_problems |>
@@ -247,7 +224,7 @@ ir_extract_isofiles <- function(
       "is finished, 0 files/archives required (re-)extraction",
       start = start
     )
-    return()
+    return(invisible(NULL))
   }
 
   # info / progress
