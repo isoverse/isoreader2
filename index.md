@@ -1,0 +1,91 @@
+# isoreader2 [![](reference/figures/isoreader_logo_thumb.png)](https://isoreader2.isoverse.org/)
+
+## Overview
+
+This package provides easy access to common IRMS (isotope ratio mass
+spectrometry) file formats, enabling the reading and processing of
+stable isotope data directly from the data files for
+platform-independent (Windows, Mac, Linux), efficient, and reproducible
+data reduction.
+
+[isoreader2](https://isoreader2.isoverse.org/) succeeds the
+[isoreader](https://isoreader.isoverse.org/) package with a completely
+new architecture built around the
+[isoextract](https://github.com/isoverse/IsofileExtractor) command-line
+tool. This makes [isoreader2](https://isoreader2.isoverse.org/)
+signifcantely faster, and more versatile with support for the following
+file formats:
+
+| Extension | Measurement type | Produced by |  |
+|----|----|----|----|
+| [`.dxf`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/isodat_structure.md) | Continuous flow | Thermo Fisher Isodat |  |
+| [`.cf`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/isodat_structure.md) | Continuous flow (legacy) | Thermo Fisher Isodat |  |
+| [`.bch`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/bch_structure.md) | Continuous flow | SerCon Callisto |  |
+| [`.iarc`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/iarc_larc_structure.md) | Continuous flow | Elementar IonOS |  |
+| [`.larc`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/iarc_larc_structure.md) | Continuous flow | Elementar LyticOS |  |
+| [`.imexp`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/imexp_structure.md)\* | Continuous flow | Thermo Fisher Qtegra |  |
+| [`.did`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/isodat_structure.md) | Dual inlet | Thermo Fisher Isodat |  |
+| [`.caf`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/isodat_structure.md) | Dual inlet (legacy) | Thermo Fisher Isodat |  |
+| [`.scn`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/isodat_structure.md) | Scan | Thermo Fisher Isodat |  |
+
+> *\* the first step of reading Qtegra notebooks (extraction of the
+> virtual file system) requires a Windows computer at present but we’re
+> working on a solution that works on all major operating systems*
+
+## Installation
+
+[isoreader2](https://isoreader2.isoverse.org/) is not yet on the
+Comprehensive R Archive Network (CRAN) but you can install the latest
+version from [GitHub](https://github.com/isoverse/isoreader2) as shown
+below. If you are on Windows, make sure to install the equivalent
+version of [Rtools](https://cran.r-project.org/bin/windows/Rtools/) for
+your version of R (e.g. for the latest R 4.5 and 4.6, use
+[RTools4.5](https://cran.r-project.org/bin/windows/Rtools/rtools45/rtools.html) -
+you can find out which version you have with
+[`getRversion()`](https://rdrr.io/r/base/numeric_version.html) from an R
+console).
+
+``` r
+
+# checks that you are set up to build R packages from source
+if (!requireNamespace("pkgbuild", quietly = TRUE)) {
+  install.packages("pkgbuild")
+}
+pkgbuild::check_build_tools()
+
+# installs the latest isoreader2 package from GitHub
+if (!requireNamespace("pak", quietly = TRUE)) {
+  install.packages("pak")
+}
+pak::pak("isoverse/isoreader2")
+
+# check/install isoextract
+isoreader2::ir_check_isoextract()
+```
+
+## Package structure
+
+[![](reference/figures/isoreader2_flowchart.svg)](https://isoreader2.isoverse.org/#package-structure)
+
+## Getting help
+
+If you encounter a bug, please file an issue with a minimal reproducible
+example on [GitHub](https://github.com/isoverse/isoreader2/issues).
+
+## isoverse [![](reference/figures/isoverse_logo_thumb.png)](http://www.isoverse.org)
+
+This package is part of the isoverse suite of data tools for stable
+isotopes. If you like the functionality that isoverse packages provide,
+please help us spread the word and include an isoverse or individual
+package logo on one of your posters or slides. All logos are posted in
+high resolution in [this repository](https://github.com/isoverse/logos).
+If you have suggestions for new features or other constructive feedback,
+please let us know on this short [feeback
+form](https://www.isoverse.org/feedback/).
+
+## Funding [![](reference/figures/NSF_logo.svg)](https://www.nsf.gov/)
+
+This project is supported by a grant from the US National Science
+Foundation
+([EAR-2411458](https://www.nsf.gov/awardsearch/show-award?AWD_ID=2411458))
+to Sebastian Kopf.
