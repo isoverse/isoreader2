@@ -203,8 +203,10 @@ check_file_paths_parameter <- function(file_paths) {
   return(file_paths)
 }
 
-# run the isoextract executable on a vector of file paths
-# this is usually not called directly
+#' run the isoextract executable on a vector of file paths
+#' this is usually not called directly
+#' @inheritParams ir_read_isofiles
+#' @export
 ir_extract_isofiles <- function(
   file_paths,
   show_progress = rlang::is_interactive(),
