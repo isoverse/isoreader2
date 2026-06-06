@@ -78,6 +78,9 @@ isoreader2::ir_check_isoextract()
 
 If you encounter a bug, please file an issue with a minimal reproducible
 example on [GitHub](https://github.com/isoverse/isoreader2/issues).
+Example files are very helpful for fixing bugs so please consider
+including an example data file (you will have to attach it as a zip
+archive).
 
 ## isoverse <a href='http://www.isoverse.org'><img src='man/figures/isoverse_logo_thumb.png' align="right" width="100"/></a>
 
