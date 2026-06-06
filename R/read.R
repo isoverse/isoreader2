@@ -187,9 +187,26 @@ ir_read_isofiles <- function(
       out$result$problems <- list(problems)
     }
 
-    # add file path
+    # add file path to outer result
     out$result <- out$result |>
       dplyr::mutate(file_path = .env$file_path, .before = 1L)
+
+    # add file_path and file_name as first columns of each inner metadata tibble
+    if ("metadata" %in% names(out$result)) {
+      fp <- file_path
+      out$result <- out$result |>
+        dplyr::mutate(
+          metadata = purrr::map(.data$metadata, function(meta) {
+            if (is.null(meta)) {
+              tibble::tibble(file_path = fp, file_name = basename(fp), analysis = 1L)
+            } else {
+              meta |> dplyr::mutate(
+                file_path = fp, file_name = basename(fp), .before = 1L
+              )
+            }
+          })
+        )
+    }
 
     # show problems?
     if (show_problems) {
