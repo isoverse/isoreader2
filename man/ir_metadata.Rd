@@ -30,6 +30,12 @@ These functions operate on the \verb{$metadata} component of an \code{\link[=ir_
 \code{ir_filter_metadata()} additionally cascades the filter to all other datasets:
 \code{traces}, \code{cycles}, and \code{scans} are filtered by the remaining \code{uidx} + \code{analysis} combinations;
 \code{resistors} and \code{problems} are filtered by the remaining \code{uidx} values.
+After filtering, columns that are entirely \code{NA} across all remaining rows are
+dropped from every dataset.
+All three functions also clear the \emph{not-aggregated} column information (columns
+present in the source files but not included in the aggregator) from every
+dataset, since that information is no longer meaningful after the metadata has
+been modified.
 }
 \section{Functions}{
 \itemize{

@@ -25,6 +25,9 @@ ir_check_isoextract(
 
 \item{min_version}{the minimum version number required}
 
+\item{show_version}{whether to print the installed isoextract version after
+a successful check (default: \code{TRUE})}
+
 \item{source}{the URL (or local path) where to find isoextract, by default this is the latests release of the executables on github}
 
 \item{...}{passed on to \code{download.file} if (re-) installing isoextract}

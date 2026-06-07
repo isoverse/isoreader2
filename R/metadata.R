@@ -6,12 +6,28 @@
 #' `ir_filter_metadata()` additionally cascades the filter to all other datasets:
 #' `traces`, `cycles`, and `scans` are filtered by the remaining `uidx` + `analysis` combinations;
 #' `resistors` and `problems` are filtered by the remaining `uidx` values.
+#' After filtering, columns that are entirely `NA` across all remaining rows are
+#' dropped from every dataset.
+#' All three functions also clear the *not-aggregated* column information (columns
+#' present in the source files but not included in the aggregator) from every
+#' dataset, since that information is no longer meaningful after the metadata has
+#' been modified.
 #'
 #' @param aggregated_data datasets aggregated from [ir_aggregate_isofiles()]
 #' @param ... passed to [dplyr::filter()], [dplyr::mutate()], or [dplyr::left_join()] respectively
 #' @return the `aggregated_data` object with an updated `$metadata`
 #' @name ir_metadata
 NULL
+
+# internal: remove unused_columns attributes from all datasets
+drop_not_aggregated_info <- function(aggregated_data) {
+  for (ds in names(aggregated_data)) {
+    if (is.data.frame(aggregated_data[[ds]])) {
+      attr(aggregated_data[[ds]], "unused_columns") <- NULL
+    }
+  }
+  return(aggregated_data)
+}
 
 #' @describeIn ir_metadata filter rows of the metadata (and cascade to other datasets)
 #' @export
@@ -58,6 +74,17 @@ ir_filter_metadata <- function(aggregated_data, ...) {
     }
   }
 
+  # drop all-NA columns from every dataset
+  for (ds in names(aggregated_data)) {
+    if (is.data.frame(aggregated_data[[ds]]) && ncol(aggregated_data[[ds]]) > 0) {
+      aggregated_data[[ds]] <- dplyr::select(
+        aggregated_data[[ds]],
+        dplyr::where(~!all(is.na(.)))
+      )
+    }
+  }
+
+  aggregated_data <- drop_not_aggregated_info(aggregated_data)
   return(aggregated_data)
 }
 
@@ -70,6 +97,7 @@ ir_mutate_metadata <- function(aggregated_data, ...) {
     "must be a set of aggregated isofiles"
   )
   aggregated_data$metadata <- dplyr::mutate(aggregated_data$metadata, ...)
+  aggregated_data <- drop_not_aggregated_info(aggregated_data)
   return(aggregated_data)
 }
 
@@ -92,10 +120,11 @@ ir_join_metadata <- function(aggregated_data, y, by) {
   if (nrow(aggregated_data$metadata) > n_before) {
     cli_abort(
       c(
-        "joining {.arg y} to metadata by {.field {by}} duplicated rows ({n_before} → {nrow(aggregated_data$metadata)})",
+        "joining {.arg y} to metadata by {.field {by}} duplicated rows ({n_before} \u2192 {nrow(aggregated_data$metadata)})",
         "i" = "make sure {.arg y} has at most one row per unique combination of {.field {by}}"
       )
     )
   }
+  aggregated_data <- drop_not_aggregated_info(aggregated_data)
   return(aggregated_data)
 }

@@ -8,8 +8,14 @@
 ## usethis namespace: start
 #' @import cli
 #' @import rlang
+#' @import ggplot2
 #' @importFrom tibble tibble is_tibble as_tibble
+#' @importFrom methods is
+#' @importFrom grDevices palette.colors
+#' @importFrom utils tail
+#' @importFrom stats setNames
 ## usethis namespace: end
+utils::globalVariables(c("file_name", "mass", "species", "type"))
 NULL
 
 # minimum required isoextract versions for different file types

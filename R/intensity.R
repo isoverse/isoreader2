@@ -62,7 +62,7 @@ ir_convert_intensity <- function(
   src_col <- src_col[1L]
   src <- intensity_unit_info(sub("^intensity\\.", "", src_col))
 
-  # join resistors when conversion path crosses the A↔V boundary
+  # join resistors when conversion path crosses the A<->V boundary
   needs_R <- (src$base == "V") != (tgt$base == "V")
   if (needs_R) {
     if (is.null(resistors)) {
@@ -85,9 +85,9 @@ ir_convert_intensity <- function(
       )
   }
 
-  # convert: src unit → src base → tgt base → tgt unit
-  # src$scale: base→src, so src→base = divide by src$scale
-  # tgt$scale: base→tgt
+  # convert: src unit -> src base -> tgt base -> tgt unit
+  # src$scale: base->src, so src->base = divide by src$scale
+  # tgt$scale: base->tgt
   intensity_src_base <- dataset[[src_col]] / src$scale
 
   intensity_tgt_base <- switch(

@@ -268,7 +268,7 @@ print.ir_aggregated_data <- function(x, ...) {
     cli_bullets() # no |> cli() at the to keep paragraphs a bit separated in knitted doc
 }
 
-#' @export
+#' @exportS3Method knitr::knit_print
 knit_print.ir_aggregated_data <- function(x, ...) {
   print(x, ...)
 }
@@ -320,7 +320,7 @@ print.ir_aggregator <- function(x, ...) {
           format_inline(
             "{.strong Dataset} {cli::col_blue(.data$dataset[[1]])}:"
           ),
-          paste0(" ", .data$label)
+          paste0("\u00a0", .data$label)
         ))
       ) |>
       dplyr::pull(.data$label) |>
@@ -330,7 +330,7 @@ print.ir_aggregator <- function(x, ...) {
   }
 }
 
-#' @export
+#' @exportS3Method knitr::knit_print
 knit_print.ir_aggregator <- function(x, ...) {
   print(x, ...)
 }

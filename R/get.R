@@ -10,6 +10,7 @@
 #' @param cycles columns to get from the aggregated `cycles`, all [dplyr::select()] syntax is supported
 #' @param scans columns to get from the aggregated `scans`, all [dplyr::select()] syntax is supported
 #' @param resistors columns to get from the aggregated `resistors`, all [dplyr::select()] syntax is supported
+#' @param by character vector of column names used as join keys when combining data from more than one dataset (default covers the standard linking columns; only keys actually present in both datasets are used)
 #' @return a tibble
 #' @export
 ir_get_data <- function(

@@ -26,6 +26,8 @@ ir_get_data(
 \item{scans}{columns to get from the aggregated \code{scans}, all \code{\link[dplyr:select]{dplyr::select()}} syntax is supported}
 
 \item{resistors}{columns to get from the aggregated \code{resistors}, all \code{\link[dplyr:select]{dplyr::select()}} syntax is supported}
+
+\item{by}{character vector of column names used as join keys when combining data from more than one dataset (default covers the standard linking columns; only keys actually present in both datasets are used)}
 }
 \value{
 a tibble

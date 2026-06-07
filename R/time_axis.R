@@ -46,7 +46,14 @@ labels_duration <- function(cutoff = 0.5, short_format = FALSE) {
       s <- secs %% 60
       if (any(h > 0, na.rm = TRUE) && any(s > 0, na.rm = TRUE)) {
         # HH:MM:SS
-        out <- sprintf("%.0f:%02.0f:%02.0f%s%s", h, m, s, sep, unit("hours", "hr"))
+        out <- sprintf(
+          "%.0f:%02.0f:%02.0f%s%s",
+          h,
+          m,
+          s,
+          sep,
+          unit("hours", "hr")
+        )
       } else if (any(h > 0, na.rm = TRUE) && any(m > 0, na.rm = TRUE)) {
         # HH:MM
         out <- sprintf("%.0f:%02.0f%s%s", h, m, sep, unit("hours", "hr"))

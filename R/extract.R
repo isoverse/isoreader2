@@ -9,6 +9,8 @@
 #' @param reinstall_if_outdated install isoextract if it's outdated (i.e. not at least `min_version`)
 #' @param reinstall_always whether to (re-)install no matter what
 #' @param min_version the minimum version number required
+#' @param show_version whether to print the installed isoextract version after
+#'   a successful check (default: `TRUE`)
 #' @param source the URL (or local path) where to find isoextract, by default this is the latests release of the executables on github
 #' @param ... passed on to `download.file` if (re-) installing isoextract
 #' @export

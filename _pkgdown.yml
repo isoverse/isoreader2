@@ -50,6 +50,28 @@ reference:
   - ir_get_data
 
   
+- title: Metadata operations
+  desc: >
+    These functions filter, modify, or extend the metadata of aggregated isofiles.
+  contents:
+  - ir_metadata
+
+- title: Visualize isofiles data
+  desc: >
+    These functions plot aggregated isofiles data.
+  contents:
+  - ir_default_theme
+  - ir_plot_scans
+  - ir_plot_continuous_flow
+  - ir_plot_dual_inlet
+
+- title: Export & storage
+  desc: >
+    These functions save aggregated isofiles data to disk.
+  contents:
+  - ir_export_to_excel
+  - ir_storage
+
 - title: Package options
   desc: >
     These functions are available to simplify or customize the data analysis.
@@ -58,5 +80,3 @@ reference:
   - ir_options
   - ir_get_options
   - ir_get_option
-
-
