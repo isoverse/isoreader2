@@ -1,8 +1,7 @@
 # visualization functions ==========
 
 # internal: label formatter for scientific notation on linear intensity axes.
-# Returns expression labels (e.g. 1.5 %.% 10^3) when values need decimals,
-# plain power-of-ten labels (e.g. 10^3) otherwise. Zero is always shown as 0.
+# Returns expression labels of the form 1.5 %.% 10^3. Zero is always shown as 0.
 #' @importFrom stats na.omit
 label_scientific <- function() {
   parser1 <- scales::label_scientific()
@@ -66,7 +65,7 @@ ir_default_theme <- function(text_size = 16, facet_text_size = 20) {
 #'   to `NULL` to suppress panels.
 #' @param color column or expression for the colour aesthetic (default: `mass`)
 #' @param linetype column or expression for the linetype aesthetic (default:
-#'   `NULL`, no linetype mapping)
+#'   `species`)
 #' @param colors named or unnamed character vector of colours passed to
 #'   [ggplot2::scale_color_manual()] (default: [palette.colors()])
 #' @param scientific whether to format y axis labels in scientific notation

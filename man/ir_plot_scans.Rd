@@ -34,7 +34,7 @@ to \code{NULL} to suppress panels.}
 \item{color}{column or expression for the colour aesthetic (default: \code{mass})}
 
 \item{linetype}{column or expression for the linetype aesthetic (default:
-\code{NULL}, no linetype mapping)}
+\code{species})}
 
 \item{colors}{named or unnamed character vector of colours passed to
 \code{\link[ggplot2:scale_color_manual]{ggplot2::scale_color_manual()}} (default: \code{\link[=palette.colors]{palette.colors()}})}
