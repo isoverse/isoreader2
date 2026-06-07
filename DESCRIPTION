@@ -16,7 +16,8 @@ Roxygen: list(markdown = TRUE)
 URL: https://isoreader2.isoverse.org/, https://github.com/isoverse/isoreader2
 BugReports: https://github.com/isoverse/isoreader2/issues
 Depends:
-    R (>= 4.5.0)
+    R (>= 4.5.0),
+    ggplot2
 Imports:
     tools,
     utils,
@@ -30,10 +31,12 @@ Imports:
     tidyr,
     purrr,
     withr,
-    RcppSimdJson
+    RcppSimdJson,
+    scales
 Suggests:
     testthat (>= 3.0.0),
     vdiffr,
-    arrow
+    arrow,
+    openxlsx
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.0.0

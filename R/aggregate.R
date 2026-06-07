@@ -18,8 +18,8 @@
 #' @export
 ir_aggregate_isofiles <- function(
   isofiles,
-  aggregator = "standard",
   intensity_units = c("mV", "V", "fA", "pA", "nA", "µA", "mA", "A", "cps"),
+  aggregator = "standard",
   show_progress = is_interactive(),
   show_problems = TRUE
 ) {
