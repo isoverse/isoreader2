@@ -197,3 +197,137 @@ get_metadata_info <- function(metadata) {
   }
   format_inline("{col_cyan(ncol(metadata))} metadata columns")
 }
+
+# print.ir_aggregated_data ========
+
+#' @export
+print.ir_aggregated_data <- function(x, ...) {
+  cli_rule(
+    center = "{.strong aggregated data from {length(unique(x$metadata$uidx))} isofiles with {nrow(x$metadata)} analys{?is/es} - retrieve with ir_get_data()}"
+  )
+
+  # details on columns
+  x |>
+    purrr::map2_chr(
+      names(x),
+      function(dataset, name) {
+        if (ncol(dataset) == 0) {
+          return(NA_character_)
+        }
+        # summarize problems
+        if (name == "problems") {
+          return(
+            summarize_cnds(
+              dataset,
+              include_symbol = FALSE,
+              include_call = FALSE,
+              summary_format = paste0(
+                "{symbol$arrow_right} {cli::col_blue('",
+                name,
+                "')}: ",
+                if (nrow(dataset) > 0) {
+                  "has a total of {issues} "
+                } else {
+                  "has {issues}"
+                },
+                if (nrow(dataset) > 0) {
+                  "{symbol$arrow_right} check with {.strong ir_get_problems(x)}"
+                }
+              )
+            )
+          )
+        }
+
+        # all other fields
+        n_rows <- nrow(dataset) |> numbers_to_text()
+        n_na <- purrr::map_int(dataset, ~ sum(is.na(.x)))
+        cols <- names(dataset) |>
+          sprintf(fmt = "{.field %s}") |>
+          paste0(dplyr::case_when(
+            n_na == nrow(dataset) ~ " ({col_yellow('all NA')})",
+            n_na > 0 ~ sprintf(" ({col_yellow('%s NA')})", n_na |> numbers_to_text()),
+            .default = ""
+          ))
+        unused_cols <- sprintf(
+          "{.emph {col_yellow('%s')}}",
+          attr(dataset, "unused_columns")
+        )
+        format_inline(
+          "{symbol$arrow_right} {cli::col_blue(name)} ({n_rows}): ",
+          "{glue::glue_collapse(cols, sep = ', ')}",
+          if (length(unused_cols) > 0) {
+            "; ({.emph not aggregated}: {glue::glue_collapse(unused_cols, sep = ', ')})"
+          }
+        )
+      }
+    ) |>
+    na.omit() |>
+    cli_bullets() # no |> cli() at the to keep paragraphs a bit separated in knitted doc
+}
+
+#' @export
+knit_print.ir_aggregated_data <- function(x, ...) {
+  print(x, ...)
+}
+
+# print.ir_aggregator ========
+
+#' @export
+print.ir_aggregator <- function(x, ...) {
+  cli_rule(center = "{.strong Aggregator {.emph {attr(x, 'name')}}}")
+  if (nrow(x) > 0) {
+    summarize_aggregator(x) |>
+      dplyr::mutate(
+        label = purrr::pmap_chr(
+          list(
+            .data$column,
+            .data$value,
+            .data$default,
+            .data$regexp,
+            .data$source
+          ),
+          function(col, value, default, regex, source) {
+            if (regex) {
+              matches <- regmatches(
+                source,
+                gregexpr("\\([^?)][^()]*\\)", source)
+              )[[1]]
+              for (i in seq_along(matches)) {
+                col <- gsub(sprintf("\\%d", i), matches[[i]], col, fixed = TRUE)
+              }
+              col <- gsub("\\", "\\\\", col, fixed = TRUE)
+              format_inline(
+                "{symbol$arrow_right} {cli::col_magenta(col)} = {.emph {value}}"
+              )
+            } else if (!is.na(default[[1]])) {
+              format_inline(
+                "{symbol$arrow_right} {.field {col}} = {.emph {value}} - {col_yellow('if source is missing')}: {.field {col}} = {.emph {default[[1]]}}"
+              )
+            } else {
+              format_inline(
+                "{symbol$arrow_right} {.field {col}} = {.emph {value}}"
+              )
+            }
+          }
+        )
+      ) |>
+      dplyr::summarise(
+        .by = "dataset",
+        label = list(c(
+          format_inline(
+            "{.strong Dataset} {cli::col_blue(.data$dataset[[1]])}:"
+          ),
+          paste0(" ", .data$label)
+        ))
+      ) |>
+      dplyr::pull(.data$label) |>
+      unlist() |>
+      cli_bullets_raw() |>
+      cli()
+  }
+}
+
+#' @export
+knit_print.ir_aggregator <- function(x, ...) {
+  print(x, ...)
+}
