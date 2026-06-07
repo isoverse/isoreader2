@@ -75,8 +75,8 @@ ir_default_theme <- function(text_size = 16, facet_text_size = 20) {
 #'   display window `c(min, max)`. Data just outside the window is retained for
 #'   correct y autoscaling at the edges; [ggplot2::coord_cartesian()] clips the
 #'   display. Default `NULL` shows the full x range.
-#' @param n_xbreaks desired number of x axis tick marks (default: `5`)
-#' @param n_ybreaks desired number of y axis tick marks (default: `5`)
+#' @param n_x_breaks desired number of x axis tick marks (default: `5`)
+#' @param n_y_breaks desired number of y axis tick marks (default: `5`)
 #' @param theme ggplot2 theme to apply (default: [ir_default_theme()])
 #' @return a `ggplot` object
 #' @export
@@ -89,8 +89,8 @@ ir_plot_scans <- function(
   colors = palette.colors(),
   scientific = FALSE,
   x_window = NULL,
-  n_xbreaks = 5,
-  n_ybreaks = 5,
+  n_x_breaks = 5,
+  n_y_breaks = 5,
   theme = ir_default_theme()
 ) {
   # safety checks
@@ -117,13 +117,13 @@ ir_plot_scans <- function(
     "must be NULL or a numeric vector of length 2 (min, max)"
   )
   check_arg(
-    n_xbreaks,
-    rlang::is_scalar_integerish(n_xbreaks) && n_xbreaks > 0,
+    n_x_breaks,
+    rlang::is_scalar_integerish(n_x_breaks) && n_x_breaks > 0,
     "must be a positive whole number"
   )
   check_arg(
-    n_ybreaks,
-    rlang::is_scalar_integerish(n_ybreaks) && n_ybreaks > 0,
+    n_y_breaks,
+    rlang::is_scalar_integerish(n_y_breaks) && n_y_breaks > 0,
     "must be a positive whole number"
   )
 
@@ -141,7 +141,7 @@ ir_plot_scans <- function(
     ) {
       cli_abort(
         c(
-          "no scans available in {.arg dataset}",
+          "no scans available in the provided {.field dataset}",
           "i" = "make sure you are reading scan isofiles and the aggregator includes columns from {.field scans}"
         )
       )
@@ -273,11 +273,11 @@ ir_plot_scans <- function(
     ggplot2::geom_line() +
     ggplot2::labs(x = x_lab, y = y_lab) +
     ggplot2::scale_x_continuous(
-      breaks = scales::pretty_breaks(n_xbreaks),
+      breaks = scales::pretty_breaks(n_x_breaks),
       expand = if (!is.null(x_window)) FALSE else c(0, 0)
     ) +
     ggplot2::scale_y_continuous(
-      breaks = scales::pretty_breaks(n_ybreaks),
+      breaks = scales::pretty_breaks(n_y_breaks),
       labels = if (scientific) label_scientific() else ggplot2::waiver()
     ) +
     ggplot2::expand_limits(y = 0)
@@ -300,6 +300,237 @@ ir_plot_scans <- function(
   # x window: clip display to the requested range
   if (!is.null(x_window)) {
     p <- p + ggplot2::coord_cartesian(xlim = x_window)
+  }
+
+  p <- p + theme
+
+  return(p)
+}
+
+#' Plot continuous flow data
+#'
+#' Plots chromatographic trace data from an [ir_aggregate_isofiles()] result or
+#' a plain data frame. When `dataset` is an `ir_aggregated_data` object, the
+#' `$traces` dataset is inner-joined with `$metadata` (bringing in all metadata
+#' columns not already present in `$traces`) before plotting. The plot data must
+#' contain a `time.s` column and an `intensity.*` column — an error is thrown if
+#' either is missing. The intensity unit suffix becomes the y axis label.
+#'
+#' @param dataset an `ir_aggregated_data` object from [ir_aggregate_isofiles()]
+#'   or a plain data frame with a `time.s` column and an `intensity.*` column
+#' @param panel column or expression for faceting (default: `file_name`). Set
+#'   to `NULL` to suppress panels.
+#' @param color column or expression for the colour aesthetic (default: `mass`)
+#' @param linetype column or expression for the linetype aesthetic (default:
+#'   `species`)
+#' @param colors named or unnamed character vector of colours passed to
+#'   [ggplot2::scale_color_manual()] (default: [palette.colors()])
+#' @param scientific whether to format y axis labels in scientific notation
+#'   (default: `FALSE`)
+#' @param time_window optional numeric vector of length 2 giving the time axis
+#'   display window `c(min, max)` in seconds. Data just outside the window is
+#'   retained for correct y autoscaling at the edges;
+#'   [ggplot2::coord_cartesian()] clips the display. Default `NULL` shows the
+#'   full time range.
+#' @param short_time_labels whether to use compact time axis labels with no
+#'   space between value and unit and abbreviated units (`hr`, `m`, `s`)
+#'   (default: `FALSE`)
+#' @param n_time_breaks desired number of time axis tick marks (default: `5`)
+#' @param n_y_breaks desired number of y axis tick marks (default: `5`)
+#' @param theme ggplot2 theme to apply (default: [ir_default_theme()])
+#' @return a `ggplot` object
+#' @export
+ir_plot_continuous_flow <- function(
+  dataset,
+  panel = file_name,
+  color = mass,
+  linetype = species,
+  colors = palette.colors(),
+  scientific = FALSE,
+  time_window = NULL,
+  short_time_labels = FALSE,
+  n_time_breaks = 5,
+  n_y_breaks = 5,
+  theme = ir_default_theme()
+) {
+  # safety checks
+  check_arg(
+    dataset,
+    !missing(dataset) &&
+      (is.data.frame(dataset) || is(dataset, "ir_aggregated_data")),
+    "must be a data frame or a set of aggregated isofiles"
+  )
+  check_arg(
+    colors,
+    is.character(colors),
+    "must be a character vector of colours"
+  )
+  check_arg(scientific, rlang::is_bool(scientific), "must be TRUE or FALSE")
+  check_arg(short_time_labels, rlang::is_bool(short_time_labels), "must be TRUE or FALSE")
+  check_arg(
+    time_window,
+    is.null(time_window) ||
+      (is.numeric(time_window) && length(time_window) == 2),
+    "must be NULL or a numeric vector of length 2 (min, max)"
+  )
+  check_arg(
+    n_time_breaks,
+    rlang::is_scalar_integerish(n_time_breaks) && n_time_breaks > 0,
+    "must be a positive whole number"
+  )
+  check_arg(
+    n_y_breaks,
+    rlang::is_scalar_integerish(n_y_breaks) && n_y_breaks > 0,
+    "must be a positive whole number"
+  )
+
+  # capture aesthetics before any data manipulation
+  panel_quo <- rlang::enquo(panel)
+  color_quo <- rlang::enquo(color)
+  linetype_quo <- rlang::enquo(linetype)
+
+  # prepare plot data
+  if (is(dataset, "ir_aggregated_data")) {
+    if (
+      !"traces" %in% names(dataset) ||
+        ncol(dataset$traces) == 0 ||
+        nrow(dataset$traces) == 0
+    ) {
+      cli_abort(
+        c(
+          "no traces available in the provided {.field dataset}",
+          "i" = "make sure you are reading continuous flow isofiles and the aggregator includes columns from {.field traces}"
+        )
+      )
+    }
+    meta_extra_cols <- setdiff(names(dataset$metadata), names(dataset$traces))
+    plot_data <- dplyr::inner_join(
+      dataset$traces,
+      dplyr::select(
+        dataset$metadata,
+        dplyr::any_of(c("uidx", "analysis", meta_extra_cols))
+      ),
+      by = c("uidx", "analysis")
+    )
+  } else {
+    plot_data <- dataset
+  }
+
+  if (nrow(plot_data) == 0) {
+    cli_abort("no data to plot (0 rows)")
+  }
+
+  # require time.s column
+  if (!"time.s" %in% names(plot_data)) {
+    cli_abort(
+      c(
+        "column {.field time.s} is missing from trace data",
+        "i" = "make sure the aggregator includes {.field time.s}"
+      )
+    )
+  }
+  time_col <- "time.s"
+  time_units <- "s"
+
+  # detect intensity column
+  intensity_cols <- grep("^intensity\\.", names(plot_data), value = TRUE)
+  if (length(intensity_cols) == 0) {
+    cli_abort(
+      c(
+        "no intensity column found in trace data",
+        "i" = "expected a column whose name matches {.code intensity.*}"
+      )
+    )
+  }
+  intensity_col <- intensity_cols[1]
+  intensity_units <- sub("^intensity\\.", "", intensity_col)
+
+  # time window: keep data just outside the limits for correct y autoscaling at edges
+  if (!is.null(time_window)) {
+    time_range <- range(plot_data[[time_col]], na.rm = TRUE)
+    line_groups <- intersect(
+      c("uidx", "analysis", "species", "channel"),
+      names(plot_data)
+    )
+    plot_data <- plot_data |>
+      dplyr::arrange(!!!rlang::syms(c(line_groups, time_col))) |>
+      dplyr::mutate(
+        in_range = .data[[time_col]] >= time_window[1] &
+          .data[[time_col]] <= time_window[2]
+      ) |>
+      dplyr::mutate(
+        .by = line_groups,
+        just_before = !.data$in_range &
+          dplyr::lag(.data$in_range, default = FALSE),
+        just_after = !.data$in_range &
+          dplyr::lead(.data$in_range, default = FALSE)
+      ) |>
+      dplyr::filter(.data$in_range | .data$just_before | .data$just_after) |>
+      dplyr::select(-"in_range", -"just_before", -"just_after")
+    if (nrow(plot_data) == 0) {
+      cli_abort(
+        c(
+          "{.arg time_window} [{time_window[1]}, {time_window[2]}] contains no data",
+          "i" = "the time range in the data is [{time_range[1]}, {time_range[2]}]"
+        )
+      )
+    }
+  }
+
+  # validate aesthetic expressions against the actual plot data
+  check_aes_expr(panel_quo, "panel", plot_data)
+  check_aes_expr(color_quo, "color", plot_data)
+  check_aes_expr(linetype_quo, "linetype", plot_data)
+
+  # group aesthetic: always set to ensure one line per trace
+  group_cols <- intersect(
+    c("uidx", "analysis", "species", "mass"),
+    names(plot_data)
+  )
+
+  # axis labels
+  x_lab <- paste0("time [", time_units, "]")
+  y_lab <- paste0("intensity [", intensity_units, "]")
+
+  # base plot
+  p <- ggplot2::ggplot(plot_data) +
+    ggplot2::aes(
+      x = !!sym(time_col),
+      y = !!sym(intensity_col),
+      group = interaction(!!!rlang::syms(group_cols))
+    ) +
+    ggplot2::geom_line() +
+    ggplot2::labs(x = x_lab, y = y_lab) +
+    ggplot2::scale_x_continuous(
+      breaks = breaks_pretty_duration(n = n_time_breaks),
+      labels = labels_duration(short_format = short_time_labels),
+      expand = if (!is.null(time_window)) FALSE else ggplot2::waiver()
+    ) +
+    ggplot2::scale_y_continuous(
+      breaks = scales::pretty_breaks(n_y_breaks),
+      labels = if (scientific) label_scientific() else ggplot2::waiver(),
+      expand = ggplot2::expansion(mult = c(0, 0.05))
+    ) +
+    ggplot2::expand_limits(y = 0)
+
+  # additional aesthetics
+  if (!rlang::quo_is_null(color_quo)) {
+    p <- p +
+      ggplot2::aes(color = !!color_quo) +
+      scale_color_manual(values = colors)
+  }
+  if (!rlang::quo_is_null(linetype_quo)) {
+    p <- p + ggplot2::aes(linetype = !!linetype_quo)
+  }
+
+  # facets
+  if (!rlang::quo_is_null(panel_quo)) {
+    p <- p + ggplot2::facet_wrap(ggplot2::vars(!!panel_quo), scales = "free")
+  }
+
+  # time window: clip display to the requested range
+  if (!is.null(time_window)) {
+    p <- p + ggplot2::coord_cartesian(xlim = time_window)
   }
 
   p <- p + theme

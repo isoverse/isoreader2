@@ -9,12 +9,12 @@ ir_plot_scans(
   scan_type = NULL,
   panel = file_name,
   color = mass,
-  linetype = NULL,
+  linetype = species,
   colors = palette.colors(),
   scientific = FALSE,
   x_window = NULL,
-  n_xbreaks = 5,
-  n_ybreaks = 5,
+  n_x_breaks = 5,
+  n_y_breaks = 5,
   theme = ir_default_theme()
 )
 }
@@ -47,9 +47,9 @@ display window \code{c(min, max)}. Data just outside the window is retained for
 correct y autoscaling at the edges; \code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} clips the
 display. Default \code{NULL} shows the full x range.}
 
-\item{n_xbreaks}{desired number of x axis tick marks (default: \code{5})}
+\item{n_x_breaks}{desired number of x axis tick marks (default: \code{5})}
 
-\item{n_ybreaks}{desired number of y axis tick marks (default: \code{5})}
+\item{n_y_breaks}{desired number of y axis tick marks (default: \code{5})}
 
 \item{theme}{ggplot2 theme to apply (default: \code{\link[=ir_default_theme]{ir_default_theme()}})}
 }
