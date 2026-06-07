@@ -213,9 +213,14 @@ check_file_paths_parameter <- function(file_paths) {
 #' run the isoextract executable on a vector of file paths
 #' this is usually not called directly
 #' @inheritParams ir_read_isofiles
+#' @param pretty_json whether to write the JSON output in human-readable
+#'   pretty-printed format (default: `FALSE`). Useful for debugging; has no
+#'   effect on the data read back by [ir_read_isofiles()]. Note that
+#'   pretty-printed files are larger than compact ones.
 #' @export
 ir_extract_isofiles <- function(
   file_paths,
+  pretty_json = FALSE,
   show_progress = is_interactive(),
   show_problems = TRUE
 ) {
@@ -265,7 +270,7 @@ ir_extract_isofiles <- function(
   })
   p <- processx::process$new(
     get_isoextract_path(),
-    c("--file-list", file_list),
+    c("--file-list", file_list, if (pretty_json) "--prettyJSON"),
     stdout = "|",
     stderr = "|"
   )
