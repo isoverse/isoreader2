@@ -20,7 +20,8 @@
       "traces",
       "\\1",
       source = "(intensity\\..*)",
-      regexp = TRUE
+      regexp = TRUE,
+      cast = "as.numeric"
     ) |>
     # CYCLES section ====================
     ir_add_to_aggregator("cycles", "analysis", cast = "as.integer") |>
@@ -32,7 +33,8 @@
       "cycles",
       "\\1",
       source = "(intensity\\..*)",
-      regexp = TRUE
+      regexp = TRUE,
+      cast = "as.numeric"
     ) |>
     # SCANS section ====================
     ir_add_to_aggregator("scans", "analysis", cast = "as.integer") |>
@@ -43,7 +45,8 @@
       "scans",
       "\\1",
       source = "(intensity\\..*)",
-      regexp = TRUE
+      regexp = TRUE,
+      cast = "as.numeric"
     ) |>
     ir_register_aggregator("minimal")
 
