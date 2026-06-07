@@ -216,7 +216,7 @@ check_file_paths_parameter <- function(file_paths) {
 #' @export
 ir_extract_isofiles <- function(
   file_paths,
-  show_progress = rlang::is_interactive(),
+  show_progress = is_interactive(),
   show_problems = TRUE
 ) {
   # safety checks
