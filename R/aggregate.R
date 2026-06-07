@@ -339,7 +339,7 @@ aggregate_files <- function(
 
   # info
   start <- start_info(
-    "is aggregating data from isofile {pb_current}/{pb_total} using {.emph {.strong {attr(aggregator, 'name')}}} aggregator {pb_bar} ",
+    "is aggregating data from isofile {pb_current}/{pb_total - 1} using {.emph {.strong {attr(aggregator, 'name')}}} aggregator {pb_bar} ",
     "| {pb_elapsed} | ETA{pb_eta} | {.file {pb_status}}",
     pb_total = nrow(isofiles) + 1L,
     pb_status = "",

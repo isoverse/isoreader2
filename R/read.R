@@ -240,7 +240,7 @@ ir_read_isofiles <- function(
 
   # start progress bar
   start <- start_info(
-    "is reading {pb_current}/{pb_total} files {pb_bar} ",
+    "is reading {pb_current}/{pb_total - 1} files {pb_bar} ",
     "| {pb_elapsed} | ETA {pb_eta} | {.file {basename(pb_extra$file_path)}} ",
     "| {.field {pb_status}}",
     pb_total = nrow(file_paths_info) + 1L,
