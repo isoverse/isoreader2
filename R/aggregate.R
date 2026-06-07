@@ -24,10 +24,16 @@ ir_aggregate_isofiles <- function(
   show_problems = TRUE
 ) {
   # safety checks
-  check_arg(
-    aggregator,
-    is_scalar_character(aggregator) || is(aggregator, "ir_aggregator")
-  )
+  isofiles |>
+    check_arg(
+      !missing(isofiles) && is(isofiles, "ir_isofiles"),
+      "must be a collection of isofiles (use ir_read_isofiles())"
+    )
+  aggregator |>
+    check_arg(
+      is_scalar_character(aggregator) || is(aggregator, "ir_aggregator"),
+      "must be a valid aggregator"
+    )
   if (is.character(aggregator)) {
     aggregator <- ir_get_aggregator(aggregator)
   }
@@ -632,8 +638,11 @@ aggregate_data <- function(
   intensity_units,
   show_problems = TRUE
 ) {
-  # don't process datasets that are not part of the data
-  missing <- setdiff(unique(aggregator$dataset), names(datasets))
+  # don't process datasets that are not part of the data (NULL or empty tibble)
+  missing <- setdiff(
+    unique(aggregator$dataset),
+    names(datasets)[purrr::map_lgl(datasets, ~ !is.null(.x) && nrow(.x) > 0L)]
+  )
   aggregator <- aggregator |> dplyr::filter(!.data$dataset %in% missing)
   if (nrow(aggregator) == 0) {
     cli_abort("there is nothing to aggregate")
@@ -756,7 +765,6 @@ aggregate_data <- function(
       used_columns = list(.data$source |> unlist(recursive = TRUE) |> unique()),
       unused_columns = list(setdiff(all_columns[[1]], used_columns[[1]]))
     )
-
   # aggregate value for dataset/column from source
   aggregate_value <- function(dataset, column, source, cast, func, args) {
     # generate expressions for sources
@@ -840,15 +848,7 @@ aggregate_data <- function(
 
   # add uidx to each tibble
   datasets <- datasets |>
-    purrr::map(
-      ~ {
-        if (nrow(.x) > 0) {
-          dplyr::mutate(.x, uidx = !!uidx, .before = 1L)
-        } else {
-          dplyr::mutate(.x, uidx = integer(0), .before = 1L)
-        }
-      }
-    )
+    purrr::map(dplyr::mutate, uidx = !!uidx, .before = 1L)
 
   problems <-
     dplyr::bind_rows(

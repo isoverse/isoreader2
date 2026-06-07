@@ -16,11 +16,15 @@ print.ir_isofiles <- function(x, ...) {
       idx = dplyr::row_number(),
       idx_spacers = max(n_digits(.data$idx)) - n_digits(.data$idx),
       n_analyses = if (!"metadata" %in% names(x)) {
-        1L
+        0L
       } else {
         purrr::map_int(
           .data$metadata,
-          ~ if (!is.data.frame(.x)) 1L else nrow(.x)
+          ~ if (!is.data.frame(.x) || all(is.na(.x[["analysis"]]))) {
+            0L
+          } else {
+            nrow(.x)
+          }
         )
       },
       filename_spacers = max(nchar(basename(.data$file_path))) -
@@ -68,7 +72,7 @@ print.ir_isofiles <- function(x, ...) {
       )
     ) |>
     dplyr::left_join(.file_type_specs, by = c("ext" = "file_type")) |>
-    dplyr::mutate(all_single = all(.data$n_analyses == 1)) |>
+    dplyr::mutate(all_single = all(.data$n_analyses <= 1)) |>
     dplyr::mutate(
       .by = "idx",
       # format_inline needs a single line

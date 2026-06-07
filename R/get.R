@@ -21,11 +21,11 @@ ir_get_data <- function(
   resistors = NULL,
   by = c("uidx", "analysis", "config", "species", "channel", "mass")
 ) {
-  check_arg(
-    aggregated_data,
-    !missing(aggregated_data) && is(aggregated_data, "ir_aggregated_data"),
-    "must be a set of aggregated isofiles"
-  )
+  aggregated_data |>
+    check_arg(
+      !missing(aggregated_data) && is(aggregated_data, "ir_aggregated_data"),
+      "must be a set of aggregated isofiles (use ir_aggregate_isofiles())"
+    )
   # what is requested?
   req_traces <- quo_is_null(enquo(traces))
   req_cycles <- quo_is_null(enquo(cycles))
