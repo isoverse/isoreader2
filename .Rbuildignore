@@ -11,3 +11,4 @@
 ^\.github$
 ^cache$
 ^tmp$
+CNAME

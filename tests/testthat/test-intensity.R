@@ -11,7 +11,7 @@ test_that("intensity_unit_info()", {
   # current units ==============================================================
   expect_equal(intensity_unit_info("A"), list(base = "A", scale = 1))
   expect_equal(intensity_unit_info("mA"), list(base = "A", scale = 1e3))
-  expect_equal(intensity_unit_info("µA"), list(base = "A", scale = 1e6))
+  expect_equal(intensity_unit_info("\u00b5A"), list(base = "A", scale = 1e6))
   expect_equal(intensity_unit_info("nA"), list(base = "A", scale = 1e9))
   expect_equal(intensity_unit_info("pA"), list(base = "A", scale = 1e12))
   expect_equal(intensity_unit_info("fA"), list(base = "A", scale = 1e15))

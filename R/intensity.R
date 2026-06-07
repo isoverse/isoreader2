@@ -15,7 +15,7 @@ intensity_unit_info <- function(unit) {
       "fA" = 1e15,
       "pA" = 1e12,
       "nA" = 1e9,
-      "µA" = 1e6,
+      "\u00b5A" = 1e6,
       "mA" = 1e3,
       "A" = 1
     )
@@ -41,12 +41,12 @@ intensity_unit_info <- function(unit) {
 #'   current/CPS; ignored otherwise. If a `config` column is present in both
 #'   `dataset` and `resistors` it is included in the join key.
 #' @param units target unit, one of `"mV"`, `"V"`, `"fA"`, `"pA"`, `"nA"`,
-#'   `"µA"`, `"mA"`, `"A"`, `"cps"`.
+#'   `"\u00b5A"`, `"mA"`, `"A"`, `"cps"`.
 #' @export
 ir_convert_intensity <- function(
   dataset,
   resistors = NULL,
-  units = c("mV", "V", "fA", "pA", "nA", "µA", "mA", "A", "cps")
+  units = c("mV", "V", "fA", "pA", "nA", "\u00b5A", "mA", "A", "cps")
 ) {
   e <- 1.602176634e-19 # elementary charge (C)
 

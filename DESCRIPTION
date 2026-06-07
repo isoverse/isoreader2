@@ -32,13 +32,13 @@ Imports:
     purrr,
     withr,
     RcppSimdJson,
-    scales
+    scales,
+    fansi,
+    knitr
 Suggests:
     testthat (>= 3.0.0),
     vdiffr,
     arrow,
-    openxlsx,
-    fansi,
-    knitr
+    openxlsx
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.0.0

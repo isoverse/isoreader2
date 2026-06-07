@@ -6,7 +6,7 @@
 \usage{
 ir_aggregate_isofiles(
   isofiles,
-  intensity_units = c("mV", "V", "fA", "pA", "nA", "µA", "mA", "A", "cps"),
+  intensity_units = c("mV", "V", "fA", "pA", "nA", "\u00b5A", "mA", "A", "cps"),
   aggregator = "standard",
   show_progress = is_interactive(),
   show_problems = TRUE
@@ -16,7 +16,7 @@ ir_aggregate_isofiles(
 \item{isofiles}{the isotope data files/archives read in by \code{\link[=ir_read_isofiles]{ir_read_isofiles()}}}
 
 \item{intensity_units}{target intensity unit to convert traces/cycles/scans to before aggregation,
-one of \code{"mV"}, \code{"V"}, \code{"fA"}, \code{"pA"}, \code{"nA"}, \code{"µA"}, \code{"mA"}, \code{"A"}, \code{"cps"}.
+one of \code{"mV"}, \code{"V"}, \code{"fA"}, \code{"pA"}, \code{"nA"}, \code{"\u00b5A"}, \code{"mA"}, \code{"A"}, \code{"cps"}.
 Only applied when the aggregator includes any of those datasets. Default is \code{"mV"}.}
 
 \item{aggregator}{typically the name of a registered aggregator (see all with \code{ir_get_option("aggregators")}),

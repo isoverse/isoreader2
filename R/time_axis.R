@@ -8,7 +8,7 @@ get_timebase <- function(interval, cutoff) {
     "m" = 60,
     "s" = 1,
     "ms" = 1e-3,
-    "µs" = 1e-6,
+    "\u00b5s" = 1e-6,
     "ns" = 1e-9,
     "ps" = 1e-12,
     "fs" = 1e-15
@@ -71,7 +71,7 @@ labels_duration <- function(cutoff = 0.5, short_format = FALSE) {
         out <- sprintf("%s%s%s", signif(s, 3), sep, unit("secs", "s"))
       }
     } else {
-      # sub-second units (ms, µs, ns, ...)
+      # sub-second units (ms, \u00b5s, ns, ...)
       out <- sprintf(
         "%s%s%s",
         format(signif(secs * 1 / base, 3), scientific = FALSE),

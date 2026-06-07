@@ -11,14 +11,14 @@
 #' The `aggregator` parameter can can also directly be an aggregator tibble (created/modified with [ir_start_aggregator()]
 #' and/or [ir_add_to_aggregator()]) that defines which data should be aggregated and how.
 #' @param intensity_units target intensity unit to convert traces/cycles/scans to before aggregation,
-#' one of `"mV"`, `"V"`, `"fA"`, `"pA"`, `"nA"`, `"µA"`, `"mA"`, `"A"`, `"cps"`.
+#' one of `"mV"`, `"V"`, `"fA"`, `"pA"`, `"nA"`, `"\u00b5A"`, `"mA"`, `"A"`, `"cps"`.
 #' Only applied when the aggregator includes any of those datasets. Default is `"mV"`.
 #' @inheritParams ir_read_isofiles
 #' @return a list of merged dataframes collected from the `isofiles` based on the `aggregator` definitions
 #' @export
 ir_aggregate_isofiles <- function(
   isofiles,
-  intensity_units = c("mV", "V", "fA", "pA", "nA", "µA", "mA", "A", "cps"),
+  intensity_units = c("mV", "V", "fA", "pA", "nA", "\u00b5A", "mA", "A", "cps"),
   aggregator = "standard",
   show_progress = is_interactive(),
   show_problems = TRUE
