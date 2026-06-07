@@ -85,7 +85,7 @@ ir_plot_scans <- function(
   scan_type = NULL,
   panel = file_name,
   color = mass,
-  linetype = NULL,
+  linetype = species,
   colors = palette.colors(),
   scientific = FALSE,
   x_window = NULL,
@@ -252,9 +252,24 @@ ir_plot_scans <- function(
   )
   y_lab <- paste0("intensity [", intensity_units, "]")
 
+  # validate aesthetic expressions against the actual plot data
+  check_aes_expr(panel_quo, "panel", plot_data)
+  check_aes_expr(color_quo, "color", plot_data)
+  check_aes_expr(linetype_quo, "linetype", plot_data)
+
+  # group aesthetic: always set to ensure one line per scan trace
+  group_cols <- intersect(
+    c("uidx", "analysis", "species", "mass"),
+    names(plot_data)
+  )
+
   # base plot
   p <- ggplot2::ggplot(plot_data) +
-    ggplot2::aes(x = !!sym("x"), y = !!sym(intensity_col)) +
+    ggplot2::aes(
+      x = !!sym("x"),
+      y = !!sym(intensity_col),
+      group = interaction(!!!rlang::syms(group_cols))
+    ) +
     ggplot2::geom_line() +
     ggplot2::labs(x = x_lab, y = y_lab) +
     ggplot2::scale_x_continuous(

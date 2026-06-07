@@ -45,6 +45,27 @@ check_arg <- function(
   }
 }
 
+# validate a tidy-eval aesthetic expression against a data frame by running a
+# 1-row mutate; throws an informative error if the expression fails (e.g. a
+# referenced column does not exist). quo must be an enquo'd expression;
+# arg_name is the parameter name shown in the error message.
+check_aes_expr <- function(quo, arg_name, data, .env = caller_env()) {
+  if (!rlang::quo_is_null(quo)) {
+    tryCatch(
+      dplyr::mutate(data[1L, ], .check = !!quo),
+      error = function(e) {
+        cli_abort(
+          c(
+            "{.field {arg_name}} = {.emph {rlang::as_label(quo)}} is not a valid expression for this dataset",
+            "i" = conditionMessage(e)
+          ),
+          call = .env
+        )
+      }
+    )
+  }
+}
+
 # check tibble for being a tibble and required columns if there are any
 check_tibble <- function(
   df,
