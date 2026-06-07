@@ -29,7 +29,8 @@ ir_read_isofiles <- function(
     check_arg(is_scalar_logical(show_progress), "must be TRUE OR FALSE")
   show_problems |>
     check_arg(is_scalar_logical(show_problems), "must be TRUE OR FALSE")
-  pretty_json |> check_arg(is_scalar_logical(pretty_json), "must be TRUE OR FALSE")
+  pretty_json |>
+    check_arg(is_scalar_logical(pretty_json), "must be TRUE OR FALSE")
   reextract |> check_arg(is_scalar_logical(reextract), "must be TRUE OR FALSE")
 
   # any paths?
@@ -103,12 +104,16 @@ ir_read_isofiles <- function(
           }
         ),
         size_identical = .data$file_size == .data$previous_file_size,
-        # (re-) extract flag
+        # (re-) extract flag - conditions
+        # has no json --> reextract
         extract = !.data$has_json |
+          # version info missing --> reextract
           is.na(.data$version_ok) |
+          # version insufficient --> reextract
           !.data$version_ok |
-          is.na(.data$size_identical) |
-          !.data$size_identical
+          # original file exists but size is not identical
+          (!is.na(.data$file_size) & is.na(.data$size_identical)) |
+          (!is.na(.data$file_size) & !.data$size_identical)
       )
   }
 
