@@ -78,7 +78,7 @@ Example files are very helpful for fixing bugs so please consider
 including an example data file (you will have to attach it as a zip
 archive).
 
-## isoverse [![](reference/figures/isoverse_logo_thumb.png)](http://www.isoverse.org)
+## isoverse [![isoverse logo](reference/figures/isoverse_logo_thumb.png)](http://www.isoverse.org)
 
 This package is part of the isoverse suite of data tools for stable
 isotopes. If you like the functionality that isoverse packages provide,
@@ -89,7 +89,7 @@ If you have suggestions for new features or other constructive feedback,
 please let us know on this short [feeback
 form](https://www.isoverse.org/feedback/).
 
-## Funding [![](reference/figures/NSF_logo.svg)](https://www.nsf.gov/)
+## Funding [![NSF logo](reference/figures/NSF_logo.svg)](https://www.nsf.gov/)
 
 This project is supported by a grant from the US National Science
 Foundation

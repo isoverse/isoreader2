@@ -8,7 +8,7 @@ not called directly
 ``` r
 ir_extract_isofiles(
   file_paths,
-  show_progress = rlang::is_interactive(),
+  show_progress = is_interactive(),
   show_problems = TRUE
 )
 ```

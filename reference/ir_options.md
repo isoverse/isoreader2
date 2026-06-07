@@ -46,14 +46,127 @@ ir_get_option(x)
 
 ## Options for the isoreader2 package
 
-- `dev_mode`: developer mode provides more verbose output
+- `aggregators`: data aggregators for pulling data out of raw files. The
+  list of available aggregators is accessible via
+  `ir_get_option("aggregators")`. Individiual aggregators are available
+  via the shortcut helper function `ir_get_aggregator("standard")`.
+  Register new/overwrite existing aggregators via
+  [`ir_register_aggregator()`](https://isoreader2.isoverse.org/reference/ir_aggregator.md).
+
+- `debug`: turn on debug mode
+
+- `auto_use_ansi`: whether to automatically enable correct rendering of
+  stylized (ansi) output in HTML reports from notebooks that call
+  [`library(isoir)`](https://rdrr.io/r/base/library.html). Can be turned
+  off by calling `isoir::ir_options(auto_use_ansi = FALSE)` **before**
+  call [`library(isoir)`](https://rdrr.io/r/base/library.html).
 
 ## Examples
 
 ``` r
 # All default options
 ir_get_options()
-#> $dev_mode
+#> $aggregators
+#> $aggregators$minimal
+#> ────────────────────────────── Aggregator minimal ──────────────────────────────
+#> Dataset metadata:
+#>  → file_name = as.character(sub(file_name, pattern = "\\.[^.]+$", replacement =
+#> ""))
+#>  → analysis = as.integer(analysis)
+#>  → timestamp = as.POSIXct(timestamp)
+#> Dataset traces:
+#>  → analysis = as.integer(analysis)
+#>  → species = as.character(species)
+#>  → mass = as.character(mass)
+#>  → time.s = as.numeric(time.s)
+#>  → (intensity\\..*) = as.character(all_matches("(intensity\\..*)"))
+#> Dataset cycles:
+#>  → analysis = as.integer(analysis)
+#>  → species = as.character(species)
+#>  → cycle = as.integer(cycle)
+#>  → type = as.character(type)
+#>  → mass = as.character(mass)
+#>  → (intensity\\..*) = as.character(all_matches("(intensity\\..*)"))
+#> Dataset scans:
+#>  → analysis = as.integer(analysis)
+#>  → species = as.character(species)
+#>  → mass = as.character(mass)
+#>  → x = as.numeric(x)
+#>  → (intensity\\..*) = as.character(all_matches("(intensity\\..*)"))
+#> 
+#> $aggregators$standard
+#> ────────────────────────────── Aggregator standard ─────────────────────────────
+#> Dataset metadata:
+#>  → file_name = as.character(sub(file_name, pattern = "\\.[^.]+$", replacement =
+#> ""))
+#>  → analysis = as.integer(analysis)
+#>  → timestamp = as.POSIXct(timestamp)
+#>  → (.*) = as.character(all_matches("(.*)"))
+#> Dataset traces:
+#>  → analysis = as.integer(analysis)
+#>  → species = as.character(species)
+#>  → mass = as.character(mass)
+#>  → time.s = as.numeric(time.s)
+#>  → (intensity\\..*) = as.character(all_matches("(intensity\\..*)"))
+#> Dataset cycles:
+#>  → analysis = as.integer(analysis)
+#>  → species = as.character(species)
+#>  → cycle = as.integer(cycle)
+#>  → type = as.character(type)
+#>  → mass = as.character(mass)
+#>  → (intensity\\..*) = as.character(all_matches("(intensity\\..*)"))
+#> Dataset scans:
+#>  → analysis = as.integer(analysis)
+#>  → species = as.character(species)
+#>  → mass = as.character(mass)
+#>  → x = as.numeric(x)
+#>  → (intensity\\..*) = as.character(all_matches("(intensity\\..*)"))
+#> 
+#> $aggregators$extended
+#> ────────────────────────────── Aggregator extended ─────────────────────────────
+#> Dataset metadata:
+#>  → file_name = as.character(sub(file_name, pattern = "\\.[^.]+$", replacement =
+#> ""))
+#>  → analysis = as.integer(analysis)
+#>  → timestamp = as.POSIXct(timestamp)
+#>  → (.*) = as.character(all_matches("(.*)"))
+#> Dataset traces:
+#>  → analysis = as.integer(analysis)
+#>  → species = as.character(species)
+#>  → mass = as.character(mass)
+#>  → time.s = as.numeric(time.s)
+#>  → (intensity\\..*) = as.character(all_matches("(intensity\\..*)"))
+#>  → channel = as.integer(channel)
+#>  → config = as.integer(config)
+#> Dataset cycles:
+#>  → analysis = as.integer(analysis)
+#>  → species = as.character(species)
+#>  → cycle = as.integer(cycle)
+#>  → type = as.character(type)
+#>  → mass = as.character(mass)
+#>  → (intensity\\..*) = as.character(all_matches("(intensity\\..*)"))
+#>  → channel = as.integer(channel)
+#> Dataset scans:
+#>  → analysis = as.integer(analysis)
+#>  → species = as.character(species)
+#>  → mass = as.character(mass)
+#>  → x = as.numeric(x)
+#>  → (intensity\\..*) = as.character(all_matches("(intensity\\..*)"))
+#>  → channel = as.integer(channel)
+#> Dataset resistors:
+#>  → species = as.character(species)
+#>  → config = as.integer(config)
+#>  → channel = as.integer(channel)
+#>  → mass = as.character(mass)
+#>  → cup = as.integer(cup)
+#>  → resistance.Ohm = as.numeric(resistance.Ohm)
+#>  → nominal.Ohm = as.numeric(nominal.Ohm)
+#> 
+#> 
+#> $debug
 #> [1] FALSE
+#> 
+#> $auto_use_ansi
+#> [1] TRUE
 #> 
 ```

@@ -84,15 +84,117 @@ with a regular expression pattern.</p>
     <h2 id="options-for-the-isoreader-package">Options for the isoreader2 package<a class="anchor" aria-label="anchor" href="#options-for-the-isoreader-package"></a></h2>
 
 
-<ul><li><p><code>dev_mode</code>: developer mode provides more verbose output</p></li>
+<ul><li><p><code>aggregators</code>: data aggregators for pulling data out of raw files. The list of available aggregators is accessible via <code>ir_get_option("aggregators")</code>. Individiual aggregators are available via the shortcut helper function <code>ir_get_aggregator("standard")</code>. Register new/overwrite existing aggregators via <code><a href="ir_aggregator.html">ir_register_aggregator()</a></code>.</p></li>
+<li><p><code>debug</code>: turn on debug mode</p></li>
+<li><p><code>auto_use_ansi</code>: whether to automatically enable correct rendering of stylized (ansi) output in HTML reports from notebooks that call <code><a href="https://rdrr.io/r/base/library.html" class="external-link">library(isoir)</a></code>. Can be turned off by calling <code>isoir::ir_options(auto_use_ansi = FALSE)</code> <strong>before</strong> call <code><a href="https://rdrr.io/r/base/library.html" class="external-link">library(isoir)</a></code>.</p></li>
 </ul></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># All default options</span></span></span>
 <span class="r-in"><span><span class="fu">ir_get_options</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $dev_mode</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aggregators</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aggregators$minimal</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> ────────────────────────────── <span style="font-weight: bold;">Aggregator </span><span style="font-weight: bold; font-style: italic;">minimal</span> ──────────────────────────────</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Dataset</span> <span style="color: #0000BB;">metadata</span>:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">file_name</span> = <span style="font-style: italic;">as.character(sub(file_name, pattern = "\\.[^.]+$", replacement =</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-style: italic;">""))</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">analysis</span> = <span style="font-style: italic;">as.integer(analysis)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">timestamp</span> = <span style="font-style: italic;">as.POSIXct(timestamp)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Dataset</span> <span style="color: #0000BB;">traces</span>:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">analysis</span> = <span style="font-style: italic;">as.integer(analysis)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">species</span> = <span style="font-style: italic;">as.character(species)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">mass</span> = <span style="font-style: italic;">as.character(mass)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">time.s</span> = <span style="font-style: italic;">as.numeric(time.s)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #BB00BB;">(intensity\\..*)</span> = <span style="font-style: italic;">as.character(all_matches("(intensity\\..*)"))</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Dataset</span> <span style="color: #0000BB;">cycles</span>:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">analysis</span> = <span style="font-style: italic;">as.integer(analysis)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">species</span> = <span style="font-style: italic;">as.character(species)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">cycle</span> = <span style="font-style: italic;">as.integer(cycle)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">type</span> = <span style="font-style: italic;">as.character(type)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">mass</span> = <span style="font-style: italic;">as.character(mass)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #BB00BB;">(intensity\\..*)</span> = <span style="font-style: italic;">as.character(all_matches("(intensity\\..*)"))</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Dataset</span> <span style="color: #0000BB;">scans</span>:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">analysis</span> = <span style="font-style: italic;">as.integer(analysis)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">species</span> = <span style="font-style: italic;">as.character(species)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">mass</span> = <span style="font-style: italic;">as.character(mass)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">x</span> = <span style="font-style: italic;">as.numeric(x)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #BB00BB;">(intensity\\..*)</span> = <span style="font-style: italic;">as.character(all_matches("(intensity\\..*)"))</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aggregators$standard</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> ────────────────────────────── <span style="font-weight: bold;">Aggregator </span><span style="font-weight: bold; font-style: italic;">standard</span> ─────────────────────────────</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Dataset</span> <span style="color: #0000BB;">metadata</span>:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">file_name</span> = <span style="font-style: italic;">as.character(sub(file_name, pattern = "\\.[^.]+$", replacement =</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-style: italic;">""))</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">analysis</span> = <span style="font-style: italic;">as.integer(analysis)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">timestamp</span> = <span style="font-style: italic;">as.POSIXct(timestamp)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #BB00BB;">(.*)</span> = <span style="font-style: italic;">as.character(all_matches("(.*)"))</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Dataset</span> <span style="color: #0000BB;">traces</span>:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">analysis</span> = <span style="font-style: italic;">as.integer(analysis)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">species</span> = <span style="font-style: italic;">as.character(species)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">mass</span> = <span style="font-style: italic;">as.character(mass)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">time.s</span> = <span style="font-style: italic;">as.numeric(time.s)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #BB00BB;">(intensity\\..*)</span> = <span style="font-style: italic;">as.character(all_matches("(intensity\\..*)"))</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Dataset</span> <span style="color: #0000BB;">cycles</span>:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">analysis</span> = <span style="font-style: italic;">as.integer(analysis)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">species</span> = <span style="font-style: italic;">as.character(species)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">cycle</span> = <span style="font-style: italic;">as.integer(cycle)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">type</span> = <span style="font-style: italic;">as.character(type)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">mass</span> = <span style="font-style: italic;">as.character(mass)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #BB00BB;">(intensity\\..*)</span> = <span style="font-style: italic;">as.character(all_matches("(intensity\\..*)"))</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Dataset</span> <span style="color: #0000BB;">scans</span>:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">analysis</span> = <span style="font-style: italic;">as.integer(analysis)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">species</span> = <span style="font-style: italic;">as.character(species)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">mass</span> = <span style="font-style: italic;">as.character(mass)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">x</span> = <span style="font-style: italic;">as.numeric(x)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #BB00BB;">(intensity\\..*)</span> = <span style="font-style: italic;">as.character(all_matches("(intensity\\..*)"))</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aggregators$extended</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> ────────────────────────────── <span style="font-weight: bold;">Aggregator </span><span style="font-weight: bold; font-style: italic;">extended</span> ─────────────────────────────</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Dataset</span> <span style="color: #0000BB;">metadata</span>:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">file_name</span> = <span style="font-style: italic;">as.character(sub(file_name, pattern = "\\.[^.]+$", replacement =</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-style: italic;">""))</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">analysis</span> = <span style="font-style: italic;">as.integer(analysis)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">timestamp</span> = <span style="font-style: italic;">as.POSIXct(timestamp)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #BB00BB;">(.*)</span> = <span style="font-style: italic;">as.character(all_matches("(.*)"))</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Dataset</span> <span style="color: #0000BB;">traces</span>:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">analysis</span> = <span style="font-style: italic;">as.integer(analysis)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">species</span> = <span style="font-style: italic;">as.character(species)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">mass</span> = <span style="font-style: italic;">as.character(mass)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">time.s</span> = <span style="font-style: italic;">as.numeric(time.s)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #BB00BB;">(intensity\\..*)</span> = <span style="font-style: italic;">as.character(all_matches("(intensity\\..*)"))</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">channel</span> = <span style="font-style: italic;">as.integer(channel)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">config</span> = <span style="font-style: italic;">as.integer(config)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Dataset</span> <span style="color: #0000BB;">cycles</span>:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">analysis</span> = <span style="font-style: italic;">as.integer(analysis)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">species</span> = <span style="font-style: italic;">as.character(species)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">cycle</span> = <span style="font-style: italic;">as.integer(cycle)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">type</span> = <span style="font-style: italic;">as.character(type)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">mass</span> = <span style="font-style: italic;">as.character(mass)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #BB00BB;">(intensity\\..*)</span> = <span style="font-style: italic;">as.character(all_matches("(intensity\\..*)"))</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">channel</span> = <span style="font-style: italic;">as.integer(channel)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Dataset</span> <span style="color: #0000BB;">scans</span>:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">analysis</span> = <span style="font-style: italic;">as.integer(analysis)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">species</span> = <span style="font-style: italic;">as.character(species)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">mass</span> = <span style="font-style: italic;">as.character(mass)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">x</span> = <span style="font-style: italic;">as.numeric(x)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #BB00BB;">(intensity\\..*)</span> = <span style="font-style: italic;">as.character(all_matches("(intensity\\..*)"))</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">channel</span> = <span style="font-style: italic;">as.integer(channel)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Dataset</span> <span style="color: #0000BB;">resistors</span>:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">species</span> = <span style="font-style: italic;">as.character(species)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">config</span> = <span style="font-style: italic;">as.integer(config)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">channel</span> = <span style="font-style: italic;">as.integer(channel)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">mass</span> = <span style="font-style: italic;">as.character(mass)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">cup</span> = <span style="font-style: italic;">as.integer(cup)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">resistance.Ohm</span> = <span style="font-style: italic;">as.numeric(resistance.Ohm)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">nominal.Ohm</span> = <span style="font-style: italic;">as.numeric(nominal.Ohm)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $debug</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $auto_use_ansi</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

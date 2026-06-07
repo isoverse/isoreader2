@@ -27,7 +27,16 @@ These functions allows reading of stable isotope data files/archives
 These functions combine the data from multiple isofiles for combined use
 
 - [`ir_aggregate_isofiles()`](https://isoreader2.isoverse.org/reference/ir_aggregate_isofiles.md)
-  : Aggregate the data from isofiles
+  : Aggregate data from isofiles
+- [`ir_convert_intensity()`](https://isoreader2.isoverse.org/reference/ir_convert_intensity.md)
+  : Convert intensity between units
+- [`ir_start_aggregator()`](https://isoreader2.isoverse.org/reference/ir_aggregator.md)
+  [`ir_add_to_aggregator()`](https://isoreader2.isoverse.org/reference/ir_aggregator.md)
+  [`ir_register_aggregator()`](https://isoreader2.isoverse.org/reference/ir_aggregator.md)
+  [`ir_get_aggregator()`](https://isoreader2.isoverse.org/reference/ir_aggregator.md)
+  : Dynamic data agreggator
+- [`ir_get_data()`](https://isoreader2.isoverse.org/reference/ir_get_data.md)
+  : Get data frame from aggregated data
 
 ## Package options
 
