@@ -10,7 +10,7 @@ ir_plot_scans(
   panel = file_name,
   color = mass,
   linetype = species,
-  colors = palette.colors(),
+  color_values = palette.colors(),
   scientific = FALSE,
   x_window = NULL,
   n_x_breaks = 5,
@@ -20,7 +20,7 @@ ir_plot_scans(
 }
 \arguments{
 \item{dataset}{an \code{ir_aggregated_data} object from \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}}
-or a plain data frame with \code{x}, \code{scan_type}, \code{x_units}, and an
+or a plain data frame with \code{x}, \code{scan_type}, \code{x_units}, \code{mass}, and an
 \verb{intensity.*} column}
 
 \item{scan_type}{which scan type to plot (e.g. \code{"high voltage"}). Required
@@ -36,8 +36,9 @@ to \code{NULL} to suppress panels.}
 \item{linetype}{column or expression for the linetype aesthetic (default:
 \code{species})}
 
-\item{colors}{named or unnamed character vector of colours passed to
-\code{\link[ggplot2:scale_color_manual]{ggplot2::scale_color_manual()}} (default: \code{\link[=palette.colors]{palette.colors()}})}
+\item{color_values}{named or unnamed character vector of colours passed to
+\code{\link[ggplot2:scale_color_manual]{ggplot2::scale_color_manual()}}, or \code{NULL} to use the ggplot2 default
+colour palette (default: \code{\link[=palette.colors]{palette.colors()}})}
 
 \item{scientific}{whether to format y axis labels in scientific notation
 (default: \code{FALSE})}
@@ -61,7 +62,9 @@ Plots scan data from an \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofile
 frame. When \code{dataset} is an \code{ir_aggregated_data} object, the \verb{$scans}
 dataset is inner-joined with \verb{$metadata} (bringing in all metadata columns
 not already present in \verb{$scans}) before plotting. The plot data must contain
-\code{x}, \code{scan_type}, \code{x_units}, and an \verb{intensity.*} column — an error is
-thrown if any are missing. The intensity unit suffix becomes the y axis
-label; \code{scan_type} and \code{x_units} are combined for the x axis label.
+\code{x}, \code{scan_type}, \code{x_units}, \code{mass}, and an \verb{intensity.*} column — an error
+is thrown if any are missing. The intensity unit suffix becomes the y axis
+label; \code{scan_type} and \code{x_units} are combined for the x axis label. If
+\code{mass} is not already a factor it is converted to one with levels sorted in
+numerical order.
 }

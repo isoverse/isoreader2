@@ -7,12 +7,18 @@ this is usually not called directly}
 \usage{
 ir_extract_isofiles(
   file_paths,
+  pretty_json = FALSE,
   show_progress = is_interactive(),
   show_problems = TRUE
 )
 }
 \arguments{
 \item{file_paths}{paths to the isodat file(s), single value or vector of paths. Use \code{\link[=ir_find_isofiles]{ir_find_isofiles()}} to get files in a folder.}
+
+\item{pretty_json}{whether to write the JSON output in human-readable
+pretty-printed format (default: \code{FALSE}). Useful for debugging; has no
+effect on the data read back by \code{\link[=ir_read_isofiles]{ir_read_isofiles()}}. Note that
+pretty-printed files are larger than compact ones.}
 
 \item{show_progress}{whether to show a progress bar, by default always enabled when running interactively e.g. inside Positron or RStudio (and disabled in a notebook), turn off with \code{show_progress = FALSE}}
 
