@@ -10,15 +10,20 @@
 #' Other options are "minimal" (`ir_get_aggregator("minimal")`) and "extended" (`ir_get_aggregator("extended")`).
 #' The `aggregator` parameter can can also directly be an aggregator tibble (created/modified with [ir_start_aggregator()]
 #' and/or [ir_add_to_aggregator()]) that defines which data should be aggregated and how.
+#' @param intensity_units target intensity unit to convert traces/cycles/scans to before aggregation,
+#' one of `"mV"`, `"V"`, `"fA"`, `"pA"`, `"nA"`, `"µA"`, `"mA"`, `"A"`, `"cps"`.
+#' Only applied when the aggregator includes any of those datasets. Default is `"mV"`.
 #' @inheritParams ir_read_isofiles
 #' @return a list of merged dataframes collected from the `isofiles` based on the `aggregator` definitions
 #' @export
 ir_aggregate_isofiles <- function(
   isofiles,
   aggregator = "standard",
-  show_progress = rlang::is_interactive(),
+  intensity_units = c("mV", "V", "fA", "pA", "nA", "µA", "mA", "A", "cps"),
+  show_progress = is_interactive(),
   show_problems = TRUE
 ) {
+  # safety checks
   check_arg(
     aggregator,
     is_scalar_character(aggregator) || is(aggregator, "ir_aggregator")
@@ -26,10 +31,18 @@ ir_aggregate_isofiles <- function(
   if (is.character(aggregator)) {
     aggregator <- ir_get_aggregator(aggregator)
   }
+
+  # intensity_units validation
+  if (missing(intensity_units)) {
+    intensity_units <- "mV"
+  }
+  intensity_units <- arg_match(intensity_units)
+
   agg_data <-
     aggregate_files(
       isofiles,
       aggregator,
+      intensity_units = intensity_units,
       show_progress = show_progress,
       show_problems = show_problems
     )
@@ -48,6 +61,9 @@ print.ir_aggregated_data <- function(x, ...) {
     purrr::map2_chr(
       names(x),
       function(dataset, name) {
+        if (ncol(dataset) == 0) {
+          return(NA_character_)
+        }
         # summarize problems
         if (name == "problems") {
           return(
@@ -95,6 +111,7 @@ print.ir_aggregated_data <- function(x, ...) {
         )
       }
     ) |>
+    na.omit() |>
     cli_bullets() # no |> cli() at the to keep paragraphs a bit separated in knitted doc
 }
 
@@ -421,7 +438,8 @@ summarize_aggregator <- function(aggregator) {
 aggregate_files <- function(
   isofiles,
   aggregator,
-  show_progress = rlang::is_interactive(),
+  intensity_units,
+  show_progress = is_interactive(),
   show_problems = TRUE,
   call = rlang::caller_call()
 ) {
@@ -429,7 +447,7 @@ aggregate_files <- function(
   root_env <- current_env()
 
   # safety checks
-  files_req_cols <- c("file_path")
+  files_req_cols <- "file_path"
   check_tibble(isofiles, files_req_cols)
   check_arg(
     aggregator,
@@ -448,9 +466,8 @@ aggregate_files <- function(
   # info
   start <- start_info(
     "is aggregating data from isofile {pb_current}/{pb_total} using {.emph {.strong {attr(aggregator, 'name')}}} aggregator {pb_bar} ",
-    "file data {pb_bar} {pb_percent}",
     "| {pb_elapsed} | ETA{pb_eta} | {.file {pb_status}}",
-    pb_total = nrow(isofiles),
+    pb_total = nrow(isofiles) + 1L,
     pb_status = "",
     show_progress = show_progress,
     .call = call,
@@ -464,6 +481,7 @@ aggregate_files <- function(
       cli_progress_update(
         id = start$pb,
         status = basename(file_path),
+        force = TRUE,
         .envir = root_env
       )
     }
@@ -478,6 +496,7 @@ aggregate_files <- function(
           uidx = uidx,
           datasets = isofiles[uidx, ] |> unlist(recursive = FALSE),
           aggregator = aggregator,
+          intensity_units = intensity_units,
           show_problems = FALSE # show them later
         ),
         error_value = list(
@@ -558,13 +577,27 @@ aggregate_files <- function(
     )
 
   # info
-  n_rows <- purrr::map_int(results, nrow) |> numbers_to_text()
-  details <- sprintf("{cli::col_blue('%s')} (%s)", names(results), n_rows) |>
+  has_data <- purrr::map_lgl(results, ~ ncol(.x) > 0)
+  data_series <- c("traces", "scans", "cycles")
+  n_rows <- purrr::map_int(results[has_data], nrow) |> numbers_to_text()
+  details <- sprintf(
+    "{cli::col_blue('%s')} (%s%s)",
+    names(results)[has_data],
+    n_rows,
+    ifelse(
+      names(results)[has_data] %in% data_series,
+      sprintf(
+        ", {.field intensity} in {cli::col_magenta('%s')}",
+        intensity_units
+      ),
+      ""
+    )
+  ) |>
     purrr::map_chr(format_inline)
   new_problems <- results$problems |>
     dplyr::filter(!is.na(.data$new) & .data$new)
   finish_info(
-    "aggregated {utils::head(details, -1)} from {nrow(isofiles)} file{?s} using the {.emph {.strong {attr(aggregator, 'name')}}} aggregator",
+    "aggregated {utils::head(details, -1)} from {nrow(isofiles)} file{?s} using the {.emph {.strong {attr(aggregator, 'name')}}} aggregator ",
     if (nrow(new_problems) > 0) {
       # custom problems summary
       summarize_cnds(
@@ -592,22 +625,43 @@ aggregate_files <- function(
 
 # actual aggregation function
 # note that this function is pretty universal
-aggregate_data <- function(uidx, datasets, aggregator, show_problems = TRUE) {
-  # check which datasets are available
-  check_datasets <- function(aggregator) {
-    missing <- setdiff(unique(aggregator$dataset), names(datasets))
-    aggregator |> dplyr::filter(!.data$dataset %in% missing)
+aggregate_data <- function(
+  uidx,
+  datasets,
+  aggregator,
+  intensity_units,
+  show_problems = TRUE
+) {
+  # don't process datasets that are not part of the data
+  missing <- setdiff(unique(aggregator$dataset), names(datasets))
+  aggregator <- aggregator |> dplyr::filter(!.data$dataset %in% missing)
+  if (nrow(aggregator) == 0) {
+    cli_abort("there is nothing to aggregate")
   }
 
-  # safety checks (run the check datasets with try_catch_cnds)
-  aggregator <- aggregator |>
-    check_datasets() |>
-    try_catch_cnds(
-      error_value = tibble(),
-      catch_errors = !ir_get_option("debug")
-    )
-  if (nrow(aggregator$result) == 0) {
-    cli_abort("there is nothing to aggregate")
+  # intensity conversion (non-standard pre-aggregation step)
+  # converts time-series datasets in place before column discovery so that
+  # find_source_columns sees the target intensity column name, not the raw one
+  conversion_cnds <- empty_cnds_tibble()
+  for (ds in intersect(
+    unique(aggregator$dataset),
+    c("traces", "scans", "cycles")
+  )) {
+    if (!is.null(datasets[[ds]]) && nrow(datasets[[ds]]) > 0L) {
+      converted <-
+        ir_convert_intensity(
+          datasets[[ds]],
+          resistors = datasets$resistors,
+          units = intensity_units
+        ) |>
+        try_catch_cnds(
+          # when the conversion fails, we'll keep the rest but not the intensity --> ends up as NAs
+          error_value = datasets[[ds]] |>
+            dplyr::select(-dplyr::starts_with("intensity."))
+        )
+      datasets[[ds]] <- converted$result
+      conversion_cnds <- dplyr::bind_rows(conversion_cnds, converted$conditions)
+    }
   }
 
   # find source columns and deal with any regexps that need to be resolved
@@ -669,7 +723,7 @@ aggregate_data <- function(uidx, datasets, aggregator, show_problems = TRUE) {
   }
 
   # run the find source columns function
-  aggregator_applied <- aggregator$result |>
+  aggregator_applied <- aggregator |>
     dplyr::mutate(
       cols = purrr::pmap(
         list(.data$dataset, .data$column, .data$source, .data$regexp),
@@ -798,8 +852,7 @@ aggregate_data <- function(uidx, datasets, aggregator, show_problems = TRUE) {
 
   problems <-
     dplyr::bind_rows(
-      datasets$conditions,
-      aggregator$conditions,
+      conversion_cnds,
       aggregator_applied$conditions
     ) |>
     dplyr::mutate(uidx = !!uidx, .before = 1L)
