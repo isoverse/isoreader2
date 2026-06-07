@@ -15,7 +15,7 @@ additional modification of the `aggregator`.
 ``` r
 ir_aggregate_isofiles(
   isofiles,
-  intensity_units = c("mV", "V", "fA", "pA", "nA", "µA", "mA", "A", "cps"),
+  intensity_units = c("mV", "V", "fA", "pA", "nA", "\u00b5A", "mA", "A", "cps"),
   aggregator = "standard",
   show_progress = is_interactive(),
   show_problems = TRUE
@@ -32,9 +32,9 @@ ir_aggregate_isofiles(
 - intensity_units:
 
   target intensity unit to convert traces/cycles/scans to before
-  aggregation, one of `"mV"`, `"V"`, `"fA"`, `"pA"`, `"nA"`, `"µA"`,
-  `"mA"`, `"A"`, `"cps"`. Only applied when the aggregator includes any
-  of those datasets. Default is `"mV"`.
+  aggregation, one of `"mV"`, `"V"`, `"fA"`, `"pA"`, `"nA"`,
+  `"\u00b5A"`, `"mA"`, `"A"`, `"cps"`. Only applied when the aggregator
+  includes any of those datasets. Default is `"mV"`.
 
 - aggregator:
 

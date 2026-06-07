@@ -38,7 +38,7 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ir_convert_intensity</span><span class="op">(</span></span>
 <span>  <span class="va">dataset</span>,</span>
 <span>  resistors <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  units <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mV"</span>, <span class="st">"V"</span>, <span class="st">"fA"</span>, <span class="st">"pA"</span>, <span class="st">"nA"</span>, <span class="st">"µA"</span>, <span class="st">"mA"</span>, <span class="st">"A"</span>, <span class="st">"cps"</span><span class="op">)</span></span>
+<span>  units <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mV"</span>, <span class="st">"V"</span>, <span class="st">"fA"</span>, <span class="st">"pA"</span>, <span class="st">"nA"</span>, <span class="st">"\u00b5A"</span>, <span class="st">"mA"</span>, <span class="st">"A"</span>, <span class="st">"cps"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -60,7 +60,7 @@ current/CPS; ignored otherwise. If a <code>config</code> column is present in bo
 
 <dt id="arg-units">units<a class="anchor" aria-label="anchor" href="#arg-units"></a></dt>
 <dd><p>target unit, one of <code>"mV"</code>, <code>"V"</code>, <code>"fA"</code>, <code>"pA"</code>, <code>"nA"</code>,
-<code>"µA"</code>, <code>"mA"</code>, <code>"A"</code>, <code>"cps"</code>.</p></dd>
+<code>"\u00b5A"</code>, <code>"mA"</code>, <code>"A"</code>, <code>"cps"</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

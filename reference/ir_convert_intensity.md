@@ -10,7 +10,7 @@ before aggregation.
 ir_convert_intensity(
   dataset,
   resistors = NULL,
-  units = c("mV", "V", "fA", "pA", "nA", "µA", "mA", "A", "cps")
+  units = c("mV", "V", "fA", "pA", "nA", "\u00b5A", "mA", "A", "cps")
 )
 ```
 
@@ -30,8 +30,8 @@ ir_convert_intensity(
 
 - units:
 
-  target unit, one of `"mV"`, `"V"`, `"fA"`, `"pA"`, `"nA"`, `"µA"`,
-  `"mA"`, `"A"`, `"cps"`.
+  target unit, one of `"mV"`, `"V"`, `"fA"`, `"pA"`, `"nA"`,
+  `"\u00b5A"`, `"mA"`, `"A"`, `"cps"`.
 
 ## Details
 
