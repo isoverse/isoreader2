@@ -231,7 +231,7 @@ print.ir_aggregated_data <- function(x, ...) {
                   "has {issues}"
                 },
                 if (nrow(dataset) > 0) {
-                  "{symbol$arrow_right} check with {.strong ir_get_problems(x)}"
+                  "{symbol$arrow_right} check with {.strong ir_show_problems(x)} / {.strong ir_get_problems(x)}"
                 }
               )
             )
@@ -245,7 +245,10 @@ print.ir_aggregated_data <- function(x, ...) {
           sprintf(fmt = "{.field %s}") |>
           paste0(dplyr::case_when(
             n_na == nrow(dataset) ~ " ({col_yellow('all NA')})",
-            n_na > 0 ~ sprintf(" ({col_yellow('%s NA')})", n_na |> numbers_to_text()),
+            n_na > 0 ~ sprintf(
+              " ({col_yellow('%s NA')})",
+              n_na |> numbers_to_text()
+            ),
             .default = ""
           ))
         unused_cols <- sprintf(
