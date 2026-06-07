@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">isoreader2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,7 +39,8 @@
 <span>  <span class="va">file_paths</span>,</span>
 <span>  show_progress <span class="op">=</span> <span class="fu">is_interactive</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  show_problems <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  reextract <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  pretty_json <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  reextract <span class="op">=</span> <span class="va">pretty_json</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -59,8 +60,18 @@
 <dd><p>whether to show problems encountered along the way (rather than just keeping track of them with <code><a href="problems.html">ir_get_problems()</a></code>). Set to <code>show_problems = FALSE</code> to turn off the live printout. Either way, all encountered problems can be retrieved with running <code><a href="problems.html">ir_get_problems()</a></code> for the returned list</p></dd>
 
 
+<dt id="arg-pretty-json">pretty_json<a class="anchor" aria-label="anchor" href="#arg-pretty-json"></a></dt>
+<dd><p>whether to write the JSON output in human-readable
+pretty-printed format (default: <code>FALSE</code>). Useful for debugging; has no
+effect on the data read back. Note that pretty-printed files are larger
+than compact ones. Setting <code>pretty_json = TRUE</code> also sets
+<code>reextract = TRUE</code> by default.</p></dd>
+
+
 <dt id="arg-reextract">reextract<a class="anchor" aria-label="anchor" href="#arg-reextract"></a></dt>
-<dd><p>whether to re-extract files (uses isoextract to read files from scratch), if FALSE (default) only extract files not previously extracted</p></dd>
+<dd><p>whether to re-extract files (uses isoextract to read files
+from scratch), if <code>FALSE</code> (default when <code>pretty_json = FALSE</code>) only
+extract files not previously extracted</p></dd>
 
 </dl></div>
     <div class="section level2">

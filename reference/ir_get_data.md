@@ -65,6 +65,12 @@ ir_get_data(
   [`dplyr::select()`](https://dplyr.tidyverse.org/reference/select.html)
   syntax is supported
 
+- by:
+
+  character vector of column names used as join keys when combining data
+  from more than one dataset (default covers the standard linking
+  columns; only keys actually present in both datasets are used)
+
 ## Value
 
 a tibble

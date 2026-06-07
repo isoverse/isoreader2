@@ -38,6 +38,11 @@ ir_check_isoextract(
 
   the minimum version number required
 
+- show_version:
+
+  whether to print the installed isoextract version after a successful
+  check (default: `TRUE`)
+
 - source:
 
   the URL (or local path) where to find isoextract, by default this is

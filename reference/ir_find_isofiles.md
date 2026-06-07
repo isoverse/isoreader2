@@ -59,11 +59,14 @@ of the files that are present)
 
 ``` r
 ir_find_continuous_flow(system.file("extdata", package = "isoreader2"))
-#> character(0)
+#> [1] "/home/runner/work/_temp/Library/isoreader2/extdata/continuous_flow_example.cf" 
+#> [2] "/home/runner/work/_temp/Library/isoreader2/extdata/continuous_flow_example.dxf"
 ir_find_dual_inlet(system.file("extdata", package = "isoreader2"))
-#> character(0)
+#> [1] "/home/runner/work/_temp/Library/isoreader2/extdata/dual_inlet_example.caf"
+#> [2] "/home/runner/work/_temp/Library/isoreader2/extdata/dual_inlet_example.did"
 ir_find_scans(system.file("extdata", package = "isoreader2"))
-#> [1] "/home/runner/work/_temp/Library/isoreader2/extdata/full_scan_example.scn"      
-#> [2] "/home/runner/work/_temp/Library/isoreader2/extdata/peak_shape_scan_example.scn"
-#> [3] "/home/runner/work/_temp/Library/isoreader2/extdata/time_scan_example.scn"      
+#> [1] "/home/runner/work/_temp/Library/isoreader2/extdata/background_scan_example.scn"
+#> [2] "/home/runner/work/_temp/Library/isoreader2/extdata/full_scan_example.scn"      
+#> [3] "/home/runner/work/_temp/Library/isoreader2/extdata/peak_shape_scan_example.scn"
+#> [4] "/home/runner/work/_temp/Library/isoreader2/extdata/time_scan_example.scn"      
 ```

@@ -9,7 +9,8 @@ ir_read_isofiles(
   file_paths,
   show_progress = is_interactive(),
   show_problems = TRUE,
-  reextract = FALSE
+  pretty_json = FALSE,
+  reextract = pretty_json
 )
 ```
 
@@ -37,11 +38,19 @@ ir_read_isofiles(
   [`ir_get_problems()`](https://isoreader2.isoverse.org/reference/problems.md)
   for the returned list
 
+- pretty_json:
+
+  whether to write the JSON output in human-readable pretty-printed
+  format (default: `FALSE`). Useful for debugging; has no effect on the
+  data read back. Note that pretty-printed files are larger than compact
+  ones. Setting `pretty_json = TRUE` also sets `reextract = TRUE` by
+  default.
+
 - reextract:
 
   whether to re-extract files (uses isoextract to read files from
-  scratch), if FALSE (default) only extract files not previously
-  extracted
+  scratch), if `FALSE` (default when `pretty_json = FALSE`) only extract
+  files not previously extracted
 
 ## Value
 

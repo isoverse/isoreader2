@@ -15,8 +15,8 @@ additional modification of the `aggregator`.
 ``` r
 ir_aggregate_isofiles(
   isofiles,
-  aggregator = "standard",
   intensity_units = c("mV", "V", "fA", "pA", "nA", "µA", "mA", "A", "cps"),
+  aggregator = "standard",
   show_progress = is_interactive(),
   show_problems = TRUE
 )
@@ -28,6 +28,13 @@ ir_aggregate_isofiles(
 
   the isotope data files/archives read in by
   [`ir_read_isofiles()`](https://isoreader2.isoverse.org/reference/ir_read_isofiles.md)
+
+- intensity_units:
+
+  target intensity unit to convert traces/cycles/scans to before
+  aggregation, one of `"mV"`, `"V"`, `"fA"`, `"pA"`, `"nA"`, `"µA"`,
+  `"mA"`, `"A"`, `"cps"`. Only applied when the aggregator includes any
+  of those datasets. Default is `"mV"`.
 
 - aggregator:
 
@@ -41,13 +48,6 @@ ir_aggregate_isofiles(
   and/or
   [`ir_add_to_aggregator()`](https://isoreader2.isoverse.org/reference/ir_aggregator.md))
   that defines which data should be aggregated and how.
-
-- intensity_units:
-
-  target intensity unit to convert traces/cycles/scans to before
-  aggregation, one of `"mV"`, `"V"`, `"fA"`, `"pA"`, `"nA"`, `"µA"`,
-  `"mA"`, `"A"`, `"cps"`. Only applied when the aggregator includes any
-  of those datasets. Default is `"mV"`.
 
 - show_progress:
 

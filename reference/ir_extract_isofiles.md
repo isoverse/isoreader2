@@ -8,6 +8,7 @@ not called directly
 ``` r
 ir_extract_isofiles(
   file_paths,
+  pretty_json = FALSE,
   show_progress = is_interactive(),
   show_problems = TRUE
 )
@@ -20,6 +21,14 @@ ir_extract_isofiles(
   paths to the isodat file(s), single value or vector of paths. Use
   [`ir_find_isofiles()`](https://isoreader2.isoverse.org/reference/ir_find_isofiles.md)
   to get files in a folder.
+
+- pretty_json:
+
+  whether to write the JSON output in human-readable pretty-printed
+  format (default: `FALSE`). Useful for debugging; has no effect on the
+  data read back by
+  [`ir_read_isofiles()`](https://isoreader2.isoverse.org/reference/ir_read_isofiles.md).
+  Note that pretty-printed files are larger than compact ones.
 
 - show_progress:
 

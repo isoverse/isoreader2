@@ -9,7 +9,7 @@ If data from more than one dataset is selected (e.g. some columns from traces AN
 
     <a class="navbar-brand me-2" href="../index.html">isoreader2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -75,6 +75,10 @@ If data from more than one dataset is selected (e.g. some columns from <code>tra
 
 <dt id="arg-resistors">resistors<a class="anchor" aria-label="anchor" href="#arg-resistors"></a></dt>
 <dd><p>columns to get from the aggregated <code>resistors</code>, all <code><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">dplyr::select()</a></code> syntax is supported</p></dd>
+
+
+<dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
+<dd><p>character vector of column names used as join keys when combining data from more than one dataset (default covers the standard linking columns; only keys actually present in both datasets are used)</p></dd>
 
 </dl></div>
     <div class="section level2">

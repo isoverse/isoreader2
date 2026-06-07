@@ -38,6 +38,39 @@ These functions combine the data from multiple isofiles for combined use
 - [`ir_get_data()`](https://isoreader2.isoverse.org/reference/ir_get_data.md)
   : Get data frame from aggregated data
 
+## Metadata operations
+
+These functions filter, modify, or extend the metadata of aggregated
+isofiles.
+
+- [`ir_filter_metadata()`](https://isoreader2.isoverse.org/reference/ir_metadata.md)
+  [`ir_mutate_metadata()`](https://isoreader2.isoverse.org/reference/ir_metadata.md)
+  [`ir_join_metadata()`](https://isoreader2.isoverse.org/reference/ir_metadata.md)
+  : Filter, mutate, or join the metadata of aggregated isofiles
+
+## Visualize isofiles data
+
+These functions plot aggregated isofiles data.
+
+- [`ir_default_theme()`](https://isoreader2.isoverse.org/reference/ir_default_theme.md)
+  : Default isoreader2 plotting theme
+- [`ir_plot_scans()`](https://isoreader2.isoverse.org/reference/ir_plot_scans.md)
+  : Plot scan data
+- [`ir_plot_continuous_flow()`](https://isoreader2.isoverse.org/reference/ir_plot_continuous_flow.md)
+  : Plot continuous flow data
+- [`ir_plot_dual_inlet()`](https://isoreader2.isoverse.org/reference/ir_plot_dual_inlet.md)
+  : Plot dual inlet cycle data
+
+## Export & storage
+
+These functions save aggregated isofiles data to disk.
+
+- [`ir_export_to_excel()`](https://isoreader2.isoverse.org/reference/ir_export_to_excel.md)
+  : Export data to Excel
+- [`ir_save_aggregated_data()`](https://isoreader2.isoverse.org/reference/ir_storage.md)
+  [`ir_load_aggregated_data()`](https://isoreader2.isoverse.org/reference/ir_storage.md)
+  : Save and load aggregated isofile data
+
 ## Package options
 
 These functions are available to simplify or customize the data

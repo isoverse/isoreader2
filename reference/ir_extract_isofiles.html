@@ -9,7 +9,7 @@ this is usually not called directly"><meta property="og:image" content="https://
 
     <a class="navbar-brand me-2" href="../index.html">isoreader2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,6 +40,7 @@ this is usually not called directly</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ir_extract_isofiles</span><span class="op">(</span></span>
 <span>  <span class="va">file_paths</span>,</span>
+<span>  pretty_json <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  show_progress <span class="op">=</span> <span class="fu">is_interactive</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  show_problems <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -51,6 +52,13 @@ this is usually not called directly</p>
 
 <dl><dt id="arg-file-paths">file_paths<a class="anchor" aria-label="anchor" href="#arg-file-paths"></a></dt>
 <dd><p>paths to the isodat file(s), single value or vector of paths. Use <code><a href="ir_find_isofiles.html">ir_find_isofiles()</a></code> to get files in a folder.</p></dd>
+
+
+<dt id="arg-pretty-json">pretty_json<a class="anchor" aria-label="anchor" href="#arg-pretty-json"></a></dt>
+<dd><p>whether to write the JSON output in human-readable
+pretty-printed format (default: <code>FALSE</code>). Useful for debugging; has no
+effect on the data read back by <code><a href="ir_read_isofiles.html">ir_read_isofiles()</a></code>. Note that
+pretty-printed files are larger than compact ones.</p></dd>
 
 
 <dt id="arg-show-progress">show_progress<a class="anchor" aria-label="anchor" href="#arg-show-progress"></a></dt>
