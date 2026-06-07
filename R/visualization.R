@@ -50,12 +50,14 @@ ir_default_theme <- function(text_size = 16, facet_text_size = 20) {
 #' frame. When `dataset` is an `ir_aggregated_data` object, the `$scans`
 #' dataset is inner-joined with `$metadata` (bringing in all metadata columns
 #' not already present in `$scans`) before plotting. The plot data must contain
-#' `x`, `scan_type`, `x_units`, and an `intensity.*` column — an error is
-#' thrown if any are missing. The intensity unit suffix becomes the y axis
-#' label; `scan_type` and `x_units` are combined for the x axis label.
+#' `x`, `scan_type`, `x_units`, `mass`, and an `intensity.*` column — an error
+#' is thrown if any are missing. The intensity unit suffix becomes the y axis
+#' label; `scan_type` and `x_units` are combined for the x axis label. If
+#' `mass` is not already a factor it is converted to one with levels sorted in
+#' numerical order.
 #'
 #' @param dataset an `ir_aggregated_data` object from [ir_aggregate_isofiles()]
-#'   or a plain data frame with `x`, `scan_type`, `x_units`, and an
+#'   or a plain data frame with `x`, `scan_type`, `x_units`, `mass`, and an
 #'   `intensity.*` column
 #' @param scan_type which scan type to plot (e.g. `"high voltage"`). Required
 #'   when the data contains more than one scan type; an error lists the
@@ -66,8 +68,9 @@ ir_default_theme <- function(text_size = 16, facet_text_size = 20) {
 #' @param color column or expression for the colour aesthetic (default: `mass`)
 #' @param linetype column or expression for the linetype aesthetic (default:
 #'   `species`)
-#' @param colors named or unnamed character vector of colours passed to
-#'   [ggplot2::scale_color_manual()] (default: [palette.colors()])
+#' @param color_values named or unnamed character vector of colours passed to
+#'   [ggplot2::scale_color_manual()], or `NULL` to use the ggplot2 default
+#'   colour palette (default: [palette.colors()])
 #' @param scientific whether to format y axis labels in scientific notation
 #'   (default: `FALSE`)
 #' @param x_window optional numeric vector of length 2 giving the x axis
@@ -85,7 +88,7 @@ ir_plot_scans <- function(
   panel = file_name,
   color = mass,
   linetype = species,
-  colors = palette.colors(),
+  color_values = palette.colors(),
   scientific = FALSE,
   x_window = NULL,
   n_x_breaks = 5,
@@ -105,9 +108,9 @@ ir_plot_scans <- function(
     "must be NULL or a single string"
   )
   check_arg(
-    colors,
-    is.character(colors),
-    "must be a character vector of colours"
+    color_values,
+    is.null(color_values) || is.character(color_values),
+    "must be NULL or a character vector of colours"
   )
   check_arg(scientific, rlang::is_bool(scientific), "must be TRUE or FALSE")
   check_arg(
@@ -163,14 +166,14 @@ ir_plot_scans <- function(
     cli_abort("no data to plot (0 rows)")
   }
 
-  # require scan_type, x_units, and x columns
-  required_cols <- c("scan_type", "x_units", "x")
+  # require scan_type, x_units, x, and mass columns
+  required_cols <- c("scan_type", "x_units", "x", "mass")
   missing_cols <- setdiff(required_cols, names(plot_data))
   if (length(missing_cols) > 0) {
     cli_abort(
       c(
         "scan data is missing required {qty(length(missing_cols))}column{?s}: {.field {missing_cols}}",
-        "i" = "make sure the aggregator includes {.field scan_type}, {.field x_units}, and {.field x}"
+        "i" = "make sure the aggregator includes {.field scan_type}, {.field x_units}, {.field x}, and {.field mass}"
       )
     )
   }
@@ -251,6 +254,12 @@ ir_plot_scans <- function(
   )
   y_lab <- paste0("intensity [", intensity_units, "]")
 
+  # sort mass as a factor in numerical order
+  if (!is.factor(plot_data$mass)) {
+    mass_levels <- as.character(sort(unique(as.numeric(plot_data$mass)), na.last = TRUE))
+    plot_data <- dplyr::mutate(plot_data, mass = factor(.data$mass, levels = mass_levels))
+  }
+
   # validate aesthetic expressions against the actual plot data
   check_aes_expr(panel_quo, "panel", plot_data)
   check_aes_expr(color_quo, "color", plot_data)
@@ -283,9 +292,10 @@ ir_plot_scans <- function(
 
   # additional aesthetics
   if (!rlang::quo_is_null(color_quo)) {
-    p <- p +
-      ggplot2::aes(color = !!color_quo) +
-      scale_color_manual(values = colors)
+    p <- p + ggplot2::aes(color = !!color_quo)
+    if (!is.null(color_values)) {
+      p <- p + scale_color_manual(values = color_values)
+    }
   }
   if (!rlang::quo_is_null(linetype_quo)) {
     p <- p + ggplot2::aes(linetype = !!linetype_quo)
@@ -312,18 +322,21 @@ ir_plot_scans <- function(
 #' a plain data frame. When `dataset` is an `ir_aggregated_data` object, the
 #' `$traces` dataset is inner-joined with `$metadata` (bringing in all metadata
 #' columns not already present in `$traces`) before plotting. The plot data must
-#' contain a `time.s` column and an `intensity.*` column — an error is thrown if
-#' either is missing. The intensity unit suffix becomes the y axis label.
+#' contain `time.s`, `mass`, and an `intensity.*` column — an error is thrown if
+#' any are missing. The intensity unit suffix becomes the y axis label. If
+#' `mass` is not already a factor it is converted to one with levels sorted in
+#' numerical order.
 #'
 #' @param dataset an `ir_aggregated_data` object from [ir_aggregate_isofiles()]
-#'   or a plain data frame with a `time.s` column and an `intensity.*` column
+#'   or a plain data frame with `time.s`, `mass`, and an `intensity.*` column
 #' @param panel column or expression for faceting (default: `file_name`). Set
 #'   to `NULL` to suppress panels.
 #' @param color column or expression for the colour aesthetic (default: `mass`)
 #' @param linetype column or expression for the linetype aesthetic (default:
 #'   `species`)
-#' @param colors named or unnamed character vector of colours passed to
-#'   [ggplot2::scale_color_manual()] (default: [palette.colors()])
+#' @param color_values named or unnamed character vector of colours passed to
+#'   [ggplot2::scale_color_manual()], or `NULL` to use the ggplot2 default
+#'   colour palette (default: [palette.colors()])
 #' @param scientific whether to format y axis labels in scientific notation
 #'   (default: `FALSE`)
 #' @param time_window optional numeric vector of length 2 giving the time axis
@@ -344,7 +357,7 @@ ir_plot_continuous_flow <- function(
   panel = file_name,
   color = mass,
   linetype = species,
-  colors = palette.colors(),
+  color_values = palette.colors(),
   scientific = FALSE,
   time_window = NULL,
   short_time_labels = FALSE,
@@ -360,9 +373,9 @@ ir_plot_continuous_flow <- function(
     "must be a data frame or a set of aggregated isofiles"
   )
   check_arg(
-    colors,
-    is.character(colors),
-    "must be a character vector of colours"
+    color_values,
+    is.null(color_values) || is.character(color_values),
+    "must be NULL or a character vector of colours"
   )
   check_arg(scientific, rlang::is_bool(scientific), "must be TRUE or FALSE")
   check_arg(short_time_labels, rlang::is_bool(short_time_labels), "must be TRUE or FALSE")
@@ -419,12 +432,13 @@ ir_plot_continuous_flow <- function(
     cli_abort("no data to plot (0 rows)")
   }
 
-  # require time.s column
-  if (!"time.s" %in% names(plot_data)) {
+  # require time.s and mass columns
+  missing_cols <- setdiff(c("time.s", "mass"), names(plot_data))
+  if (length(missing_cols) > 0) {
     cli_abort(
       c(
-        "column {.field time.s} is missing from trace data",
-        "i" = "make sure the aggregator includes {.field time.s}"
+        "trace data is missing required {qty(length(missing_cols))}column{?s}: {.field {missing_cols}}",
+        "i" = "make sure the aggregator includes {.field time.s} and {.field mass}"
       )
     )
   }
@@ -476,6 +490,12 @@ ir_plot_continuous_flow <- function(
     }
   }
 
+  # sort mass as a factor in numerical order
+  if (!is.factor(plot_data$mass)) {
+    mass_levels <- as.character(sort(unique(as.numeric(plot_data$mass)), na.last = TRUE))
+    plot_data <- dplyr::mutate(plot_data, mass = factor(.data$mass, levels = mass_levels))
+  }
+
   # validate aesthetic expressions against the actual plot data
   check_aes_expr(panel_quo, "panel", plot_data)
   check_aes_expr(color_quo, "color", plot_data)
@@ -514,9 +534,10 @@ ir_plot_continuous_flow <- function(
 
   # additional aesthetics
   if (!rlang::quo_is_null(color_quo)) {
-    p <- p +
-      ggplot2::aes(color = !!color_quo) +
-      scale_color_manual(values = colors)
+    p <- p + ggplot2::aes(color = !!color_quo)
+    if (!is.null(color_values)) {
+      p <- p + scale_color_manual(values = color_values)
+    }
   }
   if (!rlang::quo_is_null(linetype_quo)) {
     p <- p + ggplot2::aes(linetype = !!linetype_quo)
@@ -530,6 +551,189 @@ ir_plot_continuous_flow <- function(
   # time window: clip display to the requested range
   if (!is.null(time_window)) {
     p <- p + ggplot2::coord_cartesian(xlim = time_window)
+  }
+
+  p <- p + theme
+
+  return(p)
+}
+
+#' Plot dual inlet cycle data
+#'
+#' Plots cycle data from an [ir_aggregate_isofiles()] result or a plain data
+#' frame. When `dataset` is an `ir_aggregated_data` object, the `$cycles`
+#' dataset is inner-joined with `$metadata` (bringing in all metadata columns
+#' not already present in `$cycles`) before plotting. The plot data must contain
+#' `cycle`, `type`, `mass`, and an `intensity.*` column — an error is thrown if
+#' any are missing. The intensity unit suffix becomes the y axis label. If
+#' `mass` is not already a factor it is converted to one with levels sorted in
+#' numerical order.
+#'
+#' @param dataset an `ir_aggregated_data` object from [ir_aggregate_isofiles()]
+#'   or a plain data frame with `cycle`, `type`, `mass`, and an
+#'   `intensity.*` column
+#' @param panel column or expression for faceting (default: `file_name`). Set
+#'   to `NULL` to suppress panels.
+#' @param color column or expression for the colour aesthetic (default: `mass`)
+#' @param shape column or expression for the point shape aesthetic (default:
+#'   `type`, distinguishing `"standard"` from `"sample"` cycles)
+#' @param linetype column or expression for the linetype aesthetic (default:
+#'   `species`)
+#' @param color_values named or unnamed character vector of colours passed to
+#'   [ggplot2::scale_color_manual()], or `NULL` to use the ggplot2 default
+#'   colour palette (default: [palette.colors()])
+#' @param scientific whether to format y axis labels in scientific notation
+#'   (default: `FALSE`)
+#' @param n_y_breaks desired number of y axis tick marks (default: `5`)
+#' @param theme ggplot2 theme to apply (default: [ir_default_theme()])
+#' @return a `ggplot` object
+#' @export
+ir_plot_dual_inlet <- function(
+  dataset,
+  panel = file_name,
+  color = mass,
+  shape = type,
+  linetype = species,
+  color_values = palette.colors(),
+  scientific = FALSE,
+  n_y_breaks = 5,
+  theme = ir_default_theme()
+) {
+  # safety checks
+  check_arg(
+    dataset,
+    !missing(dataset) &&
+      (is.data.frame(dataset) || is(dataset, "ir_aggregated_data")),
+    "must be a data frame or a set of aggregated isofiles"
+  )
+  check_arg(
+    color_values,
+    is.null(color_values) || is.character(color_values),
+    "must be NULL or a character vector of colours"
+  )
+  check_arg(scientific, rlang::is_bool(scientific), "must be TRUE or FALSE")
+  check_arg(
+    n_y_breaks,
+    rlang::is_scalar_integerish(n_y_breaks) && n_y_breaks > 0,
+    "must be a positive whole number"
+  )
+
+  # capture aesthetics before any data manipulation
+  panel_quo <- rlang::enquo(panel)
+  color_quo <- rlang::enquo(color)
+  shape_quo <- rlang::enquo(shape)
+  linetype_quo <- rlang::enquo(linetype)
+
+  # prepare plot data
+  if (is(dataset, "ir_aggregated_data")) {
+    if (
+      !"cycles" %in% names(dataset) ||
+        ncol(dataset$cycles) == 0 ||
+        nrow(dataset$cycles) == 0
+    ) {
+      cli_abort(
+        c(
+          "no cycles available in the provided {.field dataset}",
+          "i" = "make sure you are reading dual inlet isofiles and the aggregator includes columns from {.field cycles}"
+        )
+      )
+    }
+    meta_extra_cols <- setdiff(names(dataset$metadata), names(dataset$cycles))
+    plot_data <- dplyr::inner_join(
+      dataset$cycles,
+      dplyr::select(
+        dataset$metadata,
+        dplyr::any_of(c("uidx", "analysis", meta_extra_cols))
+      ),
+      by = c("uidx", "analysis")
+    )
+  } else {
+    plot_data <- dataset
+  }
+
+  if (nrow(plot_data) == 0) {
+    cli_abort("no data to plot (0 rows)")
+  }
+
+  # require cycle, type, and mass columns
+  missing_cols <- setdiff(c("cycle", "type", "mass"), names(plot_data))
+  if (length(missing_cols) > 0) {
+    cli_abort(
+      c(
+        "cycle data is missing required {qty(length(missing_cols))}column{?s}: {.field {missing_cols}}",
+        "i" = "make sure the aggregator includes {.field cycle}, {.field type}, and {.field mass}"
+      )
+    )
+  }
+
+  # require an intensity.UNITS column
+  intensity_cols <- grep("^intensity\\.", names(plot_data), value = TRUE)
+  if (length(intensity_cols) == 0) {
+    cli_abort(
+      c(
+        "no intensity column found in cycle data",
+        "i" = "expected a column whose name matches {.code intensity.*}"
+      )
+    )
+  }
+  intensity_col <- intensity_cols[1]
+  intensity_units <- sub("^intensity\\.", "", intensity_col)
+
+  y_lab <- paste0("intensity [", intensity_units, "]")
+
+  # sort mass as a factor in numerical order
+  if (!is.factor(plot_data$mass)) {
+    mass_levels <- as.character(sort(unique(as.numeric(plot_data$mass)), na.last = TRUE))
+    plot_data <- dplyr::mutate(plot_data, mass = factor(.data$mass, levels = mass_levels))
+  }
+
+  # validate aesthetic expressions against the actual plot data
+  check_aes_expr(panel_quo, "panel", plot_data)
+  check_aes_expr(color_quo, "color", plot_data)
+  check_aes_expr(shape_quo, "shape", plot_data)
+  check_aes_expr(linetype_quo, "linetype", plot_data)
+
+  # group aesthetic: always set to ensure one line per cycle trace
+  group_cols <- intersect(
+    c("uidx", "analysis", "species", "mass", "type"),
+    names(plot_data)
+  )
+
+  # base plot
+  p <- ggplot2::ggplot(plot_data) +
+    ggplot2::aes(
+      x = !!sym("cycle"),
+      y = !!sym(intensity_col),
+      group = interaction(!!!rlang::syms(group_cols))
+    ) +
+    ggplot2::geom_line() +
+    ggplot2::geom_point() +
+    ggplot2::labs(x = "Cycle", y = y_lab) +
+    ggplot2::scale_x_continuous(breaks = scales::breaks_width(1)) +
+    ggplot2::scale_y_continuous(
+      breaks = scales::pretty_breaks(n_y_breaks),
+      labels = if (scientific) label_scientific() else ggplot2::waiver(),
+      expand = ggplot2::expansion(mult = c(0, 0.05))
+    ) +
+    ggplot2::expand_limits(y = 0)
+
+  # additional aesthetics
+  if (!rlang::quo_is_null(color_quo)) {
+    p <- p + ggplot2::aes(color = !!color_quo)
+    if (!is.null(color_values)) {
+      p <- p + scale_color_manual(values = color_values)
+    }
+  }
+  if (!rlang::quo_is_null(shape_quo)) {
+    p <- p + ggplot2::aes(shape = !!shape_quo)
+  }
+  if (!rlang::quo_is_null(linetype_quo)) {
+    p <- p + ggplot2::aes(linetype = !!linetype_quo)
+  }
+
+  # facets
+  if (!rlang::quo_is_null(panel_quo)) {
+    p <- p + ggplot2::facet_wrap(ggplot2::vars(!!panel_quo), scales = "free")
   }
 
   p <- p + theme
