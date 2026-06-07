@@ -102,7 +102,7 @@ start_info <- function(
   pb_total = NA,
   pb_extra = NULL,
   pb_status = NULL,
-  show_progress = rlang::is_interactive(),
+  show_progress = is_interactive(),
   .env = caller_env(),
   .call = caller_call()
 ) {
