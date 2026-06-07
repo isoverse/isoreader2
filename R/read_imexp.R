@@ -229,13 +229,13 @@ map_imexp_traces <- function(traces, metadata, resistors) {
       dplyr::left_join(
         resistors |> dplyr::select("config", "species", "channel", "mass"),
         by = c("config", "mass")
-      ) |>
-      dplyr::select(-"config")
+      )
   }
 
   traces |>
     dplyr::select(
       "analysis",
+      "config",
       "species",
       "channel",
       "mass",
