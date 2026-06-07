@@ -19,16 +19,20 @@ ir_get_problems <- function(obj, strip_ansi = TRUE) {
 
   # what type of data is it?
   if (methods::is(obj, "ir_aggregated_data")) {
-    # FIXME
-    # # aggregated data
-    # probs <-
-    #   obj |>
-    #   ir_get_data(
-    #     file_info = c("file" = "filepath"),
-    #     problems = everything()
-    #   ) |>
-    #   dplyr::mutate(file = basename(.data$file)) |>
-    #   suppressMessages()
+    # aggregated data
+    probs <-
+      obj$metadata |>
+      dplyr::mutate(file = basename(.data$file_path)) |>
+      dplyr::select("uidx", "file") |>
+      dplyr::distinct() |>
+      dplyr::inner_join(obj$problems, by = "uidx") |>
+      dplyr::mutate(
+        message = .data$file |>
+          purrr::map_chr(
+            ~ format_inline("for {.file {.x}} {cli::symbol$arrow_right}")
+          ) |>
+          paste(.data$message)
+      )
   } else if (methods::is(obj, "ir_isofiles")) {
     # raw file data
     probs <-
@@ -37,8 +41,15 @@ ir_get_problems <- function(obj, strip_ansi = TRUE) {
         uidx = dplyr::row_number(),
         file = basename(.data$file_path)
       ) |>
-      dplyr::select("uidx", "file_path", "problems") |>
-      tidyr::unnest("problems")
+      dplyr::select("uidx", "file", "problems") |>
+      tidyr::unnest("problems") |>
+      dplyr::mutate(
+        message = .data$file |>
+          purrr::map_chr(
+            ~ format_inline("for {.file {.x}} {cli::symbol$arrow_right}")
+          ) |>
+          paste(.data$message)
+      )
   } else {
     # everything else
     probs <- empty_cnds_tibble()
@@ -80,5 +91,12 @@ ir_get_problems <- function(obj, strip_ansi = TRUE) {
 #' @param obj data object that holds problems information
 #' @export
 ir_show_problems <- function(obj) {
-  ir_get_problems(obj, strip_ansi = FALSE) |> show_cnds()
+  if (
+    is.data.frame(obj) &&
+      all(c("type", "call", "message", "condition") %in% names(obj))
+  ) {
+    obj |> show_cnds(include_call = FALSE)
+  } else {
+    ir_get_problems(obj, strip_ansi = FALSE) |> show_cnds(include_call = FALSE)
+  }
 }
