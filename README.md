@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# isoreader2 <a href='https://isoreader2.isoverse.org/'> <img src="man/figures/isoreader_logo_thumb.png" align="right" width="100"/> </a>
+# isoreader2 <a href='https://isoreader2.isoverse.org/'> <img src="man/figures/isoreader_logo_thumb.png" align="right" width="100" alt="isoreader logo"/> </a>
 
 <!-- badges: start -->
 
@@ -82,7 +82,7 @@ Example files are very helpful for fixing bugs so please consider
 including an example data file (you will have to attach it as a zip
 archive).
 
-## isoverse <a href='http://www.isoverse.org'><img src='man/figures/isoverse_logo_thumb.png' align="right" width="100"/></a>
+## isoverse <a href='http://www.isoverse.org'><img src='man/figures/isoverse_logo_thumb.png' align="right" width="100" alt="isoverse logo"/></a>
 
 This package is part of the isoverse suite of data tools for stable
 isotopes. If you like the functionality that isoverse packages provide,
@@ -93,7 +93,7 @@ If you have suggestions for new features or other constructive feedback,
 please let us know on this short [feeback
 form](https://www.isoverse.org/feedback/).
 
-## Funding <a href='https://www.nsf.gov/'><img src='man/figures/NSF_logo.svg' align="right" width="100"/></a>
+## Funding <a href='https://www.nsf.gov/'><img src='man/figures/NSF_logo.svg' align="right" width="100" alt="NSF logo"/></a>
 
 This project is supported by a grant from the US National Science
 Foundation

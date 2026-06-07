@@ -23,6 +23,9 @@ current/CPS; ignored otherwise. If a \code{config} column is present in both
 \code{"µA"}, \code{"mA"}, \code{"A"}, \code{"cps"}.}
 }
 \description{
+Note: this function is rarely called directly, it's run as part of ir_aggregate_isofiles to standardize the trace/cycle/scan datasets before aggregation.
+}
+\details{
 Converts the intensity column of a dataset between voltage, current, and
 count-per-second units using \code{A = CPS * e} and \code{V = A * R}. Automatically
 detects the source unit from any \verb{intensity.<unit>} column present in

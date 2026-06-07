@@ -42,6 +42,13 @@ reference:
     These functions combine the data from multiple isofiles for combined use
   contents:
   - ir_aggregate_isofiles
+  - ir_convert_intensity
+  - ir_start_aggregator
+  - ir_add_to_aggregator
+  - ir_register_aggregator
+  - ir_get_aggregator
+  - ir_get_data
+
   
 - title: Package options
   desc: >

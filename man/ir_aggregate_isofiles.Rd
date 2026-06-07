@@ -2,13 +2,36 @@
 % Please edit documentation in R/aggregate.R
 \name{ir_aggregate_isofiles}
 \alias{ir_aggregate_isofiles}
-\title{Aggregate the data from isofiles}
+\title{Aggregate data from isofiles}
 \usage{
-ir_aggregate_isofiles(isofiles)
+ir_aggregate_isofiles(
+  isofiles,
+  aggregator = "standard",
+  intensity_units = c("mV", "V", "fA", "pA", "nA", "µA", "mA", "A", "cps"),
+  show_progress = is_interactive(),
+  show_problems = TRUE
+)
 }
 \arguments{
-\item{isofiles}{isofiles data object returned by \code{\link[=ir_read_isofiles]{ir_read_isofiles()}}}
+\item{isofiles}{the isotope data files/archives read in by \code{\link[=ir_read_isofiles]{ir_read_isofiles()}}}
+
+\item{aggregator}{typically the name of a registered aggregator (see all with \code{ir_get_option("aggregators")}),
+default is the "standard" aggregator included in the package (\code{ir_get_aggregator("standard")}).
+Other options are "minimal" (\code{ir_get_aggregator("minimal")}) and "extended" (\code{ir_get_aggregator("extended")}).
+The \code{aggregator} parameter can can also directly be an aggregator tibble (created/modified with \code{\link[=ir_start_aggregator]{ir_start_aggregator()}}
+and/or \code{\link[=ir_add_to_aggregator]{ir_add_to_aggregator()}}) that defines which data should be aggregated and how.}
+
+\item{intensity_units}{target intensity unit to convert traces/cycles/scans to before aggregation,
+one of \code{"mV"}, \code{"V"}, \code{"fA"}, \code{"pA"}, \code{"nA"}, \code{"µA"}, \code{"mA"}, \code{"A"}, \code{"cps"}.
+Only applied when the aggregator includes any of those datasets. Default is \code{"mV"}.}
+
+\item{show_progress}{whether to show a progress bar, by default always enabled when running interactively e.g. inside Positron or RStudio (and disabled in a notebook), turn off with \code{show_progress = FALSE}}
+
+\item{show_problems}{whether to show problems encountered along the way (rather than just keeping track of them with \code{\link[=ir_get_problems]{ir_get_problems()}}). Set to \code{show_problems = FALSE} to turn off the live printout. Either way, all encountered problems can be retrieved with running \code{\link[=ir_get_problems]{ir_get_problems()}} for the returned list}
+}
+\value{
+a list of merged dataframes collected from the \code{isofiles} based on the \code{aggregator} definitions
 }
 \description{
-Aggregate the data from isofiles
+This function allows dynamic aggregation and validation of data read by \code{\link[=ir_read_isofiles]{ir_read_isofiles()}}. Like \code{\link[=ir_read_isofiles]{ir_read_isofiles()}}, it is designed to be fail save by safely catching errors and reporting back on them (see \code{\link[=ir_get_problems]{ir_get_problems()}}). This function should work out of the box for most files without additional modification of the \code{aggregator}.
 }

@@ -6,7 +6,7 @@
 \usage{
 ir_read_isofiles(
   file_paths,
-  show_progress = rlang::is_interactive(),
+  show_progress = is_interactive(),
   show_problems = TRUE,
   reextract = FALSE
 )

@@ -40,7 +40,9 @@ with a regular expression pattern.
 \section{Options for the isoreader2 package}{
 
 \itemize{
-\item \code{dev_mode}: developer mode provides more verbose output
+\item \code{aggregators}: data aggregators for pulling data out of raw files. The list of available aggregators is accessible via \code{ir_get_option("aggregators")}. Individiual aggregators are available via the shortcut helper function \code{ir_get_aggregator("standard")}. Register new/overwrite existing aggregators via \code{ir_register_aggregator()}.
+\item \code{debug}: turn on debug mode
+\item \code{auto_use_ansi}: whether to automatically enable correct rendering of stylized (ansi) output in HTML reports from notebooks that call \code{library(isoir)}. Can be turned off by calling \code{isoir::ir_options(auto_use_ansi = FALSE)} \strong{before} call \code{library(isoir)}.
 }
 }
 
