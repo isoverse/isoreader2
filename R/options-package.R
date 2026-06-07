@@ -46,9 +46,27 @@ ir_get_option <- function(x) {
 #' @section Options for the isoreader2 package:
 get_pkg_options <- function() {
   list(
-    #' - `dev_mode`: developer mode provides more verbose output
-    dev_mode = define_pkg_option(
-      default = FALSE,
+    #' - `aggregators`: data aggregators for pulling data out of raw files. The list of available aggregators is accessible via `ir_get_option("aggregators")`. Individiual aggregators are available via the shortcut helper function `ir_get_aggregator("standard")`. Register new/overwrite existing aggregators via `ir_register_aggregator()`.
+    aggregators = define_pkg_option(
+      default = list(), # default aggregators are registered in zzz.R
+      check_fn = function(x) {
+        if (
+          missing(x) ||
+            !is.list(x) ||
+            !all(purrr::map_lgl(x, is, "ir_aggregator"))
+        ) {
+          cli_abort(
+            "{.var aggregators} is not a list of {cli::col_magenta('ir_aggregator')} objects. Please use {.strong ir_register_aggregator()} too add individual aggregators."
+          )
+        }
+        return(TRUE)
+      }
+    ),
+    #' - `debug`: turn on debug mode
+    debug = define_pkg_option(default = FALSE, check_fn = is_scalar_logical),
+    #' - `auto_use_ansi`: whether to automatically enable correct rendering of stylized (ansi) output in HTML reports from notebooks that call `library(isoir)`. Can be turned off by calling `isoir::ir_options(auto_use_ansi = FALSE)` **before** call `library(isoir)`.
+    auto_use_ansi = define_pkg_option(
+      default = TRUE,
       check_fn = is_scalar_logical
     )
   )

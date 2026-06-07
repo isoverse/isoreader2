@@ -12,7 +12,7 @@
 try_catch_cnds <- function(
   expr,
   error_value = NULL,
-  catch_errors = TRUE,
+  catch_errors = !ir_get_option("debug"),
   catch_warnings = TRUE,
   truncate_call_stack = TRUE,
   truncate_shiny_call_stack = TRUE,
