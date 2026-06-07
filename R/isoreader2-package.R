@@ -8,12 +8,12 @@
 ## usethis namespace: start
 #' @import cli
 #' @import rlang
-#' @importFrom tibble tibble
+#' @importFrom tibble tibble is_tibble as_tibble
 ## usethis namespace: end
 NULL
 
 # minimum required isoextract versions for different file types
-.file_type_specs <- tibble::tibble(
+.file_type_specs <- tibble(
   file_type = c(
     "dxf",
     "cf",

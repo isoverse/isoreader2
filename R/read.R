@@ -41,7 +41,7 @@ ir_read_isofiles <- function(
     file_paths_info <- file_paths_info |> dplyr::mutate(extract = TRUE)
   } else {
     # empty metadata
-    empty_meta <- tibble::tibble(
+    empty_meta <- tibble(
       isoextract_version = NA_character_,
       file_type = NA_character_,
       previous_file_size = NA_integer_,
@@ -198,7 +198,7 @@ ir_read_isofiles <- function(
         dplyr::mutate(
           metadata = purrr::map(.data$metadata, function(meta) {
             if (is.null(meta)) {
-              tibble::tibble(
+              tibble(
                 file_path = fp,
                 file_name = basename(fp),
                 analysis = 1L
@@ -267,7 +267,7 @@ ir_read_isofiles <- function(
 # extract meta from a single JSON file
 read_json_meta <- function(json_path) {
   meta <- query_json(json_path, "/meta")
-  tibble::tibble(
+  tibble(
     isoextract_version = meta$isoextract_version,
     file_type = meta$file_type,
     previous_file_size = meta$file_size_bytes,

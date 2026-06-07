@@ -52,7 +52,7 @@ read_isodat_calibrated_resistors <- function(
   resistors$p |>
     purrr::map2(gas_names, function(parent_node, gas) {
       hw <- parent_node$objects$CEvalIntegrationUnitHWInfo
-      tibble::tibble(
+      tibble(
         species = as.character(gas),
         channel = as.integer(hw$channel) + 1L, # 0-based, make 1-based as is customary in R
         mass = as.character(signif(as.numeric(hw$mass), digits = 3)),
@@ -75,7 +75,7 @@ read_isodat_nominal_resistors <- function(
   hw <- query_json(json_path, cup_hw_ptr)
   channels <- query_json(json_path, channel_gas_ptr)
   # resistor info
-  tibble::tibble(
+  tibble(
     channel = as.integer(channels$idx), # already 1-based (as is customary in R)
     mass = as.character(signif(as.numeric(channels$mass), digits = 3)),
     cup = as.integer(channels$cup),
@@ -123,7 +123,7 @@ parse_isodat_traces <- function(x, traces) {
     nrow() |>
     seq_len() |>
     purrr::map(function(i) {
-      tibble::tibble(
+      tibble(
         analysis = 1L, # always a single analysis
         channel = i,
         x = as.numeric(x),
@@ -207,7 +207,7 @@ parse_isodat_cycles <- function(json_path, root_ptr) {
   ) |>
     purrr::pmap(
       function(type, cycle, values) {
-        tibble::tibble(
+        tibble(
           analysis = 1L, # always a single analysis
           cycle = cycle,
           type = type,
@@ -774,7 +774,7 @@ read_scn_metadata <- function(json_path) {
     NA_character_
   }
   ts <- query_json(json_path, "/CScanStorage/timestamp_start")
-  tibble::tibble(
+  tibble(
     analysis = 1L, # always a single analysis
     type = "scan",
     timestamp = parse_iso8601_datetime(ts),

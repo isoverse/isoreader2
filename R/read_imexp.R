@@ -92,7 +92,7 @@ read_imexp_resistors <- function(json_path) {
 read_imexp_metadata <- function(json_path) {
   # settings_id → config integer mapping (ordered as in the archive)
   settings <- query_json(json_path, "/settings", list_as_tibble = TRUE)
-  config_map <- tibble::tibble(
+  config_map <- tibble(
     settings_id = as.character(settings$settings_id),
     config = seq_len(nrow(settings))
   )
@@ -121,13 +121,18 @@ read_imexp_metadata <- function(json_path) {
   # params: pivot each row's label/type/value into typed columns
   params_wide <- purrr::map(all_rows$params, function(p) {
     if (is.null(p) || nrow(p) == 0L) {
-      return(tibble::tibble(.rows = 1L))
+      return(tibble(.rows = 1L))
     }
     vals <- purrr::map2(p$value, p$type, function(v, t) {
       if (is.na(v) || identical(v, "")) {
         switch(t, "int" = NA_integer_, "double" = NA_real_, NA_character_)
       } else {
-        switch(t, "int" = as.integer(v), "double" = as.double(v), as.character(v))
+        switch(
+          t,
+          "int" = as.integer(v),
+          "double" = as.double(v),
+          as.character(v)
+        )
       }
     })
     names(vals) <- p$label
@@ -139,7 +144,7 @@ read_imexp_metadata <- function(json_path) {
 
   # entry data: session_time → timestamp, settings_id → config, h3_factor per guid
   entries <- query_json(json_path, "/entries", list_as_tibble = TRUE)
-  entry_data <- tibble::tibble(
+  entry_data <- tibble(
     guid = as.character(entries$guid),
     timestamp = parse_iso8601_datetime(entries$session_time),
     settings_id = as.character(entries$settings_id),
@@ -172,7 +177,7 @@ read_imexp_metadata <- function(json_path) {
 read_imexp_traces <- function(json_path) {
   entries <- query_json(json_path, "/entries", list_as_tibble = TRUE)
 
-  tibble::tibble(
+  tibble(
     entry_id = as.character(entries$guid),
     settings_id = as.character(entries$settings_id),
     segments = entries$segments

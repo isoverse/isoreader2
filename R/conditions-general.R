@@ -19,12 +19,12 @@ try_catch_cnds <- function(
   augment_errors_to_rlang = TRUE,
   call = caller_call()
 ) {
-  conds <- tibble::tibble(type = character(0), condition = list())
+  conds <- tibble(type = character(0), condition = list())
 
   handle_warning <- function(cnd) {
     # add warning
     conds <<- conds |>
-      dplyr::bind_rows(tibble::tibble(type = "warning", condition = list(cnd)))
+      dplyr::bind_rows(tibble(type = "warning", condition = list(cnd)))
     cnd_muffle(cnd)
   }
 
@@ -46,7 +46,7 @@ try_catch_cnds <- function(
 
     # store caught error
     conds <<- conds |>
-      dplyr::bind_rows(tibble::tibble(type = "error", condition = list(cnd)))
+      dplyr::bind_rows(tibble(type = "error", condition = list(cnd)))
     return(error_value)
   }
 

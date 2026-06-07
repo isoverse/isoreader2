@@ -53,7 +53,7 @@ read_bch_json <- function(json_path) {
 read_bch_metadata <- function(json_path) {
   ts <- query_json(json_path, "/header/timestamp")
   blocks <- query_json(json_path, "/data/blocks")
-  tibble::tibble(
+  tibble(
     analysis = seq_len(nrow(blocks)),
     type = "cf",
     timestamp = as.POSIXct(ts, format = "%H:%M:%S\t%m-%d-%Y", tz = "UTC"),
@@ -125,7 +125,7 @@ read_bch_timings <- function(json_path) {
 # Reads /data/blocks traces. species and mass are NA until map_bch_traces().
 read_bch_traces <- function(json_path) {
   blocks <- query_json(json_path, "/data/blocks")
-  tibble::tibble(
+  tibble(
     analysis = seq_len(nrow(blocks)),
     traces = purrr::map(
       blocks$traces,

@@ -121,7 +121,7 @@ read_liarc_metadata <- function(json_path) {
   ts <- query_json(json_path, "/created_date")
 
   # base: system, sequence, id, name, sample type, method
-  result <- tibble::tibble(
+  result <- tibble(
     analysis = seq_len(nrow(tasks)),
     type = "cf",
     timestamp = parse_liarc_datetime(ts),
