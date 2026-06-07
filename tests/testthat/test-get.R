@@ -1,0 +1,80 @@
+test_that("ir_get_data()", {
+  fake_agg <- structure(
+    list(traces = tibble(), cycles = tibble(), scans = tibble()),
+    class = "ir_aggregated_data"
+  )
+  ir_get_data(fake_agg, traces = everything(), cycles = everything()) |>
+    expect_error("only one of.*traces.*cycles.*scans")
+  ir_get_data(fake_agg, traces = everything(), scans = everything()) |>
+    expect_error("only one of.*traces.*cycles.*scans")
+  ir_get_data(fake_agg, cycles = everything(), scans = everything()) |>
+    expect_error("only one of.*traces.*cycles.*scans")
+})
+
+test_that("get_data()", {
+  # errors
+  get_data() |> expect_error("must be.*list")
+  get_data(42) |> expect_error("must be.*list")
+  get_data(list()) |> expect_error("at least one")
+  get_data(list(a = tibble()), by = 42) |> expect_error("must be.*character")
+  get_data(list(a = tibble())) |> expect_error("no.*selections")
+  get_data(list(a = tibble()), b = "a") |>
+    expect_error("dataset.*not in the data")
+  get_data(list(a = tibble(), d = tibble()), a = "a") |>
+    expect_error("error selecting columns")
+  get_data(list(a = cars, b = cars), a = "speed", b = "dist") |>
+    expect_error("unclear how to join")
+  get_data(
+    list(a = cars, b = cars |> dplyr::mutate(speed = as.character(speed))),
+    a = "speed",
+    b = "dist",
+    by = "speed"
+  ) |>
+    expect_error("encountered issue when joining")
+  get_data(
+    list(a = cars, b = cars),
+    a = everything(),
+    b = everything(),
+    by = "speed"
+  ) |>
+    expect_error("encountered issue") # many-to-many relationship
+
+  # working snapshots
+
+  test_run1 <- function() {
+    list(
+      a = tibble(id = c("a", "b"), info = paste(id, "info")),
+      b = tibble(id = "a", x = 1:10, y = 42),
+      data = tibble(id = "a", x = 1:10, z = x * 10)
+    ) |>
+      get_data(
+        a = everything(),
+        b = c("id", "x"),
+        data = everything(),
+        by = c("id", "x")
+      )
+  }
+
+  test_run2 <- function() {
+    get_data(
+      list(a = cars, b = cars),
+      a = everything(),
+      b = everything(),
+      by = "speed",
+      relationship = "many-to-many"
+    )
+  }
+
+  # messages
+  test_that_cli("cli", configs = c("plain", "fancy"), {
+    expect_snapshot(out <- test_run1())
+    expect_snapshot(out <- test_run2())
+  }) |>
+    withr::with_options(new = list(show_exec_times = FALSE))
+
+  # data
+  expect_snapshot_value(test_run1(), style = "json2") |>
+    suppressMessages()
+  expect_snapshot_value(test_run2(), style = "json2") |>
+    suppressMessages()
+})
