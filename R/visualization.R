@@ -96,6 +96,14 @@ ir_plot_scans <- function(
   theme = ir_default_theme()
 ) {
   # safety checks
+  if (!missing(dataset) && is(dataset, "ir_isofiles")) {
+    cli_abort(
+      c(
+        "{.field dataset} contains raw isofiles object and cannot be plotted directly",
+        "i" = "aggregate the data first with {.code ir_aggregate_isofiles(dataset)}"
+      )
+    )
+  }
   check_arg(
     dataset,
     !missing(dataset) &&
@@ -256,8 +264,14 @@ ir_plot_scans <- function(
 
   # sort mass as a factor in numerical order
   if (!is.factor(plot_data$mass)) {
-    mass_levels <- as.character(sort(unique(as.numeric(plot_data$mass)), na.last = TRUE))
-    plot_data <- dplyr::mutate(plot_data, mass = factor(.data$mass, levels = mass_levels))
+    mass_levels <- as.character(sort(
+      unique(as.numeric(plot_data$mass)),
+      na.last = TRUE
+    ))
+    plot_data <- dplyr::mutate(
+      plot_data,
+      mass = factor(.data$mass, levels = mass_levels)
+    )
   }
 
   # validate aesthetic expressions against the actual plot data
@@ -366,6 +380,14 @@ ir_plot_continuous_flow <- function(
   theme = ir_default_theme()
 ) {
   # safety checks
+  if (!missing(dataset) && is(dataset, "ir_isofiles")) {
+    cli_abort(
+      c(
+        "{.arg dataset} is a raw isofiles object and cannot be plotted directly",
+        "i" = "aggregate it first with {.code ir_aggregate_isofiles(dataset)}"
+      )
+    )
+  }
   check_arg(
     dataset,
     !missing(dataset) &&
@@ -378,7 +400,11 @@ ir_plot_continuous_flow <- function(
     "must be NULL or a character vector of colours"
   )
   check_arg(scientific, rlang::is_bool(scientific), "must be TRUE or FALSE")
-  check_arg(short_time_labels, rlang::is_bool(short_time_labels), "must be TRUE or FALSE")
+  check_arg(
+    short_time_labels,
+    rlang::is_bool(short_time_labels),
+    "must be TRUE or FALSE"
+  )
   check_arg(
     time_window,
     is.null(time_window) ||
@@ -492,8 +518,14 @@ ir_plot_continuous_flow <- function(
 
   # sort mass as a factor in numerical order
   if (!is.factor(plot_data$mass)) {
-    mass_levels <- as.character(sort(unique(as.numeric(plot_data$mass)), na.last = TRUE))
-    plot_data <- dplyr::mutate(plot_data, mass = factor(.data$mass, levels = mass_levels))
+    mass_levels <- as.character(sort(
+      unique(as.numeric(plot_data$mass)),
+      na.last = TRUE
+    ))
+    plot_data <- dplyr::mutate(
+      plot_data,
+      mass = factor(.data$mass, levels = mass_levels)
+    )
   }
 
   # validate aesthetic expressions against the actual plot data
@@ -600,6 +632,14 @@ ir_plot_dual_inlet <- function(
   theme = ir_default_theme()
 ) {
   # safety checks
+  if (!missing(dataset) && is(dataset, "ir_isofiles")) {
+    cli_abort(
+      c(
+        "{.arg dataset} is a raw isofiles object and cannot be plotted directly",
+        "i" = "aggregate it first with {.code ir_aggregate_isofiles(dataset)}"
+      )
+    )
+  }
   check_arg(
     dataset,
     !missing(dataset) &&
@@ -683,8 +723,14 @@ ir_plot_dual_inlet <- function(
 
   # sort mass as a factor in numerical order
   if (!is.factor(plot_data$mass)) {
-    mass_levels <- as.character(sort(unique(as.numeric(plot_data$mass)), na.last = TRUE))
-    plot_data <- dplyr::mutate(plot_data, mass = factor(.data$mass, levels = mass_levels))
+    mass_levels <- as.character(sort(
+      unique(as.numeric(plot_data$mass)),
+      na.last = TRUE
+    ))
+    plot_data <- dplyr::mutate(
+      plot_data,
+      mass = factor(.data$mass, levels = mass_levels)
+    )
   }
 
   # validate aesthetic expressions against the actual plot data

@@ -20,7 +20,7 @@ current/CPS; ignored otherwise. If a \code{config} column is present in both
 \code{dataset} and \code{resistors} it is included in the join key.}
 
 \item{units}{target unit, one of \code{"mV"}, \code{"V"}, \code{"fA"}, \code{"pA"}, \code{"nA"},
-\code{"\µA"}, \code{"mA"}, \code{"A"}, \code{"cps"}.}
+\code{"µA"}, \code{"mA"}, \code{"A"}, \code{"cps"}.}
 }
 \description{
 Note: this function is rarely called directly, it's run as part of ir_aggregate_isofiles to standardize the trace/cycle/scan datasets before aggregation.
