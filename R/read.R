@@ -8,7 +8,7 @@
 #' @export
 ir_read_isofiles <- function(
   file_paths,
-  show_progress = rlang::is_interactive(),
+  show_progress = is_interactive(),
   show_problems = TRUE,
   reextract = FALSE
 ) {
@@ -176,7 +176,7 @@ ir_read_isofiles <- function(
         try_catch_cnds(
           eval_tidy(func_quo),
           error_value = tibble(problems = list(empty_cnds_tibble())),
-          catch_errors = !ir_get_option("dev_mode")
+          catch_errors = !ir_get_option("debug")
         )
     }
 
@@ -198,11 +198,18 @@ ir_read_isofiles <- function(
         dplyr::mutate(
           metadata = purrr::map(.data$metadata, function(meta) {
             if (is.null(meta)) {
-              tibble::tibble(file_path = fp, file_name = basename(fp), analysis = 1L)
-            } else {
-              meta |> dplyr::mutate(
-                file_path = fp, file_name = basename(fp), .before = 1L
+              tibble::tibble(
+                file_path = fp,
+                file_name = basename(fp),
+                analysis = 1L
               )
+            } else {
+              meta |>
+                dplyr::mutate(
+                  file_path = fp,
+                  file_name = basename(fp),
+                  .before = 1L
+                )
             }
           })
         )
@@ -229,7 +236,7 @@ ir_read_isofiles <- function(
     "is reading {pb_current}/{pb_total} files {pb_bar} ",
     "| {pb_elapsed} | ETA {pb_eta} | {.file {basename(pb_extra$file_path)}} ",
     "| {.field {pb_status}}",
-    pb_total = nrow(file_paths_info),
+    pb_total = nrow(file_paths_info) + 1L,
     pb_extra = list(file_path = NA_character_),
     pb_status = "initializing",
     show_progress = show_progress,
