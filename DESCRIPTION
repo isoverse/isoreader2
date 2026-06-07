@@ -1,6 +1,6 @@
 Package: isoreader2
 Title: Read Stable Isotope Data Files
-Version: 0.1.2
+Version: 0.1.3
 Authors@R: 
     c(
         person(
@@ -32,6 +32,8 @@ Imports:
     withr,
     RcppSimdJson
 Suggests:
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    vdiffr,
+    arrow
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.0.0
