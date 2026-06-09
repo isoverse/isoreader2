@@ -44,6 +44,90 @@ ir_default_theme <- function(text_size = 16, facet_text_size = 20) {
     )
 }
 
+# internal: add faceting to a plot based on the captured `facet` expression.
+# A two-sided formula (e.g. `species ~ mass`) is faceted with
+# [ggplot2::facet_grid()]; any other column/expression is faceted with
+# [ggplot2::facet_wrap()]. `scales`, `nrow`, `ncol`, and `...` are forwarded to
+# the facet function (`nrow`/`ncol` only apply to facet_wrap). A `NULL` facet
+# adds no faceting. The referenced columns/expression are validated against
+# `data` first.
+add_facets <- function(
+  p,
+  facet_quo,
+  data,
+  scales,
+  nrow = NULL,
+  ncol = NULL,
+  ...,
+  .env = caller_env()
+) {
+  if (rlang::quo_is_null(facet_quo)) {
+    return(p)
+  }
+  facet_expr <- rlang::quo_get_expr(facet_quo)
+  if (rlang::is_formula(facet_expr)) {
+    # validate that the formula's variables exist in the data
+    vars <- setdiff(all.vars(facet_expr), ".")
+    missing <- setdiff(vars, names(data))
+    if (length(missing) > 0) {
+      cli_abort(
+        c(
+          "{.field facet} formula {.emph {rlang::as_label(facet_quo)}} references unknown column{?s}: {.field {missing}}",
+          "i" = "available columns: {.field {names(data)}}"
+        ),
+        call = .env
+      )
+    }
+    if (!is.null(nrow) || !is.null(ncol)) {
+      cli_warn(
+        c(
+          "!" = "{.arg nrow}/{.arg ncol} only apply when faceting a single variable or expression ({.fn facet_wrap}) and are ignored for the formula facet {.emph {rlang::as_label(facet_quo)}} ({.fn facet_grid})"
+        ),
+        call = .env
+      )
+    }
+    return(
+      p +
+        ggplot2::facet_grid(rlang::eval_tidy(facet_quo), scales = scales, ...)
+    )
+  }
+  # non-formula: validate as a column expression and facet_wrap
+  check_aes_expr(facet_quo, "facet", data, .env = .env)
+  p +
+    ggplot2::facet_wrap(
+      ggplot2::vars(!!facet_quo),
+      scales = scales,
+      nrow = nrow,
+      ncol = ncol,
+      ...
+    )
+}
+
+# internal: if a `trace` column is present and not already a factor, convert it
+# to a factor with levels sorted by the numerical mass number at the end of the
+# trace label (e.g. "CO2: 44" -> 44), mirroring how `mass` is sorted. Traces
+# without a trailing number sort last.
+sort_trace_factor <- function(plot_data) {
+  if ("trace" %in% names(plot_data) && !is.factor(plot_data$trace)) {
+    trace_levels <- unique(plot_data$trace)
+    # extract the trailing mass number as the sort key (NA for traces without
+    # one, which then sort last); coercion NAs are expected, so silence them
+    trace_mass <- suppressWarnings(
+      as.numeric(sub("^.* (\\d+\\.?\\d*)$", "\\1", trace_levels))
+    )
+    trace_levels <- trace_levels[order(
+      trace_mass,
+      trace_levels,
+      na.last = TRUE
+    )]
+    plot_data <- dplyr::mutate(
+      plot_data,
+      trace = factor(.data$trace, levels = trace_levels)
+    )
+  }
+  return(plot_data)
+}
+
 #' Plot scan data
 #'
 #' Plots scan data from an [ir_aggregate_isofiles()] result or a plain data
@@ -63,16 +147,30 @@ ir_default_theme <- function(text_size = 16, facet_text_size = 20) {
 #'   when the data contains more than one scan type; an error lists the
 #'   available types. If the data contains only one scan type, the parameter
 #'   must either be `NULL` or match that type exactly.
-#' @param panel column or expression for faceting (default: `file_name`). Set
-#'   to `NULL` to suppress panels.
-#' @param color column or expression for the colour aesthetic (default: `mass`)
+#' @param facet column or expression to facet by (default: `file_name`). A
+#'   plain column or expression (e.g. `file_name` or `paste(species, mass)`) is
+#'   faceted with [ggplot2::facet_wrap()]; a two-sided formula (e.g.
+#'   `species ~ mass`) is faceted with [ggplot2::facet_grid()]. Set to `NULL`
+#'   to suppress faceting.
+#' @param scales whether facet scales should be `"free"` (default), `"fixed"`,
+#'   `"free_x"`, or `"free_y"`; passed on to [ggplot2::facet_wrap()] /
+#'   [ggplot2::facet_grid()].
+#' @param nrow,ncol number of rows and columns of facet panels (`nrow` default
+#'   `NULL` lets ggplot2 choose; `ncol` default `1` stacks the panels in a
+#'   single column). Only applies when `facet` is a single variable or
+#'   expression (faceted with [ggplot2::facet_wrap()]); ignored with a warning
+#'   when `facet` is a formula (faceted with [ggplot2::facet_grid()]).
+#' @param color column or expression for the colour aesthetic (default:
+#'   `trace`, the per-species/mass trace identifier, e.g. `"CO2: 44"`)
 #' @param linetype column or expression for the linetype aesthetic (default:
-#'   `species`)
+#'   `NULL`, i.e. no linetype aesthetic)
 #' @param color_values named or unnamed character vector of colours passed to
 #'   [ggplot2::scale_color_manual()], or `NULL` to use the ggplot2 default
 #'   colour palette (default: [palette.colors()])
 #' @param scientific whether to format y axis labels in scientific notation
 #'   (default: `FALSE`)
+#' @param ... additional arguments passed on to [ggplot2::facet_wrap()] or
+#'   [ggplot2::facet_grid()] (e.g. `labeller`)
 #' @param x_window optional numeric vector of length 2 giving the x axis
 #'   display window `c(min, max)`. Data just outside the window is retained for
 #'   correct y autoscaling at the edges; [ggplot2::coord_cartesian()] clips the
@@ -85,15 +183,19 @@ ir_default_theme <- function(text_size = 16, facet_text_size = 20) {
 ir_plot_scans <- function(
   dataset,
   scan_type = NULL,
-  panel = file_name,
-  color = mass,
-  linetype = species,
+  facet = file_name,
+  scales = "free",
+  nrow = NULL,
+  ncol = 1,
+  color = trace,
+  linetype = NULL,
   color_values = palette.colors(),
   scientific = FALSE,
   x_window = NULL,
   n_x_breaks = 5,
   n_y_breaks = 5,
-  theme = ir_default_theme()
+  theme = ir_default_theme(),
+  ...
 ) {
   # safety checks
   if (!missing(dataset) && is(dataset, "ir_isofiles")) {
@@ -136,9 +238,10 @@ ir_plot_scans <- function(
     rlang::is_scalar_integerish(n_y_breaks) && n_y_breaks > 0,
     "must be a positive whole number"
   )
+  check_arg(scales, rlang::is_scalar_character(scales), "must be a string")
 
   # capture aesthetics before any data manipulation
-  panel_quo <- rlang::enquo(panel)
+  facet_quo <- rlang::enquo(facet)
   color_quo <- rlang::enquo(color)
   linetype_quo <- rlang::enquo(linetype)
 
@@ -264,18 +367,19 @@ ir_plot_scans <- function(
 
   # sort mass as a factor in numerical order
   if (!is.factor(plot_data$mass)) {
-    mass_levels <- as.character(sort(
-      unique(as.numeric(plot_data$mass)),
-      na.last = TRUE
-    ))
-    plot_data <- dplyr::mutate(
-      plot_data,
-      mass = factor(.data$mass, levels = mass_levels)
-    )
+    mass_levels <- plot_data$mass |>
+      unique() |>
+      as.numeric() |>
+      sort(na.last = TRUE) |>
+      as.character()
+    plot_data <- plot_data |>
+      dplyr::mutate(mass = factor(.data$mass, levels = mass_levels))
   }
 
+  # sort trace as a factor in numerical order of the trailing mass number
+  plot_data <- sort_trace_factor(plot_data)
+
   # validate aesthetic expressions against the actual plot data
-  check_aes_expr(panel_quo, "panel", plot_data)
   check_aes_expr(color_quo, "color", plot_data)
   check_aes_expr(linetype_quo, "linetype", plot_data)
 
@@ -308,7 +412,13 @@ ir_plot_scans <- function(
   if (!rlang::quo_is_null(color_quo)) {
     p <- p + ggplot2::aes(color = !!color_quo)
     if (!is.null(color_values)) {
-      p <- p + scale_color_manual(values = color_values)
+      # only apply the manual palette if it provides enough colours for the
+      # number of distinct colour groups; otherwise fall back to the default
+      # ggplot2 colour scale (which generates as many distinct hues as needed)
+      n_colors <- dplyr::n_distinct(rlang::eval_tidy(color_quo, plot_data))
+      if (length(color_values) >= n_colors) {
+        p <- p + scale_color_manual(values = color_values)
+      }
     }
   }
   if (!rlang::quo_is_null(linetype_quo)) {
@@ -316,9 +426,7 @@ ir_plot_scans <- function(
   }
 
   # facets
-  if (!rlang::quo_is_null(panel_quo)) {
-    p <- p + ggplot2::facet_wrap(ggplot2::vars(!!panel_quo), scales = "free")
-  }
+  p <- add_facets(p, facet_quo, plot_data, scales, nrow, ncol, ...)
 
   # x window: clip display to the requested range
   if (!is.null(x_window)) {
@@ -343,16 +451,30 @@ ir_plot_scans <- function(
 #'
 #' @param dataset an `ir_aggregated_data` object from [ir_aggregate_isofiles()]
 #'   or a plain data frame with `time.s`, `mass`, and an `intensity.*` column
-#' @param panel column or expression for faceting (default: `file_name`). Set
-#'   to `NULL` to suppress panels.
-#' @param color column or expression for the colour aesthetic (default: `mass`)
+#' @param facet column or expression to facet by (default: `file_name`). A
+#'   plain column or expression (e.g. `file_name` or `paste(species, mass)`) is
+#'   faceted with [ggplot2::facet_wrap()]; a two-sided formula (e.g.
+#'   `species ~ mass`) is faceted with [ggplot2::facet_grid()]. Set to `NULL`
+#'   to suppress faceting.
+#' @param scales whether facet scales should be `"free"` (default), `"fixed"`,
+#'   `"free_x"`, or `"free_y"`; passed on to [ggplot2::facet_wrap()] /
+#'   [ggplot2::facet_grid()].
+#' @param nrow,ncol number of rows and columns of facet panels (`nrow` default
+#'   `NULL` lets ggplot2 choose; `ncol` default `1` stacks the panels in a
+#'   single column). Only applies when `facet` is a single variable or
+#'   expression (faceted with [ggplot2::facet_wrap()]); ignored with a warning
+#'   when `facet` is a formula (faceted with [ggplot2::facet_grid()]).
+#' @param color column or expression for the colour aesthetic (default:
+#'   `trace`, the per-species/mass trace identifier, e.g. `"CO2: 44"`)
 #' @param linetype column or expression for the linetype aesthetic (default:
-#'   `species`)
+#'   `NULL`, i.e. no linetype aesthetic)
 #' @param color_values named or unnamed character vector of colours passed to
 #'   [ggplot2::scale_color_manual()], or `NULL` to use the ggplot2 default
 #'   colour palette (default: [palette.colors()])
 #' @param scientific whether to format y axis labels in scientific notation
 #'   (default: `FALSE`)
+#' @param ... additional arguments passed on to [ggplot2::facet_wrap()] or
+#'   [ggplot2::facet_grid()] (e.g. `labeller`)
 #' @param time_window optional numeric vector of length 2 giving the time axis
 #'   display window `c(min, max)` in seconds. Data just outside the window is
 #'   retained for correct y autoscaling at the edges;
@@ -368,16 +490,20 @@ ir_plot_scans <- function(
 #' @export
 ir_plot_continuous_flow <- function(
   dataset,
-  panel = file_name,
-  color = mass,
-  linetype = species,
+  facet = file_name,
+  scales = "free",
+  nrow = NULL,
+  ncol = 1,
+  color = trace,
+  linetype = NULL,
   color_values = palette.colors(),
   scientific = FALSE,
   time_window = NULL,
   short_time_labels = FALSE,
   n_time_breaks = 5,
   n_y_breaks = 5,
-  theme = ir_default_theme()
+  theme = ir_default_theme(),
+  ...
 ) {
   # safety checks
   if (!missing(dataset) && is(dataset, "ir_isofiles")) {
@@ -421,9 +547,10 @@ ir_plot_continuous_flow <- function(
     rlang::is_scalar_integerish(n_y_breaks) && n_y_breaks > 0,
     "must be a positive whole number"
   )
+  check_arg(scales, rlang::is_scalar_character(scales), "must be a string")
 
   # capture aesthetics before any data manipulation
-  panel_quo <- rlang::enquo(panel)
+  facet_quo <- rlang::enquo(facet)
   color_quo <- rlang::enquo(color)
   linetype_quo <- rlang::enquo(linetype)
 
@@ -528,8 +655,10 @@ ir_plot_continuous_flow <- function(
     )
   }
 
+  # sort trace as a factor in numerical order of the trailing mass number
+  plot_data <- sort_trace_factor(plot_data)
+
   # validate aesthetic expressions against the actual plot data
-  check_aes_expr(panel_quo, "panel", plot_data)
   check_aes_expr(color_quo, "color", plot_data)
   check_aes_expr(linetype_quo, "linetype", plot_data)
 
@@ -568,7 +697,13 @@ ir_plot_continuous_flow <- function(
   if (!rlang::quo_is_null(color_quo)) {
     p <- p + ggplot2::aes(color = !!color_quo)
     if (!is.null(color_values)) {
-      p <- p + scale_color_manual(values = color_values)
+      # only apply the manual palette if it provides enough colours for the
+      # number of distinct colour groups; otherwise fall back to the default
+      # ggplot2 colour scale (which generates as many distinct hues as needed)
+      n_colors <- dplyr::n_distinct(rlang::eval_tidy(color_quo, plot_data))
+      if (length(color_values) >= n_colors) {
+        p <- p + scale_color_manual(values = color_values)
+      }
     }
   }
   if (!rlang::quo_is_null(linetype_quo)) {
@@ -576,9 +711,7 @@ ir_plot_continuous_flow <- function(
   }
 
   # facets
-  if (!rlang::quo_is_null(panel_quo)) {
-    p <- p + ggplot2::facet_wrap(ggplot2::vars(!!panel_quo), scales = "free")
-  }
+  p <- add_facets(p, facet_quo, plot_data, scales, nrow, ncol, ...)
 
   # time window: clip display to the requested range
   if (!is.null(time_window)) {
@@ -604,8 +737,19 @@ ir_plot_continuous_flow <- function(
 #' @param dataset an `ir_aggregated_data` object from [ir_aggregate_isofiles()]
 #'   or a plain data frame with `cycle`, `type`, `mass`, and an
 #'   `intensity.*` column
-#' @param panel column or expression for faceting (default: `file_name`). Set
-#'   to `NULL` to suppress panels.
+#' @param facet column or expression to facet by (default: `file_name`). A
+#'   plain column or expression (e.g. `file_name` or `paste(species, mass)`) is
+#'   faceted with [ggplot2::facet_wrap()]; a two-sided formula (e.g.
+#'   `species ~ mass`) is faceted with [ggplot2::facet_grid()]. Set to `NULL`
+#'   to suppress faceting.
+#' @param scales whether facet scales should be `"free"` (default), `"fixed"`,
+#'   `"free_x"`, or `"free_y"`; passed on to [ggplot2::facet_wrap()] /
+#'   [ggplot2::facet_grid()].
+#' @param nrow,ncol number of rows and columns of facet panels (`nrow` default
+#'   `NULL` lets ggplot2 choose; `ncol` default `1` stacks the panels in a
+#'   single column). Only applies when `facet` is a single variable or
+#'   expression (faceted with [ggplot2::facet_wrap()]); ignored with a warning
+#'   when `facet` is a formula (faceted with [ggplot2::facet_grid()]).
 #' @param color column or expression for the colour aesthetic (default: `mass`)
 #' @param shape column or expression for the point shape aesthetic (default:
 #'   `type`, distinguishing `"standard"` from `"sample"` cycles)
@@ -618,18 +762,24 @@ ir_plot_continuous_flow <- function(
 #'   (default: `FALSE`)
 #' @param n_y_breaks desired number of y axis tick marks (default: `5`)
 #' @param theme ggplot2 theme to apply (default: [ir_default_theme()])
+#' @param ... additional arguments passed on to [ggplot2::facet_wrap()] or
+#'   [ggplot2::facet_grid()] (e.g. `labeller`)
 #' @return a `ggplot` object
 #' @export
 ir_plot_dual_inlet <- function(
   dataset,
-  panel = file_name,
-  color = mass,
+  facet = file_name,
+  scales = "free",
+  nrow = NULL,
+  ncol = 1,
+  color = trace,
   shape = type,
-  linetype = species,
+  linetype = NULL,
   color_values = palette.colors(),
   scientific = FALSE,
   n_y_breaks = 5,
-  theme = ir_default_theme()
+  theme = ir_default_theme(),
+  ...
 ) {
   # safety checks
   if (!missing(dataset) && is(dataset, "ir_isofiles")) {
@@ -657,9 +807,10 @@ ir_plot_dual_inlet <- function(
     rlang::is_scalar_integerish(n_y_breaks) && n_y_breaks > 0,
     "must be a positive whole number"
   )
+  check_arg(scales, rlang::is_scalar_character(scales), "must be a string")
 
   # capture aesthetics before any data manipulation
-  panel_quo <- rlang::enquo(panel)
+  facet_quo <- rlang::enquo(facet)
   color_quo <- rlang::enquo(color)
   shape_quo <- rlang::enquo(shape)
   linetype_quo <- rlang::enquo(linetype)
@@ -733,8 +884,10 @@ ir_plot_dual_inlet <- function(
     )
   }
 
+  # sort trace as a factor in numerical order of the trailing mass number
+  plot_data <- sort_trace_factor(plot_data)
+
   # validate aesthetic expressions against the actual plot data
-  check_aes_expr(panel_quo, "panel", plot_data)
   check_aes_expr(color_quo, "color", plot_data)
   check_aes_expr(shape_quo, "shape", plot_data)
   check_aes_expr(linetype_quo, "linetype", plot_data)
@@ -767,7 +920,13 @@ ir_plot_dual_inlet <- function(
   if (!rlang::quo_is_null(color_quo)) {
     p <- p + ggplot2::aes(color = !!color_quo)
     if (!is.null(color_values)) {
-      p <- p + scale_color_manual(values = color_values)
+      # only apply the manual palette if it provides enough colours for the
+      # number of distinct colour groups; otherwise fall back to the default
+      # ggplot2 colour scale (which generates as many distinct hues as needed)
+      n_colors <- dplyr::n_distinct(rlang::eval_tidy(color_quo, plot_data))
+      if (length(color_values) >= n_colors) {
+        p <- p + scale_color_manual(values = color_values)
+      }
     }
   }
   if (!rlang::quo_is_null(shape_quo)) {
@@ -778,9 +937,7 @@ ir_plot_dual_inlet <- function(
   }
 
   # facets
-  if (!rlang::quo_is_null(panel_quo)) {
-    p <- p + ggplot2::facet_wrap(ggplot2::vars(!!panel_quo), scales = "free")
-  }
+  p <- add_facets(p, facet_quo, plot_data, scales, nrow, ncol, ...)
 
   p <- p + theme
 
