@@ -20,46 +20,96 @@ check_openxlsx <- function() {
 
 #' Export data to Excel
 #'
-#' Exports a data frame or an [ir_aggregate_isofiles()] result to an Excel file.
-#' Each dataset in the aggregated data becomes its own sheet. The `include`
-#' parameter controls which datasets are exported (default: just the metadata).
-#' Possibilities: `"metadata"`, `"traces"` (for continuous flow data), `"cycles"`
-#' (for dual inlet data), "`scans`" (for scan data), `"resistors"` (all file
-#' formats), and `"isodat_data_table"` (only available from isodat .dxf, .cf
-#' .did, and .caf files).
+#' Exports one or more data frames / tibbles (typically retrieved with the
+#' `ir_get_*()` functions, e.g. [ir_get_metadata()], [ir_get_traces()]) to an
+#' Excel file, one sheet per data frame. Pass the data frames as `...`: **named**
+#' arguments use the name as the sheet name, **unnamed** arguments are placed in
+#' a sheet named after their position (e.g. the 3rd unnamed data frame goes into
+#' `"Sheet3"`).
+#'
+#' This function only accepts data frames. To store a complete
+#' [ir_aggregate_isofiles()] result use [ir_save_aggregated_data()] instead.
 #'
 #' Requires the \pkg{openxlsx} package. If not installed, one
 #' installation attempt from CRAN is made automatically.
 #'
-#' @param data a data frame or an `ir_aggregated_data` object from [ir_aggregate_isofiles()]
+#' @param ... one or more data frames / tibbles to export, one per sheet. Named
+#'   arguments set the sheet name; unnamed arguments use `"Sheet{position}"`.
 #' @param file path to the `.xlsx` file (`.xlsx` extension added if absent)
-#' @param include for `ir_aggregated_data` only: character vector of dataset
-#'   names to include as sheets. Default `"metadata"` exports only the metadata.
 #' @param dbl_digits number of decimal places shown for double columns (all
 #'   digits are stored; this only affects display formatting in Excel)
 #' @param int_format Excel number format string for integer columns
 #' @param dbl_format Excel number format string for double columns (derived
 #'   automatically from `dbl_digits` if not set)
 #' @param show_progress whether to show a progress indicator
-#' @return `data` invisibly, for use in pipes
+#' @return the exported data invisibly (the single data frame if one was
+#'   provided, otherwise the list of data frames), for use in pipes
+#' @examples
+#' \dontrun{
+#' agg <- ir_examples_folder() |>
+#'   ir_find_continuous_flow() |>
+#'   ir_read_isofiles() |>
+#'   ir_aggregate_isofiles()
+#' ir_export_to_excel(
+#'   metadata = ir_get_metadata(agg),
+#'   traces = ir_get_traces(agg),
+#'   file = "my_export.xlsx"
+#' )
+#' }
 #' @export
 ir_export_to_excel <- function(
-  data,
+  ...,
   file,
-  include = "metadata",
   dbl_digits = 2,
   int_format = "0",
   dbl_format = sprintf(sprintf("%%.%sf", dbl_digits), 0),
   show_progress = is_interactive()
 ) {
   check_openxlsx()
-  check_arg(
-    data,
-    !missing(data) && (is.data.frame(data) || is(data, "ir_aggregated_data")),
-    "must be a data frame or a set of aggregated isofiles"
-  )
   check_arg(file, !missing(file) && is_scalar_character(file), "must be a path")
-  check_arg(include, is_character(include), "must be a character vector")
+
+  datasets <- rlang::list2(...)
+  if (length(datasets) == 0) {
+    cli_abort(
+      c(
+        "no data provided to export",
+        "i" = "pass one or more data frames/tibbles, e.g. {.code ir_export_to_excel(metadata = ir_get_metadata(agg), file = \"out.xlsx\")}"
+      )
+    )
+  }
+
+  # all `...` arguments must be data frames
+  is_df <- purrr::map_lgl(datasets, is.data.frame)
+  if (!all(is_df)) {
+    bad <- which(!is_df)
+    positions <- paste(bad, collapse = ", ")
+    cli_abort(
+      c(
+        "every {.arg ...} argument must be a data frame or tibble",
+        "i" = "{qty(length(bad))}argument{?s} at position{?s} {positions} {?is/are} not a data frame",
+        "i" = "to store a full aggregated dataset use {.fn ir_save_aggregated_data} instead"
+      )
+    )
+  }
+
+  # sheet names: named args use the name, unnamed use "Sheet{position}"
+  nms <- names(datasets) %||% rep("", length(datasets))
+  nms[is.na(nms)] <- ""
+  sheet_names <- ifelse(
+    nzchar(nms),
+    nms,
+    paste0("Sheet", seq_along(datasets))
+  )
+  # Excel sheet names are limited to 31 characters and must be unique
+  sheet_names <- substr(sheet_names, 1L, 31L)
+  if (anyDuplicated(sheet_names)) {
+    cli_abort(
+      c(
+        "sheet names must be unique",
+        "i" = "duplicated (after truncation to 31 characters): {.field {unique(sheet_names[duplicated(sheet_names)])}}"
+      )
+    )
+  }
 
   if (!grepl("\\.xlsx$", file, ignore.case = TRUE)) {
     file <- paste0(file, ".xlsx")
@@ -74,52 +124,23 @@ ir_export_to_excel <- function(
   start <- start_info("is writing {.field {pb_status}} | {pb_elapsed}")
 
   wb <- openxlsx::createWorkbook()
-
-  if (is(data, "ir_aggregated_data")) {
-    # select sheets to export
-    available <- names(data)[purrr::map_lgl(data, ~ ncol(.x) > 0)]
-    sheets <- intersect(include, available)
-    if (length(sheets) == 0) {
-      cli_abort(
-        c(
-          "no datasets available to export",
-          "i" = "none of {.field {include}} matched a non-empty dataset in {.arg data}"
-        )
-      )
-    }
-    info <- character(length(sheets))
-    for (i in seq_along(sheets)) {
-      if (show_progress) {
-        cli_progress_update(
-          id = start$pb,
-          inc = 0,
-          status = sheets[i],
-          force = TRUE
-        )
-      }
-      info[i] <- format_inline(
-        "{numbers_to_text(nrow(data[[sheets[i]]]))} {qty(nrow(data[[sheets[i]]]))}row{?s} of {.field {sheets[i]}}"
-      )
-      add_excel_sheet(
-        wb,
-        sheet_name = sheets[i],
-        dataset = data[[sheets[i]]],
-        dbl_digits = dbl_digits,
-        int_format = int_format,
-        dbl_format = dbl_format
-      )
-    }
-  } else {
+  info <- character(length(datasets))
+  for (i in seq_along(datasets)) {
     if (show_progress) {
-      cli_progress_update(id = start$pb, inc = 0, status = "data", force = TRUE)
+      cli_progress_update(
+        id = start$pb,
+        inc = 0,
+        status = sheet_names[i],
+        force = TRUE
+      )
     }
-    info <- format_inline(
-      "{numbers_to_text(nrow(data))} {qty(nrow(data))}row{?s}, {ncol(data)} column{?s}"
+    info[i] <- format_inline(
+      "{numbers_to_text(nrow(datasets[[i]]))} {qty(nrow(datasets[[i]]))}row{?s} of {.field {sheet_names[i]}}"
     )
     add_excel_sheet(
       wb,
-      sheet_name = "data",
-      dataset = data,
+      sheet_name = sheet_names[i],
+      dataset = datasets[[i]],
       dbl_digits = dbl_digits,
       int_format = int_format,
       dbl_format = dbl_format
@@ -135,7 +156,7 @@ ir_export_to_excel <- function(
     "exported {info} to {.file {file}}",
     start = start
   )
-  return(invisible(data))
+  return(invisible(if (length(datasets) == 1L) datasets[[1L]] else datasets))
 }
 
 # internal: add a formatted sheet to an openxlsx workbook
