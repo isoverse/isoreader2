@@ -19,33 +19,30 @@ ir_get_data(
   by = c("uidx", "analysis", "config", "species", "channel", "mass")
 )
 
-ir_get_metadata(
-  aggregated_data,
-  by = c("uidx", "analysis", "config", "species", "channel", "mass")
-)
+ir_get_metadata(aggregated_data, metadata = everything())
 
 ir_get_resistors(
   aggregated_data,
   metadata = c("file_name"),
-  by = c("uidx", "analysis", "config", "species", "channel", "mass")
+  by = c("uidx", "analysis")
 )
 
 ir_get_traces(
   aggregated_data,
   metadata = c("file_name"),
-  by = c("uidx", "analysis", "config", "species", "channel", "mass")
+  by = c("uidx", "analysis")
 )
 
 ir_get_cycles(
   aggregated_data,
   metadata = c("file_name"),
-  by = c("uidx", "analysis", "config", "species", "channel", "mass")
+  by = c("uidx", "analysis")
 )
 
 ir_get_scans(
   aggregated_data,
   metadata = c("file_name"),
-  by = c("uidx", "analysis", "config", "species", "channel", "mass")
+  by = c("uidx", "config")
 )
 }
 \arguments{

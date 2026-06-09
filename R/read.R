@@ -271,6 +271,18 @@ ir_read_isofiles <- function(
   return(all_files)
 }
 
+#' Combine isofiles
+#'
+#' Combine multiple collections of isofiles (read by [ir_read_isofiles()]) into a single `ir_isofiles` object by row-binding them with [dplyr::bind_rows()]. This preserves the object structure and type.
+#' @param ... `ir_isofiles` objects to combine
+#' @return a single combined `ir_isofiles` object
+#' @export
+c.ir_isofiles <- function(...) {
+  combined <- dplyr::bind_rows(...)
+  class(combined) <- unique(c("ir_isofiles", class(combined)))
+  return(combined)
+}
+
 # extract meta from a single JSON file
 read_json_meta <- function(json_path) {
   meta <- query_json(json_path, "/meta")
