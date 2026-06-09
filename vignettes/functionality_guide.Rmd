@@ -251,14 +251,14 @@ data_folder |>
 
 ## `ir_export_to_excel()`
 
-Finally, you can export the aggregated data to an Excel file (one sheet per dataset). This requires the suggested **openxlsx** package.
+Finally, you can export individual data frames (typically retrieved with the `ir_get_*()` functions) to an Excel file, one sheet per data frame. Named arguments set the sheet names; unnamed ones use `"Sheet{position}"`. This requires the suggested **openxlsx** package.
 
 ```{r}
-dataset |>
-  ir_export_to_excel(
-    file = "tmp/my_dataset.xlsx",
-    include = c("metadata", "traces")
-  )
+ir_export_to_excel(
+  metadata = dataset |> ir_get_metadata(),
+  traces = dataset |> ir_get_traces(),
+  file = "tmp/my_dataset.xlsx"
+)
 ```
 
 ```{r, include=FALSE}

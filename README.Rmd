@@ -69,60 +69,96 @@ isoreader2::ir_check_isoextract()
 
 ## Show me some code
 
-### Read data files
-
 ```{r, include = FALSE}
 isoreader2::ir_examples_folder() |>
   list.files("\\.json", full.names = TRUE) |>
   unlink()
 ```
 
-```{r fig.width = 8, fig.height = 6}
+```{r "continuous_flow_example", message=FALSE, fig.width = 8, fig.height = 6}
 # load library
 library(isoreader2)
 
-# provide the path to your data folder here:
-# for this example, we use the example files bundled with the package
-data_folder <- ir_examples_folder()
+# load data
+dataset <-
+  ir_examples_folder() |>
+  ir_find_continuous_flow() |>
+  ir_read_isofiles() |>
+  ir_aggregate_isofiles("mV")
 
-# to use your own data instead, comment in this this line (remove the '#')
-# and adjust the path to point to your data folder(s)
-# data_folder <- file.path("project", "data")
+# visualize data
+dataset |>
+  ir_plot_continuous_flow()
+```
 
-# and search for continuous flow files (all known file types) in that folder
-file_paths <- ir_find_continuous_flow(data_folder)
+## Show me more details
+
+```{r, include = FALSE}
+isoreader2::ir_examples_folder() |>
+  list.files("\\.json", full.names = TRUE) |>
+  unlink()
+dir.create("tmp/project/data", recursive = TRUE)
+```
+
+### Read isotope data files
+
+```{r}
+# load library
+library(isoreader2)
+
+# specify where the data files are located (relative or absolute path)
+data_folder <- "tmp/project/data"
+
+# search for dual inlet files (all known file types) in that folder
+# (or use ir_find_continuous_flow or ir_find_scans instead)
+file_paths <- ir_find_dual_inlet(data_folder)
 
 # for this example, we use the example files bundled with the package
 # instead (remove this line if working with your own data)
-file_paths <- ir_examples_folder() |> ir_find_continuous_flow()
+file_paths <- ir_examples_folder() |> ir_find_dual_inlet()
 
 # read the files
 isofiles <- file_paths |> ir_read_isofiles()
 # show information about the files
 isofiles
+```
+
+### Aggregate the data
+
+```{r}
 # aggregate the data from the read files specifying which units to use
 # (mV, V, nA, A, cps, etc.), conversion via resistor values happens automatically
-dataset <- isofiles |> ir_aggregate_isofiles("mV")
+dataset <- isofiles |> ir_aggregate_isofiles("V")
 # show the available data that was aggregated  metadata is all the available
 # sequence information from the different file types
 dataset
-# plot the data  with the default plotting settings
-dataset |> ir_plot_continuous_flow()
+```
+
+### Visualize the data
+
+```{r "dual_inlet_example", fig.width = 8, fig.height = 5}
+# filter the data for by a metadata field and plot it
+# use ir_plot_continuous_flow() and ir_plot_scans(), respectively
+dataset |>
+  ir_filter_metadata(file_name == "caf_dual_inlet_example") |>
+  ir_plot_dual_inlet()
 ```
 
 ### Export the data
 
 ```{r}
-# the file metadata
-dataset |>
-  ir_export_to_excel(
-    include = c("metadata", "traces"),
-    file = "my_export.xlsx"
-  )
+# get the data of interest (here, metadata and dual inlet cycles data)
+# and export both into one excel file (one sheet per data set)
+ir_export_to_excel(
+  metadata = dataset |> ir_get_metadata(),
+  cycles = dataset |> ir_get_cycles(),
+  file = "my_export.xlsx"
+)
 ```
 
 ```{r, include = FALSE}
 unlink("my_export.xlsx")
+unlink("tmp/project", recursive = TRUE, force = TRUE)
 ```
 
 ## Package structure

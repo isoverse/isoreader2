@@ -74,69 +74,102 @@ isoreader2::ir_check_isoextract()
 
 ## Show me some code
 
-### Read data files
+``` r
+# load library
+library(isoreader2)
+
+# load data
+dataset <-
+  ir_examples_folder() |>
+  ir_find_continuous_flow() |>
+  ir_read_isofiles() |>
+  ir_aggregate_isofiles("mV")
+
+# visualize data
+dataset |>
+  ir_plot_continuous_flow()
+```
+
+<img src="man/figures/README-continuous_flow_example-1.png" alt="" width="100%" />
+
+## Show me more details
+
+### Read isotope data files
 
 ``` r
 # load library
 library(isoreader2)
 
-# provide the path to your data folder here:
-# for this example, we use the example files bundled with the package
-data_folder <- ir_examples_folder()
+# specify where the data files are located (relative or absolute path)
+data_folder <- "tmp/project/data"
 
-# to use your own data instead, comment in this this line (remove the '#')
-# and adjust the path to point to your data folder(s)
-# data_folder <- file.path("project", "data")
-
-# and search for continuous flow files (all known file types) in that folder
-file_paths <- ir_find_continuous_flow(data_folder)
+# search for dual inlet files (all known file types) in that folder
+# (or use ir_find_continuous_flow or ir_find_scans instead)
+file_paths <- ir_find_dual_inlet(data_folder)
 
 # for this example, we use the example files bundled with the package
 # instead (remove this line if working with your own data)
-file_paths <- ir_examples_folder() |> ir_find_continuous_flow()
+file_paths <- ir_examples_folder() |> ir_find_dual_inlet()
 
 # read the files
 isofiles <- file_paths |> ir_read_isofiles()
-✔ [342ms] ir_extract_isofiles() finished extracting 2 files/archives
-✔ [55ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+✔ [335ms] ir_extract_isofiles() finished extracting 2 files/archives
+✔ [153ms] ir_read_isofiles() finished reading 2 isotope data files/archives
 # show information about the files
 isofiles
 ─────────────────── 2 isofiles with 2 analyses - combine with ir_aggregate_isofiles() ───────────────────
-1. continuous_flow_ea_example.dxf: with 1.1k time points for N2 (masses 28, 29, and 30); 1.34k time
-points for CO2 (masses 44, 45, and 46); 20 metadata columns
-2. continuous_flow_gc_example.cf:   with 8.6k time points for HD (masses 2 and 3); 19 metadata columns
+1. caf_dual_inlet_example.caf: with 8 sample/standard cycles for CO2clump (masses 44, 45, 46, 47, 48,
+49, 44, 45, 46, 47, 48, 49, 44, 45, 46, 47, 48, 49, …, 48, and 49); 21 metadata columns
+2. did_dual_inlet_example.did: with 7 sample/standard cycles for CO2+ (masses 44, 45, 46, 47, 48, 49,
+44, 45, 46, 47, 48, 49, 44, 45, 46, 47, 48, 49, …, 48, and 49); 17 metadata columns
+```
+
+### Aggregate the data
+
+``` r
 # aggregate the data from the read files specifying which units to use
 # (mV, V, nA, A, cps, etc.), conversion via resistor values happens automatically
-dataset <- isofiles |> ir_aggregate_isofiles("mV")
-✔ [85ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k, intensity in mV) from 2
-files using the standard aggregator
+dataset <- isofiles |> ir_aggregate_isofiles("V")
+✔ [88ms] ir_aggregate_isofiles() aggregated metadata (2) and cycles (192, intensity in V) from 2 files
+using the standard aggregator
 # show the available data that was aggregated  metadata is all the available
 # sequence information from the different file types
 dataset
 ───────────── aggregated data from 2 isofiles with 2 analyses - retrieve with ir_get_data() ─────────────
-→ metadata (2): uidx, file_path, file_name, analysis, timestamp, type, h3_factor (1 NA), Row (1 NA),
-Peak Center (1 NA), Check Ref. Dilution (1 NA), H3 Stability (1 NA), H3 Factor (1 NA), Amount (1 NA),
-Type (1 NA), EA Method (1 NA), Identifier 1, Identifier 2 (1 NA), Analysis, Comment (1 NA), Preparation
-(1 NA), Method, Line (1 NA), GC Method (1 NA), AS Sample (1 NA), AS Method (1 NA), Pre Script (all NA),
-Post Script (all NA)
-→ traces (24.5k): uidx, analysis, species, mass, trace, time.s, intensity.mV; (not aggregated: channel)
+→ metadata (2): uidx, file_path, file_name, analysis, timestamp, type, h3_factor (all NA), Line, Peak
+Center, Pressadjust, Background, Reference Refill (1 NA), Weight [mg] (1 NA), Sample (1 NA), Identifier
+1, Identifier 2, Analysis, Comment, Preparation, Pre Script (1 NA), Post Script, Method
+→ cycles (192): uidx, analysis, species, cycle, type, mass, trace, intensity.V; (not aggregated:
+channel)
 → problems: has no issues
-# plot the data  with the default plotting settings
-dataset |> ir_plot_continuous_flow()
 ```
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" alt="" width="100%" />
+### Visualize the data
+
+``` r
+# filter the data for by a metadata field and plot it
+# use ir_plot_continuous_flow() and ir_plot_scans(), respectively
+dataset |>
+  ir_filter_metadata(file_name == "caf_dual_inlet_example") |>
+  ir_plot_dual_inlet()
+```
+
+<img src="man/figures/README-dual_inlet_example-1.png" alt="" width="100%" />
 
 ### Export the data
 
 ``` r
-# the file metadata
-dataset |>
-  ir_export_to_excel(
-    include = c("metadata", "traces"),
-    file = "my_export.xlsx"
-  )
-✔ [643ms] ir_export_to_excel() exported 2 rows of metadata and 24.5k rows of traces to ']8;;file:///Users/seko0922/Dropbox/Tools/software/R/isoreader2/my_export.xlsxmy_export.xlsx]8;;'
+# get the data of interest (here, metadata and dual inlet cycles data)
+# and export both into one excel file (one sheet per data set)
+ir_export_to_excel(
+  metadata = dataset |> ir_get_metadata(),
+  cycles = dataset |> ir_get_cycles(),
+  file = "my_export.xlsx"
+)
+✔ [2ms] ir_get_data() retrieved 2 records from metadata
+✔ [3ms] ir_get_data() retrieved 192 records from the combination of metadata (2) and cycles (192) via
+uidx and analysis
+✔ [320ms] ir_export_to_excel() exported 2 rows of metadata and 192 rows of cycles to ']8;;file:///Users/seko0922/Dropbox/Tools/software/R/isoreader2/my_export.xlsxmy_export.xlsx]8;;'
 ```
 
 ## Package structure
