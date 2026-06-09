@@ -16,9 +16,9 @@ Roxygen: list(markdown = TRUE)
 URL: https://isoreader2.isoverse.org/, https://github.com/isoverse/isoreader2
 BugReports: https://github.com/isoverse/isoreader2/issues
 Depends:
-    R (>= 4.5.0),
-    ggplot2
+    R (>= 4.5.0)
 Imports:
+    ggplot2,
     tools,
     utils,
     methods,
