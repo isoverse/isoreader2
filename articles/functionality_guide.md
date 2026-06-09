@@ -86,12 +86,12 @@ isofiles <- file_paths |> ir_read_isofiles()
 ``` fansi
 → Trying to install isoextract for your operating system isoextract-linux-x64
   (this requires an internet connection and may take a moment)...
-✔ [2.3s] ir_check_isoextract() successfully installed isoextract version
+✔ [1.1s] ir_check_isoextract() successfully installed isoextract version
 0.2.0.0
 
-✔ [180ms] ir_extract_isofiles() finished extracting 2 files/archives
+✔ [195ms] ir_extract_isofiles() finished extracting 2 files/archives
 
-✔ [192ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+✔ [189ms] ir_read_isofiles() finished reading 2 isotope data files/archives
 ```
 
 ``` r
@@ -148,7 +148,7 @@ isofiles |> ir_save_isofiles(file.path("tmp", "my_isofiles"))
 ```
 
 ``` fansi
-✔ [51ms] ir_save_isofiles() saved 2 isofiles to tmp/my_isofiles.rds
+✔ [49ms] ir_save_isofiles() saved 2 isofiles to tmp/my_isofiles.rds
 ```
 
 ``` r
@@ -176,7 +176,7 @@ dataset <- isofiles |> ir_aggregate_isofiles()
 ```
 
 ``` fansi
-✔ [280ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+✔ [261ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 intensity in mV) from 2 files using the standard aggregator
 ```
 
@@ -315,7 +315,7 @@ isofiles |> ir_aggregate_isofiles(aggregator = "extended")
 ```
 
 ``` fansi
-✔ [316ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
+✔ [288ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
 intensity in mV), and resistors (8) from 2 files using the extended aggregator
 ```
 
@@ -411,7 +411,7 @@ isofiles |> ir_aggregate_isofiles(aggregator = "my_aggregator")
 ```
 
 ``` fansi
-✔ [167ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+✔ [153ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 intensity in mV) from 2 files using the my_aggregator aggregator
 ```
 
@@ -542,7 +542,7 @@ dataset |>
 ```
 
 ``` fansi
-✔ [11ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [10ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
@@ -605,7 +605,7 @@ dataset |> ir_get_traces()
 ```
 
 ``` fansi
-✔ [10ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [9ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
@@ -698,15 +698,15 @@ data_folder |>
 ```
 
 ``` fansi
-✔ [149ms] ir_extract_isofiles() finished extracting 2 files/archives
+✔ [138ms] ir_extract_isofiles() finished extracting 2 files/archives
 ```
 
 ``` fansi
-✔ [146ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+✔ [134ms] ir_read_isofiles() finished reading 2 isotope data files/archives
 ```
 
 ``` fansi
-✔ [264ms] ir_aggregate_isofiles() aggregated metadata (2) and cycles (192,
+✔ [247ms] ir_aggregate_isofiles() aggregated metadata (2) and cycles (192,
 intensity in V) from 2 files using the standard aggregator
 ```
 
@@ -726,15 +726,15 @@ data_folder |>
 ```
 
 ``` fansi
-✔ [121ms] ir_extract_isofiles() finished extracting 4 files/archives
+✔ [117ms] ir_extract_isofiles() finished extracting 4 files/archives
 ```
 
 ``` fansi
-✔ [184ms] ir_read_isofiles() finished reading 4 isotope data files/archives
+✔ [174ms] ir_read_isofiles() finished reading 4 isotope data files/archives
 ```
 
 ``` fansi
-✔ [379ms] ir_aggregate_isofiles() aggregated metadata (4) and scans (17.8k,
+✔ [349ms] ir_aggregate_isofiles() aggregated metadata (4) and scans (17.8k,
 intensity in V) from 4 files using the standard aggregator
 ```
 
@@ -744,16 +744,27 @@ intensity in V) from 4 files using the standard aggregator
 
 ### `ir_export_to_excel()`
 
-Finally, you can export the aggregated data to an Excel file (one sheet
-per dataset). This requires the suggested **openxlsx** package.
+Finally, you can export individual data frames (typically retrieved with
+the `ir_get_*()` functions) to an Excel file, one sheet per data frame.
+Named arguments set the sheet names; unnamed ones use
+`"Sheet{position}"`. This requires the suggested **openxlsx** package.
 
 ``` r
 
-dataset |>
-  ir_export_to_excel(
-    file = "tmp/my_dataset.xlsx",
-    include = c("metadata", "traces")
-  )
+ir_export_to_excel(
+  metadata = dataset |> ir_get_metadata(),
+  traces = dataset |> ir_get_traces(),
+  file = "tmp/my_dataset.xlsx"
+)
+```
+
+``` fansi
+✔ [5ms] ir_get_data() retrieved 2 records from metadata
+```
+
+``` fansi
+✔ [9ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+(2) and traces (24.5k) via uidx and analysis
 ```
 
 ``` fansi
