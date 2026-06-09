@@ -92,11 +92,11 @@ isofiles <- file_paths |> ir_read_isofiles()
 ```
 
 ``` fansi
-✔ [337ms] ir_extract_isofiles() finished extracting 2 files/archives
+✔ [324ms] ir_extract_isofiles() finished extracting 2 files/archives
 ```
 
 ``` fansi
-✔ [159ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+✔ [291ms] ir_read_isofiles() finished reading 2 isotope data files/archives
 ```
 
 ``` r
@@ -124,7 +124,7 @@ dataset <- isofiles |> ir_aggregate_isofiles("mV")
 ```
 
 ``` fansi
-✔ [87ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+✔ [82ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 intensity in mV) from 2 files using the standard aggregator
 ```
 
@@ -181,7 +181,7 @@ dataset |>
 ```
 
 ``` fansi
-✔ [643ms] ir_export_to_excel() exported 2 rows of metadata and 24.5k rows of
+✔ [590ms] ir_export_to_excel() exported 2 rows of metadata and 24.5k rows of
 traces to my_export.xlsx
 ```
 
