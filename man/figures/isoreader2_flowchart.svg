@@ -412,8 +412,8 @@
   </g>
   <g>
     <g>
-      <rect class="st17" x="1" y="138.96" width="283.19" height="322.82" rx="16.31" ry="16.31"/>
-      <rect class="st5" x="1" y="138.96" width="283.19" height="322.82" rx="16.31" ry="16.31"/>
+      <rect class="st17" x="1" y="128.96" width="283.19" height="322.82" rx="16.31" ry="16.31"/>
+      <rect class="st5" x="1" y="128.96" width="283.19" height="322.82" rx="16.31" ry="16.31"/>
     </g>
     <g class="st19">
       <g class="st19">
@@ -423,24 +423,7 @@
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st14" transform="translate(62.36 344.76)"><tspan x="0" y="0">information functions</tspan></text>
-                  </g>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-    </g>
-    <g class="st19">
-      <g class="st19">
-        <g class="st19">
-          <g class="st19">
-            <g class="st19">
-              <g class="st19">
-                <g class="st19">
-                  <g class="st19">
-                    <text class="st14" transform="translate(62.36 305.32)"><tspan x="0" y="0">processing functions</tspan></text>
+                    <text class="st14" transform="translate(62.36 334.76)"><tspan x="0" y="0">information functions</tspan></text>
                   </g>
                 </g>
               </g>
@@ -457,7 +440,7 @@
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st14" transform="translate(61.16 218.94)"><tspan x="0" y="0">isoreader core functions</tspan></text>
+                    <text class="st14" transform="translate(62.36 295.32)"><tspan x="0" y="0">processing functions</tspan></text>
                   </g>
                 </g>
               </g>
@@ -474,22 +457,7 @@
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st14" transform="translate(61.16 248.7)"><tspan x="0" y="0">auxiliary functions</tspan></text>
-                  </g>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-      <g class="st19">
-        <g class="st19">
-          <g class="st19">
-            <g class="st19">
-              <g class="st19">
-                <g class="st19">
-                  <g class="st19">
-                    <text class="st14" transform="translate(61.16 272.63)"><tspan x="0" y="0">(optional)</tspan></text>
+                    <text class="st14" transform="translate(61.16 208.94)"><tspan x="0" y="0">isoreader core functions</tspan></text>
                   </g>
                 </g>
               </g>
@@ -506,7 +474,22 @@
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st14" transform="translate(62.36 384.93)"><tspan x="0" y="0">visualization functions</tspan></text>
+                    <text class="st14" transform="translate(61.16 238.7)"><tspan x="0" y="0">auxiliary functions</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <text class="st14" transform="translate(61.16 262.63)"><tspan x="0" y="0">(optional)</tspan></text>
                   </g>
                 </g>
               </g>
@@ -523,7 +506,24 @@
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st14" transform="translate(62.36 419.71)"><tspan x="0" y="0">core functions, essential</tspan></text>
+                    <text class="st14" transform="translate(62.36 374.93)"><tspan x="0" y="0">visualization functions</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g class="st19">
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <text class="st14" transform="translate(62.36 409.71)"><tspan x="0" y="0">core functions, essential</tspan></text>
                   </g>
                 </g>
               </g>
@@ -538,7 +538,7 @@
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st14" transform="translate(62.36 443.64)"><tspan x="0" y="0">input from user</tspan></text>
+                    <text class="st14" transform="translate(62.36 433.64)"><tspan x="0" y="0">input from user</tspan></text>
                   </g>
                 </g>
               </g>
@@ -547,21 +547,21 @@
         </g>
       </g>
     </g>
-    <path class="st0" d="M22.5,299.99l1.23-12.12c.09-.85.67-1.49,1.38-1.49h7.29c.65,0,1.17.64,1.17,1.44,0,.17-.03.35-.07.5l-2,6.56h6.03c.87,0,1.59.87,1.59,1.95,0,.39-.1.78-.28,1.1l-8.31,14.93c-.26.46-.67.73-1.12.73h-.13c-.68,0-1.23-.68-1.23-1.51,0-.12.01-.24.04-.37l2.03-10.03h-6.23c-.77,0-1.38-.76-1.38-1.7h-.01Z"/>
+    <path class="st0" d="M22.5,289.99l1.23-12.12c.09-.85.67-1.49,1.38-1.49h7.29c.65,0,1.17.64,1.17,1.44,0,.17-.03.35-.07.5l-2,6.56h6.03c.87,0,1.59.87,1.59,1.95,0,.39-.1.78-.28,1.1l-8.31,14.93c-.26.46-.67.73-1.12.73h-.13c-.68,0-1.23-.68-1.23-1.51,0-.12.01-.24.04-.37l2.03-10.03h-6.23c-.77,0-1.38-.76-1.38-1.7h-.01Z"/>
     <g>
-      <rect class="st23" x="16.26" y="198" width="31.26" height="31.26" rx="5.69" ry="5.69"/>
-      <rect class="st7" x="16.26" y="198" width="31.26" height="31.26" rx="5.69" ry="5.69"/>
-    </g>
-    <g>
-      <rect class="st23" x="16.26" y="239.72" width="31.26" height="31.26" rx="5.69" ry="5.69"/>
-      <rect class="st10" x="16.26" y="239.72" width="31.26" height="31.26" rx="5.69" ry="5.69"/>
+      <rect class="st23" x="16.26" y="188" width="31.26" height="31.26" rx="5.69" ry="5.69"/>
+      <rect class="st7" x="16.26" y="188" width="31.26" height="31.26" rx="5.69" ry="5.69"/>
     </g>
     <g>
-      <polygon class="st3" points="33.24 408.74 31.99 408.74 14.08 426.36 31.99 443.99 33.24 443.99 51.16 426.36 33.24 408.74"/>
-      <path class="st0" d="M31.36,420.45c0-.82.66-1.48,1.48-1.48s1.48.66,1.48,1.48-.66,1.48-1.48,1.48-1.48-.66-1.48-1.48ZM29.88,424.89c0-.54.44-.98.98-.98h1.97c.54,0,.98.44.98.98v6.89h.98c.54,0,.98.44.98.98s-.44.98-.98.98h-3.94c-.54,0-.98-.44-.98-.98s.44-.98.98-.98h.98v-5.91h-.98c-.54,0-.98-.44-.98-.98h0Z"/>
+      <rect class="st23" x="16.26" y="229.72" width="31.26" height="31.26" rx="5.69" ry="5.69"/>
+      <rect class="st10" x="16.26" y="229.72" width="31.26" height="31.26" rx="5.69" ry="5.69"/>
     </g>
-    <path class="st0" d="M30.8,353.98c8.03,0,14.54-6.51,14.54-14.54s-6.51-14.54-14.54-14.54-14.54,6.51-14.54,14.54,6.51,14.54,14.54,14.54ZM28.53,343.98h1.36v-3.63h-1.36c-.76,0-1.36-.61-1.36-1.36s.61-1.36,1.36-1.36h2.73c.76,0,1.36.61,1.36,1.36v5h.45c.76,0,1.36.61,1.36,1.36s-.61,1.36-1.36,1.36h-4.54c-.76,0-1.36-.61-1.36-1.36s.61-1.36,1.36-1.36h0ZM30.8,332.17c1,0,1.82.81,1.82,1.82s-.81,1.82-1.82,1.82-1.82-.81-1.82-1.82.81-1.82,1.82-1.82Z"/>
-    <path class="st0" d="M20.82,369.63c0-.92-.74-1.66-1.66-1.66s-1.66.74-1.66,1.66v17.47c0,2.3,1.86,4.16,4.16,4.16h20.8c.92,0,1.66-.74,1.66-1.66s-.74-1.66-1.66-1.66h-20.8c-.46,0-.83-.37-.83-.83v-17.47h-.01,0ZM41.96,374.13c.65-.65.65-1.71,0-2.36s-1.71-.65-2.36,0l-5.47,5.48-2.98-2.98c-.65-.65-1.71-.65-2.36,0l-5.82,5.82c-.65.65-.65,1.71,0,2.36s1.71.65,2.36,0l4.65-4.64,2.98,2.98c.65.65,1.71.65,2.36,0l6.65-6.65h-.01Z"/>
+    <g>
+      <polygon class="st3" points="33.24 398.74 31.99 398.74 14.08 416.36 31.99 433.99 33.24 433.99 51.16 416.36 33.24 398.74"/>
+      <path class="st0" d="M31.36,410.45c0-.82.66-1.48,1.48-1.48s1.48.66,1.48,1.48-.66,1.48-1.48,1.48-1.48-.66-1.48-1.48ZM29.88,414.89c0-.54.44-.98.98-.98h1.97c.54,0,.98.44.98.98v6.89h.98c.54,0,.98.44.98.98s-.44.98-.98.98h-3.94c-.54,0-.98-.44-.98-.98s.44-.98.98-.98h.98v-5.91h-.98c-.54,0-.98-.44-.98-.98h0Z"/>
+    </g>
+    <path class="st0" d="M30.8,343.98c8.03,0,14.54-6.51,14.54-14.54s-6.51-14.54-14.54-14.54-14.54,6.51-14.54,14.54,6.51,14.54,14.54,14.54ZM28.53,333.98h1.36v-3.63h-1.36c-.76,0-1.36-.61-1.36-1.36s.61-1.36,1.36-1.36h2.73c.76,0,1.36.61,1.36,1.36v5h.45c.76,0,1.36.61,1.36,1.36s-.61,1.36-1.36,1.36h-4.54c-.76,0-1.36-.61-1.36-1.36s.61-1.36,1.36-1.36h0ZM30.8,322.17c1,0,1.82.81,1.82,1.82s-.81,1.82-1.82,1.82-1.82-.81-1.82-1.82.81-1.82,1.82-1.82Z"/>
+    <path class="st0" d="M20.82,359.63c0-.92-.74-1.66-1.66-1.66s-1.66.74-1.66,1.66v17.47c0,2.3,1.86,4.16,4.16,4.16h20.8c.92,0,1.66-.74,1.66-1.66s-.74-1.66-1.66-1.66h-20.8c-.46,0-.83-.37-.83-.83v-17.47h-.01,0ZM41.96,364.13c.65-.65.65-1.71,0-2.36s-1.71-.65-2.36,0l-5.47,5.48-2.98-2.98c-.65-.65-1.71-.65-2.36,0l-5.82,5.82c-.65.65-.65,1.71,0,2.36s1.71.65,2.36,0l4.65-4.64,2.98,2.98c.65.65,1.71.65,2.36,0l6.65-6.65h-.01Z"/>
     <g class="st19">
       <g class="st19">
         <g class="st19">
@@ -570,7 +570,7 @@
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st14" transform="translate(62.29 176.75)"><tspan x="0" y="0">data files</tspan></text>
+                    <text class="st14" transform="translate(62.29 166.75)"><tspan x="0" y="0">data files</tspan></text>
                   </g>
                 </g>
               </g>
@@ -580,8 +580,8 @@
       </g>
     </g>
     <g>
-      <rect class="st24" x="15.94" y="155.16" width="32.52" height="32.52" rx="1.55" ry="1.55"/>
-      <rect class="st8" x="15.94" y="155.16" width="32.52" height="32.52" rx="1.55" ry="1.55"/>
+      <rect class="st24" x="15.94" y="145.16" width="32.52" height="32.52" rx="1.55" ry="1.55"/>
+      <rect class="st8" x="15.94" y="145.16" width="32.52" height="32.52" rx="1.55" ry="1.55"/>
     </g>
   </g>
   <a xlink:href="https://isoreader2.isoverse.org/reference/ir_read_isofiles.html">
