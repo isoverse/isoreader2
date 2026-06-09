@@ -178,7 +178,9 @@ sort_trace_factor <- function(plot_data) {
 #' @param n_x_breaks desired number of x axis tick marks (default: `5`)
 #' @param n_y_breaks desired number of y axis tick marks (default: `5`)
 #' @param theme ggplot2 theme to apply (default: [ir_default_theme()])
-#' @return a `ggplot` object
+#' @return a `ggplot` object. To further customize the plot by adding ggplot2
+#'   layers (e.g. `+ ggplot2::labs(...)`), attach ggplot2 with
+#'   `library(ggplot2)` first.
 #' @export
 ir_plot_scans <- function(
   dataset,
@@ -486,7 +488,9 @@ ir_plot_scans <- function(
 #' @param n_time_breaks desired number of time axis tick marks (default: `5`)
 #' @param n_y_breaks desired number of y axis tick marks (default: `5`)
 #' @param theme ggplot2 theme to apply (default: [ir_default_theme()])
-#' @return a `ggplot` object
+#' @return a `ggplot` object. To further customize the plot by adding ggplot2
+#'   layers (e.g. `+ ggplot2::labs(...)`), attach ggplot2 with
+#'   `library(ggplot2)` first.
 #' @export
 ir_plot_continuous_flow <- function(
   dataset,
@@ -764,7 +768,9 @@ ir_plot_continuous_flow <- function(
 #' @param theme ggplot2 theme to apply (default: [ir_default_theme()])
 #' @param ... additional arguments passed on to [ggplot2::facet_wrap()] or
 #'   [ggplot2::facet_grid()] (e.g. `labeller`)
-#' @return a `ggplot` object
+#' @return a `ggplot` object. To further customize the plot by adding ggplot2
+#'   layers (e.g. `+ ggplot2::labs(...)`), attach ggplot2 with
+#'   `library(ggplot2)` first.
 #' @export
 ir_plot_dual_inlet <- function(
   dataset,

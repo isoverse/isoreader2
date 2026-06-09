@@ -211,7 +211,7 @@ reloaded <- ir_load_aggregated_data(file.path("tmp", "my_dataset"))
 
 # Visualizing data
 
-isoreader2 provides quick-look plotting functions for each measurement type. They operate on aggregated data and return regular `ggplot` objects that you can further customize.
+isoreader2 provides quick-look plotting functions for each measurement type. They operate on aggregated data and return regular `ggplot` objects that you can further customize. To add your own ggplot2 layers (e.g. `+ labs(...)` or `+ theme(...)`), attach ggplot2 with `library(ggplot2)` first.
 
 ## `ir_plot_continuous_flow()`
 
