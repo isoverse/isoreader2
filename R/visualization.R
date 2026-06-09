@@ -907,7 +907,7 @@ ir_plot_dual_inlet <- function(
     ) +
     ggplot2::geom_line() +
     ggplot2::geom_point() +
-    ggplot2::labs(x = "Cycle", y = y_lab) +
+    ggplot2::labs(y = y_lab) +
     ggplot2::scale_x_continuous(breaks = scales::breaks_width(1)) +
     ggplot2::scale_y_continuous(
       breaks = scales::pretty_breaks(n_y_breaks),
