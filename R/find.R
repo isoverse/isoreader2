@@ -1,3 +1,13 @@
+#' Path to the bundled example files
+#' @description Returns the path to the folder with the example isodat files bundled with the package. This is a convenience wrapper around `system.file("extdata", package = "isoreader2")` for use in examples and for getting started.
+#' @return the path to the example files folder as a single string
+#' @examples
+#' ir_examples_folder() |> ir_find_scans()
+#' @export
+ir_examples_folder <- function() {
+  system.file("extdata", package = "isoreader2")
+}
+
 #' Find isodat files
 #' @description Finds isodat files with the specified extensions in one or more folders.
 #' @param folder path to a folder with isodat files, or a character vector of folder paths

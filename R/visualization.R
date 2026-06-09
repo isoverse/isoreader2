@@ -325,7 +325,7 @@ ir_plot_scans <- function(
     p <- p + ggplot2::coord_cartesian(xlim = x_window)
   }
 
-  p <- p + theme
+  p <- p + theme + labs(x = "time")
 
   return(p)
 }
