@@ -1,3 +1,33 @@
+test_that("ir_aggregate_isofiles() input checks", {
+  # character vector -> hint to run ir_read_isofiles() first
+  ir_aggregate_isofiles(c("a.dxf", "b.dxf")) |>
+    expect_error("not a character vector.*ir_read_isofiles")
+  ir_aggregate_isofiles("a.dxf") |>
+    expect_error("not a character vector.*ir_read_isofiles")
+
+  # other invalid inputs -> generic isofiles error
+  ir_aggregate_isofiles() |>
+    expect_error("must be a collection of isofiles")
+  ir_aggregate_isofiles(42) |>
+    expect_error("must be a collection of isofiles")
+})
+
+test_that("drop_empty_datasets()", {
+  agg <- list(
+    metadata = tibble(uidx = 1:2, file_name = c("a", "b")),
+    cycles = tibble(),
+    scans = tibble(uidx = 1:2)
+  )
+  out <- drop_empty_datasets(agg)
+  # zero-column cycles dropped, others kept
+  expect_equal(names(out), c("metadata", "scans"))
+  # non-data-frame entries are left untouched
+  expect_equal(
+    drop_empty_datasets(list(a = tibble(), b = "keep")),
+    list(b = "keep")
+  )
+})
+
 test_that("ir_start_aggregator()", {
   # errors
   expect_error(ir_start_aggregator(), "must be a string")

@@ -24,6 +24,14 @@ ir_aggregate_isofiles <- function(
   show_problems = TRUE
 ) {
   # safety checks
+  if (!missing(isofiles) && is.character(isofiles)) {
+    cli_abort(
+      c(
+        "argument {.field isofiles} must be a collection of isofiles, not a character vector of file paths",
+        "i" = "did you mean to run {.strong ir_read_isofiles()} on {qty(length(isofiles))}{?this path/these paths} first?"
+      )
+    )
+  }
   isofiles |>
     check_arg(
       !missing(isofiles) && is(isofiles, "ir_isofiles"),
@@ -52,8 +60,17 @@ ir_aggregate_isofiles <- function(
       show_progress = show_progress,
       show_problems = show_problems
     )
+  # drop any aggregated dataset that ended up with no columns
+  agg_data <- drop_empty_datasets(agg_data)
   class(agg_data) <- unique(c("ir_aggregated_data"), class(agg_data))
   return(agg_data)
+}
+
+# remove aggregated datasets that ended up with no columns (ncol == 0)
+drop_empty_datasets <- function(agg_data) {
+  agg_data[
+    !purrr::map_lgl(agg_data, \(x) is.data.frame(x) && ncol(x) == 0)
+  ]
 }
 
 # design aggregators (general) ========

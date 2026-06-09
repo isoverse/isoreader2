@@ -2,6 +2,11 @@
 % Please edit documentation in R/get.R
 \name{ir_get_data}
 \alias{ir_get_data}
+\alias{ir_get_metadata}
+\alias{ir_get_resistors}
+\alias{ir_get_traces}
+\alias{ir_get_cycles}
+\alias{ir_get_scans}
 \title{Get data frame from aggregated data}
 \usage{
 ir_get_data(
@@ -11,6 +16,35 @@ ir_get_data(
   cycles = NULL,
   scans = NULL,
   resistors = NULL,
+  by = c("uidx", "analysis", "config", "species", "channel", "mass")
+)
+
+ir_get_metadata(
+  aggregated_data,
+  by = c("uidx", "analysis", "config", "species", "channel", "mass")
+)
+
+ir_get_resistors(
+  aggregated_data,
+  metadata = c("file_name"),
+  by = c("uidx", "analysis", "config", "species", "channel", "mass")
+)
+
+ir_get_traces(
+  aggregated_data,
+  metadata = c("file_name"),
+  by = c("uidx", "analysis", "config", "species", "channel", "mass")
+)
+
+ir_get_cycles(
+  aggregated_data,
+  metadata = c("file_name"),
+  by = c("uidx", "analysis", "config", "species", "channel", "mass")
+)
+
+ir_get_scans(
+  aggregated_data,
+  metadata = c("file_name"),
   by = c("uidx", "analysis", "config", "species", "channel", "mass")
 )
 }
@@ -36,3 +70,16 @@ a tibble
 Retrieve a specific subset of the aggregated data into a single data frame by specifying which columns to take from each dataset (metadata, traces, cycles, scans, resistors) using \code{\link[dplyr:select]{dplyr::select()}} syntax.
 If data from more than one dataset is selected (e.g. some columns from \code{traces} AND some from \code{resistors}), the datasets are combined with an \code{\link[dplyr:inner_join]{dplyr::inner_join()}} using the columns listed in \code{by} (only the ones actually in the datasets). Joins that would lead to duplicated data entries (i.e. many-to-many joins) are not allowed and will throw an error to avoid unexpected replications of individual datapoints. If you really want to do such a join, you'll have to do it manually.
 }
+\section{Functions}{
+\itemize{
+\item \code{ir_get_metadata()}: shortcut for retrieving all \code{metadata} columns (i.e. \code{metadata = dplyr::everything()})
+
+\item \code{ir_get_resistors()}: shortcut for retrieving all \code{resistors} columns (i.e. \code{resistors = dplyr::everything()}), keyed by the selected \code{metadata}
+
+\item \code{ir_get_traces()}: shortcut for retrieving all \code{traces} columns (i.e. \code{traces = dplyr::everything()}), keyed by the selected \code{metadata}
+
+\item \code{ir_get_cycles()}: shortcut for retrieving all \code{cycles} columns (i.e. \code{cycles = dplyr::everything()}), keyed by the selected \code{metadata}
+
+\item \code{ir_get_scans()}: shortcut for retrieving all \code{scans} columns (i.e. \code{scans = dplyr::everything()}), keyed by the selected \code{metadata}
+
+}}

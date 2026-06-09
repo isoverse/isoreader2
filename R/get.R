@@ -54,9 +54,121 @@ ir_get_data <- function(
     traces = {{ traces }},
     cycles = {{ cycles }},
     scans = {{ scans }},
+    resistors = {{ resistors }},
     by = by
   )
   return(out)
+}
+
+#' @describeIn ir_get_data shortcut for retrieving all `metadata` columns (i.e. `metadata = dplyr::everything()`)
+#' @export
+ir_get_metadata <- function(
+  aggregated_data,
+  metadata = everything()
+) {
+  check_aggregated_dataset(aggregated_data, "metadata")
+  ir_get_data(
+    aggregated_data,
+    metadata = {{ metadata }}
+  )
+}
+
+#' @describeIn ir_get_data shortcut for retrieving all `resistors` columns (i.e. `resistors = dplyr::everything()`), keyed by the selected `metadata`
+#' @export
+ir_get_resistors <- function(
+  aggregated_data,
+  metadata = c("file_name"),
+  by = c("uidx", "analysis")
+) {
+  check_aggregated_dataset(aggregated_data, "resistors")
+  ir_get_data(
+    aggregated_data,
+    metadata = {{ metadata }},
+    resistors = dplyr::everything(),
+    by = by
+  )
+}
+
+#' @describeIn ir_get_data shortcut for retrieving all `traces` columns (i.e. `traces = dplyr::everything()`), keyed by the selected `metadata`
+#' @export
+ir_get_traces <- function(
+  aggregated_data,
+  metadata = c("file_name"),
+  by = c("uidx", "analysis")
+) {
+  check_aggregated_dataset(aggregated_data, "traces")
+  ir_get_data(
+    aggregated_data,
+    metadata = {{ metadata }},
+    traces = dplyr::everything(),
+    by = by
+  )
+}
+
+#' @describeIn ir_get_data shortcut for retrieving all `cycles` columns (i.e. `cycles = dplyr::everything()`), keyed by the selected `metadata`
+#' @export
+ir_get_cycles <- function(
+  aggregated_data,
+  metadata = c("file_name"),
+  by = c("uidx", "analysis")
+) {
+  check_aggregated_dataset(aggregated_data, "cycles")
+  ir_get_data(
+    aggregated_data,
+    metadata = {{ metadata }},
+    cycles = dplyr::everything(),
+    by = by
+  )
+}
+
+#' @describeIn ir_get_data shortcut for retrieving all `scans` columns (i.e. `scans = dplyr::everything()`), keyed by the selected `metadata`
+#' @export
+ir_get_scans <- function(
+  aggregated_data,
+  metadata = c("file_name"),
+  by = c("uidx", "config")
+) {
+  check_aggregated_dataset(aggregated_data, "scans")
+  ir_get_data(
+    aggregated_data,
+    metadata = {{ metadata }},
+    scans = dplyr::everything(),
+    by = by
+  )
+}
+
+# check that `aggregated_data` is valid and contains the named `dataset` tibble,
+# erroring with a reminder to use an aggregator that includes it otherwise
+check_aggregated_dataset <- function(
+  aggregated_data,
+  dataset,
+  .arg = caller_arg(aggregated_data),
+  .env = caller_env()
+) {
+  aggregated_data |>
+    check_arg(
+      !missing(aggregated_data) && is(aggregated_data, "ir_aggregated_data"),
+      "must be a set of aggregated isofiles (use ir_aggregate_isofiles())",
+      .arg = .arg,
+      .env = .env
+    )
+  if (
+    !dataset %in% names(aggregated_data) ||
+      !is.data.frame(aggregated_data[[dataset]])
+  ) {
+    cli_abort(
+      c(
+        "the aggregated data does not include a {.field {dataset}} dataset",
+        "i" = paste(
+          "make sure your isofiles actually include {.field {dataset}} data",
+          "and use an aggregator that aggregates {.field {dataset}}",
+          "(when in doubt, use the {.val extended} aggregator:",
+          "{.code ir_aggregate_isofiles(aggregator = \"extended\")})"
+        )
+      ),
+      call = .env
+    )
+  }
 }
 
 # generic get data from aggregated ===========
