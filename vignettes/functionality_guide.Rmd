@@ -1,0 +1,267 @@
+---
+title: "Functionality Guide"
+description: >
+  A detailed guide to isoreader2 functionality.
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Functionality Guide}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options:
+  chunk_output_type: console
+---
+
+> This step-by-step functionality guide is still in development. Eventually all functions in the [package structure flowchart](https://isoreader2.isoverse.org/index.html#package-structure) will be covered with detailed examples. All functions below labelled with an `*` are required steps of the standard data reading flow. Everything else is optional. Rarely used additional features that are mentioned here but not part of the standard flowchart are labeled as `bonus`.
+
+```{r, include=FALSE}
+# default chunk options
+knitr::opts_chunk$set(collapse = FALSE, message = TRUE, comment = "")
+```
+
+```{r, message=FALSE}
+# libraries
+library(isoreader2) # load isoreader2 R package
+library(dplyr) # for select syntax and mutating data frames
+```
+
+```{r, include=FALSE}
+# copy the bundled example files (and any extraction cache) to a local
+# folder so reading does not write into the installed package directory
+if (!dir.exists("tmp")) {
+  dir.create("tmp")
+}
+ir_examples_folder() |>
+  list.files(full.names = TRUE) |>
+  file.copy(to = "tmp", overwrite = TRUE)
+```
+
+# Reading isotope files
+
+The first step is finding and reading your isotope data files. isoreader2 supports a range of continuous flow, dual inlet, and scan file formats:
+
+```{r}
+# supported file types
+ir_get_supported_file_types()
+```
+
+## `ir_find_isofiles()` *
+
+Point isoreader2 at a folder to discover the data files inside it. The generic `ir_find_isofiles()` finds all supported types, while `ir_find_continuous_flow()`, `ir_find_dual_inlet()`, and `ir_find_scans()` narrow the search to specific measurement types. The bundled example files are available via `ir_examples_folder()`.
+
+```{r}
+# path to your data folder (here the local copy of the example files)
+data_folder <- file.path("tmp")
+
+# find continuous flow files (.dxf/.cf) in the folder
+file_paths <- data_folder |> ir_find_continuous_flow()
+
+# show what was found
+file_paths
+```
+
+## `ir_read_isofiles()` *
+
+Read the discovered files. This returns an `ir_isofiles` object - a tibble with one row per file and the extracted datasets stored in nested columns.
+
+```{r}
+# read the files
+isofiles <- file_paths |> ir_read_isofiles()
+
+# show what was read
+isofiles
+```
+
+### bonus combine collections with `c()`
+
+Multiple `ir_isofiles` collections can be combined into one with a simple `c()`, which row-binds them while preserving the object type.
+
+```{r}
+# combine two collections (here just the same files twice for illustration)
+c(isofiles, isofiles)
+```
+
+### bonus `ir_save_isofiles()` / `ir_load_isofiles()`
+
+You can store an entire `ir_isofiles` collection to disk (as an RDS file) and read it back exactly as it was, without re-reading the original data files.
+
+```{r}
+# save and reload the read isofiles
+isofiles |> ir_save_isofiles(file.path("tmp", "my_isofiles"))
+reloaded <- ir_load_isofiles(file.path("tmp", "my_isofiles"))
+```
+
+# Aggregating data
+
+The nested `ir_isofiles` structure is convenient for reading but not for analysis. Aggregation pulls the data together into a tidy set of data frames (metadata, traces, cycles, scans, resistors) that are easy to work with.
+
+## `ir_aggregate_isofiles()` *
+
+```{r}
+# aggregate the data
+dataset <- isofiles |> ir_aggregate_isofiles()
+
+# show all that was recovered
+# (as well as what was ignored / not aggregated)
+dataset
+```
+
+### bonus `ir_get_aggregator()`
+
+You can optionally use a different aggregator. The `minimal` aggregator keeps a smaller set of columns, while the `extended` aggregator is more elaborate and provides access to additional columns (such as the resistor/cup configuration) from the data files.
+
+```{r}
+# minimal vs. extended aggregator
+ir_get_aggregator("minimal")
+ir_get_aggregator("extended")
+
+# using the extended aggregator instead of the default (standard)
+isofiles |> ir_aggregate_isofiles(aggregator = "extended")
+```
+
+### bonus `ir_register_aggregator()`
+
+Or build your own aggregator with `ir_start_aggregator()` and/or expand an existing one with `ir_add_to_aggregator()`, then register it via `ir_register_aggregator()`. This functionality is rarely needed and thus not part of the package structure flowchart.
+
+```{r}
+my_agg <-
+  ir_get_aggregator("minimal") |>
+  # pull the "Identifier 1" metadata field out under a friendlier name
+  ir_add_to_aggregator("metadata", "sample_id", source = "Identifier 1") |>
+  ir_register_aggregator(name = "my_aggregator")
+
+# show my aggregator summary
+my_agg
+
+# use it
+isofiles |> ir_aggregate_isofiles(aggregator = "my_aggregator")
+```
+
+### bonus `ir_get_problems()` / `ir_show_problems()`
+
+Reading and aggregation are designed to be fail-safe: instead of stopping at the first error, problems are collected and reported. There were no problems with these example files so the result is empty, but this can be very helpful for figuring out what went wrong.
+
+`ir_get_problems()` returns the problems as a data frame for further inspection:
+
+```{r}
+isofiles |> ir_get_problems()
+dataset |> ir_get_problems()
+```
+
+`ir_show_problems()` instead just prints out all the problems directly:
+
+```{r}
+isofiles |> ir_show_problems()
+dataset |> ir_show_problems()
+```
+
+# Accessing the data
+
+## `ir_get_data()`
+
+At any point you can pull the data of interest out of the aggregated dataset with `ir_get_data()`, selecting columns from each dataset using `dplyr::select()` syntax. Columns selected from more than one dataset are automatically combined with a join.
+
+```{r}
+# direct access to the individual datasets
+dataset$metadata
+dataset$traces
+
+# retrieve + combine data with dplyr select syntax
+dataset |>
+  ir_get_data(
+    metadata = c("file_name", "analysis", sample = "Identifier 1"),
+    traces = c("species", "mass", "time.s", "intensity.mV")
+  )
+```
+
+### shortcuts `ir_get_metadata()` / `ir_get_traces()` / ...
+
+For the common case of grabbing a whole dataset, the shortcut functions `ir_get_metadata()`, `ir_get_traces()`, `ir_get_cycles()`, `ir_get_scans()`, and `ir_get_resistors()` retrieve all columns of the respective dataset.
+
+```{r}
+# all metadata columns
+dataset |> ir_get_metadata()
+
+# all traces (joined with the file metadata)
+dataset |> ir_get_traces()
+```
+
+## `ir_filter_metadata()` / `ir_mutate_metadata()` / `ir_join_metadata()`
+
+You can filter, add to, or join into the metadata while keeping the rest of the datasets consistent. `ir_filter_metadata()` cascades the filter to all other datasets so they always stay in sync.
+
+```{r}
+# keep only continuous flow files and add a derived label column
+dataset |>
+  ir_filter_metadata(type == "cf") |>
+  ir_mutate_metadata(label = paste(file_name, analysis, sep = " / ")) |>
+  ir_get_metadata(metadata = c("file_name", "analysis", "label"))
+```
+
+These functions also work directly on an unaggregated `ir_isofiles` object (applied individually to each file), though that is significantly slower than working on an aggregated dataset.
+
+## bonus `ir_save_aggregated_data()` / `ir_load_aggregated_data()`
+
+Aggregated data can be stored to (and loaded from) a parquet file for fast, language-independent access. This requires the suggested **arrow** package.
+
+```{r, eval=FALSE}
+# save and reload the aggregated data
+dataset |> ir_save_aggregated_data(file.path("tmp", "my_dataset"))
+reloaded <- ir_load_aggregated_data(file.path("tmp", "my_dataset"))
+```
+
+# Visualizing data
+
+isoreader2 provides quick-look plotting functions for each measurement type. They operate on aggregated data and return regular `ggplot` objects that you can further customize.
+
+## `ir_plot_continuous_flow()`
+
+```{r}
+#| fig.width: 8
+#| fig.height: 4
+dataset |> ir_plot_continuous_flow()
+```
+
+## `ir_plot_dual_inlet()`
+
+```{r}
+#| fig.width: 8
+#| fig.height: 6
+data_folder |>
+  ir_find_dual_inlet() |>
+  ir_read_isofiles() |>
+  ir_aggregate_isofiles("V") |>
+  ir_plot_dual_inlet()
+```
+
+## `ir_plot_scans()`
+
+For scan files with more than one scan type, specify which one to plot.
+
+```{r}
+#| fig.width: 8
+#| fig.height: 6
+data_folder |>
+  ir_find_scans() |>
+  ir_read_isofiles() |>
+  ir_aggregate_isofiles("V") |>
+  ir_plot_scans(scan_type = "high voltage")
+```
+
+# Exporting data
+
+## `ir_export_to_excel()`
+
+Finally, you can export the aggregated data to an Excel file (one sheet per dataset). This requires the suggested **openxlsx** package.
+
+```{r}
+dataset |>
+  ir_export_to_excel(
+    file = "tmp/my_dataset.xlsx",
+    include = c("metadata", "traces")
+  )
+```
+
+```{r, include=FALSE}
+# clean up the local data folder created for this vignette
+unlink("tmp", recursive = TRUE)
+```
