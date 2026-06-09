@@ -15,6 +15,13 @@
     ir_add_to_aggregator("traces", "analysis", cast = "as.integer") |>
     ir_add_to_aggregator("traces", "species") |>
     ir_add_to_aggregator("traces", "mass") |>
+    ir_add_to_aggregator(
+      "traces",
+      "trace",
+      source = list("species", "mass"),
+      func = "sprintf",
+      args = list(fmt = "%s: %s")
+    ) |>
     ir_add_to_aggregator("traces", "time.s", cast = "as.numeric") |>
     ir_add_to_aggregator(
       "traces",
@@ -31,6 +38,13 @@
     ir_add_to_aggregator("cycles", "mass") |>
     ir_add_to_aggregator(
       "cycles",
+      "trace",
+      source = list("species", "mass"),
+      func = "sprintf",
+      args = list(fmt = "%s: %s")
+    ) |>
+    ir_add_to_aggregator(
+      "cycles",
       "\\1",
       source = "(intensity\\..*)",
       regexp = TRUE,
@@ -40,6 +54,13 @@
     ir_add_to_aggregator("scans", "analysis", cast = "as.integer") |>
     ir_add_to_aggregator("scans", "species") |>
     ir_add_to_aggregator("scans", "mass") |>
+    ir_add_to_aggregator(
+      "scans",
+      "trace",
+      source = list("species", "mass"),
+      func = "sprintf",
+      args = list(fmt = "%s: %s")
+    ) |>
     ir_add_to_aggregator("scans", "x", cast = "as.numeric") |>
     ir_add_to_aggregator(
       "scans",
