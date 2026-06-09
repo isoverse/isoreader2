@@ -6,14 +6,18 @@
 \usage{
 ir_plot_dual_inlet(
   dataset,
-  panel = file_name,
-  color = mass,
+  facet = file_name,
+  scales = "free",
+  nrow = NULL,
+  ncol = 1,
+  color = trace,
   shape = type,
-  linetype = species,
+  linetype = NULL,
   color_values = palette.colors(),
   scientific = FALSE,
   n_y_breaks = 5,
-  theme = ir_default_theme()
+  theme = ir_default_theme(),
+  ...
 )
 }
 \arguments{
@@ -21,8 +25,21 @@ ir_plot_dual_inlet(
 or a plain data frame with \code{cycle}, \code{type}, \code{mass}, and an
 \verb{intensity.*} column}
 
-\item{panel}{column or expression for faceting (default: \code{file_name}). Set
-to \code{NULL} to suppress panels.}
+\item{facet}{column or expression to facet by (default: \code{file_name}). A
+plain column or expression (e.g. \code{file_name} or \code{paste(species, mass)}) is
+faceted with \code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}; a two-sided formula (e.g.
+\code{species ~ mass}) is faceted with \code{\link[ggplot2:facet_grid]{ggplot2::facet_grid()}}. Set to \code{NULL}
+to suppress faceting.}
+
+\item{scales}{whether facet scales should be \code{"free"} (default), \code{"fixed"},
+\code{"free_x"}, or \code{"free_y"}; passed on to \code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}} /
+\code{\link[ggplot2:facet_grid]{ggplot2::facet_grid()}}.}
+
+\item{nrow, ncol}{number of rows and columns of facet panels (\code{nrow} default
+\code{NULL} lets ggplot2 choose; \code{ncol} default \code{1} stacks the panels in a
+single column). Only applies when \code{facet} is a single variable or
+expression (faceted with \code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}); ignored with a warning
+when \code{facet} is a formula (faceted with \code{\link[ggplot2:facet_grid]{ggplot2::facet_grid()}}).}
 
 \item{color}{column or expression for the colour aesthetic (default: \code{mass})}
 
@@ -42,6 +59,9 @@ colour palette (default: \code{\link[=palette.colors]{palette.colors()}})}
 \item{n_y_breaks}{desired number of y axis tick marks (default: \code{5})}
 
 \item{theme}{ggplot2 theme to apply (default: \code{\link[=ir_default_theme]{ir_default_theme()}})}
+
+\item{...}{additional arguments passed on to \code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}} or
+\code{\link[ggplot2:facet_grid]{ggplot2::facet_grid()}} (e.g. \code{labeller})}
 }
 \value{
 a \code{ggplot} object

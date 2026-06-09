@@ -55,9 +55,9 @@ test_that("ir_find_isofiles()", {
 
   # json sidecar deduplication =================================================
   tmp <- withr::local_tempdir()
-  file.copy(file.path(extdata, "continuous_flow_example.dxf"), tmp)
-  file.copy(file.path(extdata, "continuous_flow_example.cf"), tmp)
-  file.create(file.path(tmp, "continuous_flow_example.dxf.json"))
+  file.copy(file.path(extdata, "continuous_flow_ea_example.dxf"), tmp)
+  file.copy(file.path(extdata, "continuous_flow_gc_example.cf"), tmp)
+  file.create(file.path(tmp, "continuous_flow_ea_example.dxf.json"))
 
   tmp_files <- ir_find_isofiles(tmp, types = c("dxf", "cf"))
   expect_length(tmp_files[grepl("\\.dxf$", tmp_files, ignore.case = TRUE)], 1)
@@ -67,8 +67,8 @@ test_that("ir_find_isofiles()", {
   tmp2 <- withr::local_tempdir()
   subdir <- file.path(tmp2, "sub")
   dir.create(subdir)
-  file.copy(file.path(extdata, "continuous_flow_example.dxf"), tmp2)
-  file.copy(file.path(extdata, "continuous_flow_example.cf"), subdir)
+  file.copy(file.path(extdata, "continuous_flow_ea_example.dxf"), tmp2)
+  file.copy(file.path(extdata, "continuous_flow_gc_example.cf"), subdir)
 
   expect_length(ir_find_isofiles(tmp2, types = c("dxf", "cf"), recursive = TRUE), 2)
   expect_length(ir_find_isofiles(tmp2, types = c("dxf", "cf"), recursive = FALSE), 1)
@@ -76,8 +76,8 @@ test_that("ir_find_isofiles()", {
   # multiple folders ===========================================================
   tmp3 <- withr::local_tempdir()
   tmp4 <- withr::local_tempdir()
-  file.copy(file.path(extdata, "continuous_flow_example.dxf"), tmp3)
-  file.copy(file.path(extdata, "continuous_flow_example.cf"), tmp4)
+  file.copy(file.path(extdata, "continuous_flow_ea_example.dxf"), tmp3)
+  file.copy(file.path(extdata, "continuous_flow_gc_example.cf"), tmp4)
 
   multi_files <- ir_find_isofiles(c(tmp3, tmp4), types = c("dxf", "cf"))
   expect_length(multi_files, 2)

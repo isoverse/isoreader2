@@ -12,8 +12,7 @@ knitr::opts_chunk$set(
   comment = "",
   fig.path = "man/figures/README-",
   out.width = "100%",
-  dpi = 300,
-  message = FALSE
+  dpi = 300
 )
 ```
 
@@ -22,6 +21,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
   [![Documentation](https://img.shields.io/badge/docs-online-green.svg)](https://isoreader2.isoverse.org/)
   [![R-CMD-check](https://github.com/isoverse/isoreader2/workflows/R-CMD-check/badge.svg)](https://github.com/isoverse/isoreader2/actions)
+  [![Codecov test coverage](https://codecov.io/gh/isoverse/isoreader2/graph/badge.svg)](https://app.codecov.io/gh/isoverse/isoreader2)
 <!-- badges: end -->
 
 ## Overview
@@ -65,6 +65,64 @@ pak::pak("isoverse/isoreader2")
 
 # check/install isoextract
 isoreader2::ir_check_isoextract()
+```
+
+## Show me some code
+
+### Read data files
+
+```{r, include = FALSE}
+isoreader2::ir_examples_folder() |>
+  list.files("\\.json", full.names = TRUE) |>
+  unlink()
+```
+
+```{r fig.width = 8, fig.height = 6}
+# load library
+library(isoreader2)
+
+# provide the path to your data folder here:
+# for this example, we use the example files bundled with the package
+data_folder <- ir_examples_folder()
+
+# to use your own data instead, comment in this this line (remove the '#')
+# and adjust the path to point to your data folder(s)
+# data_folder <- file.path("project", "data")
+
+# and search for continuous flow files (all known file types) in that folder
+file_paths <- ir_find_continuous_flow(data_folder)
+
+# for this example, we use the example files bundled with the package
+# instead (remove this line if working with your own data)
+file_paths <- ir_examples_folder() |> ir_find_continuous_flow()
+
+# read the files
+isofiles <- file_paths |> ir_read_isofiles()
+# show information about the files
+isofiles
+# aggregate the data from the read files specifying which units to use
+# (mV, V, nA, A, cps, etc.), conversion via resistor values happens automatically
+dataset <- isofiles |> ir_aggregate_isofiles("mV")
+# show the available data that was aggregated  metadata is all the available
+# sequence information from the different file types
+dataset
+# plot the data  with the default plotting settings
+dataset |> ir_plot_continuous_flow()
+```
+
+### Export the data
+
+```{r}
+# the file metadata
+dataset |>
+  ir_export_to_excel(
+    include = c("metadata", "traces"),
+    file = "my_export.xlsx"
+  )
+```
+
+```{r, include = FALSE}
+unlink("my_export.xlsx")
 ```
 
 ## Package structure

@@ -22,10 +22,13 @@ check_openxlsx <- function() {
 #'
 #' Exports a data frame or an [ir_aggregate_isofiles()] result to an Excel file.
 #' Each dataset in the aggregated data becomes its own sheet. The `include`
-#' parameter controls which datasets are exported (default: all non-empty
-#' datasets). Recursively creates the output directory if it does not exist.
+#' parameter controls which datasets are exported (default: just the metadata).
+#' Possibilities: `"metadata"`, `"traces"` (for continuous flow data), `"cycles"`
+#' (for dual inlet data), "`scans`" (for scan data), `"resistors"` (all file
+#' formats), and `"isodat_data_table"` (only available from isodat .dxf, .cf
+#' .did, and .caf files).
 #'
-#' Requires the \pkg{openxlsx} package (suggested). If not installed, one
+#' Requires the \pkg{openxlsx} package. If not installed, one
 #' installation attempt from CRAN is made automatically.
 #'
 #' @param data a data frame or an `ir_aggregated_data` object from [ir_aggregate_isofiles()]

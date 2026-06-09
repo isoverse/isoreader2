@@ -1,6 +1,6 @@
 Package: isoreader2
 Title: Read Stable Isotope Data Files
-Version: 0.1.4
+Version: 0.1.5
 Authors@R: 
     c(
         person(
@@ -39,6 +39,8 @@ Suggests:
     testthat (>= 3.0.0),
     vdiffr,
     arrow,
-    openxlsx
+    openxlsx,
+    rmarkdown
+VignetteBuilder: knitr
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.0.0

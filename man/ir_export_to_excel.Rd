@@ -38,10 +38,13 @@ automatically from \code{dbl_digits} if not set)}
 \description{
 Exports a data frame or an \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}} result to an Excel file.
 Each dataset in the aggregated data becomes its own sheet. The \code{include}
-parameter controls which datasets are exported (default: all non-empty
-datasets). Recursively creates the output directory if it does not exist.
+parameter controls which datasets are exported (default: just the metadata).
+Possibilities: \code{"metadata"}, \code{"traces"} (for continuous flow data), \code{"cycles"}
+(for dual inlet data), "\code{scans}" (for scan data), \code{"resistors"} (all file
+formats), and \code{"isodat_data_table"} (only available from isodat .dxf, .cf
+.did, and .caf files).
 }
 \details{
-Requires the \pkg{openxlsx} package (suggested). If not installed, one
+Requires the \pkg{openxlsx} package. If not installed, one
 installation attempt from CRAN is made automatically.
 }

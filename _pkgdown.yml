@@ -15,6 +15,10 @@ navbar:
   title: isoreader2
   type: default
   left:
+  - text: Quick Start
+    href: index.html#show-me-some-code
+  - text: Functionality Guide
+    href: articles/functionality_guide.html
   - text: Reference
     href: reference/index.html
   right:
@@ -27,11 +31,13 @@ reference:
   desc: >
     These functions allows reading of stable isotope data files/archives
   contents:
+  - ir_examples_folder
   - ir_find_isofiles
   - ir_find_continuous_flow
   - ir_find_dual_inlet
   - ir_find_scans
   - ir_read_isofiles
+  - c.ir_isofiles
   - ir_check_isoextract
   - ir_extract_isofiles
   - ir_get_supported_file_types
@@ -71,6 +77,7 @@ reference:
   contents:
   - ir_export_to_excel
   - ir_storage
+  - ir_isofiles_storage
 
 - title: Package options
   desc: >
