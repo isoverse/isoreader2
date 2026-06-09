@@ -100,3 +100,82 @@ ir_load_aggregated_data <- function(file) {
   )
   return(result)
 }
+
+# storage for ir_isofiles ==========
+
+#' Save and load isofiles
+#'
+#' `ir_save_isofiles()` serializes a collection of isofiles read with
+#' [ir_read_isofiles()] to an RDS file using [readr::write_rds()], storing the
+#' whole `ir_isofiles` object as-is (including all nested datasets and condition
+#' objects) without any changes. `ir_load_isofiles()` reads the file back with
+#' [readr::read_rds()] and returns the `ir_isofiles` object exactly as it was
+#' saved.
+#'
+#' This operates at the unaggregated `ir_isofiles` level. To store an aggregated
+#' result instead, use [ir_save_aggregated_data()] / [ir_load_aggregated_data()].
+#'
+#' @param isofiles a collection of isofiles from [ir_read_isofiles()]
+#' @param file path to the RDS file (`.rds` extension added if absent)
+#' @return `ir_save_isofiles()` returns `isofiles` invisibly;
+#'   `ir_load_isofiles()` returns an `ir_isofiles` object.
+#' @name ir_isofiles_storage
+NULL
+
+#' @describeIn ir_isofiles_storage save isofiles to an RDS file
+#' @export
+ir_save_isofiles <- function(isofiles, file) {
+  check_arg(
+    isofiles,
+    !missing(isofiles) && is(isofiles, "ir_isofiles"),
+    "must be a collection of isofiles (use ir_read_isofiles())"
+  )
+  check_arg(file, !missing(file) && is_scalar_character(file), "must be a path")
+
+  if (!grepl("\\.rds$", file, ignore.case = TRUE)) {
+    file <- paste0(file, ".rds")
+  }
+
+  start <- start_info("is saving to {.file {file}}")
+
+  readr::write_rds(isofiles, file)
+
+  finish_info(
+    "saved {numbers_to_text(nrow(isofiles))} {qty(nrow(isofiles))}isofile{?s} to {.file {file}}",
+    start = start
+  )
+  return(invisible(isofiles))
+}
+
+#' @describeIn ir_isofiles_storage load isofiles from an RDS file
+#' @export
+ir_load_isofiles <- function(file) {
+  check_arg(
+    file,
+    !missing(file) && is_scalar_character(file),
+    "must be a string"
+  )
+
+  if (!grepl("\\.rds$", file, ignore.case = TRUE)) {
+    file <- paste0(file, ".rds")
+  }
+
+  start <- start_info("is loading from {.file {file}}")
+
+  result <- readr::read_rds(file)
+
+  if (!is(result, "ir_isofiles")) {
+    cli_abort(
+      c(
+        "the file {.file {file}} does not contain a collection of isofiles",
+        "i" = "it holds {.obj_type_friendly {result}} instead of an {.cls ir_isofiles} object"
+      )
+    )
+  }
+
+  finish_info(
+    "loaded {numbers_to_text(nrow(result))} {qty(nrow(result))}isofile{?s} from {.file {file}}",
+    start = start
+  )
+  return(result)
+}

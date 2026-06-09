@@ -64,7 +64,7 @@ isoreader2::ir_check_isoextract()
 
 ```{=html}
 <?xml version="1.0" encoding="UTF-8"?>
-<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 763.89 740.25">
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 1539.06 975.03">
   <!-- Generator: Adobe Illustrator 30.5.1, SVG Export Plug-In . SVG Version: 2.1.4 Build 3)  -->
   <defs>
     <style>
@@ -200,426 +200,14 @@ isoreader2::ir_check_isoextract()
       }
     </style>
   </defs>
-  <rect class="st22" width="763.89" height="740.25"/>
+  <rect class="st22" x="775.17" width="763.89" height="740.25"/>
   <g>
     <g>
-      <rect class="st23" x="458.51" y="569.99" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
-      <rect class="st6" x="458.51" y="569.99" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
+      <rect class="st23" x="457.98" y="714.99" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
+      <rect class="st6" x="457.98" y="714.99" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
     </g>
-    <path class="st0" d="M472.83,590.95l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
+    <path class="st0" d="M472.3,735.95l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
     <g class="st19">
-      <g class="st19">
-        <g class="st19">
-          <g class="st19">
-            <g class="st19">
-              <g class="st19">
-                <g class="st19">
-                  <text class="st16" transform="translate(497.37 595.48)"><tspan x="0" y="0">ir_filter</tspan></text>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-    </g>
-  </g>
-  <g>
-    <g>
-      <rect class="st23" x="458.51" y="618.11" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
-      <rect class="st6" x="458.51" y="618.11" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
-    </g>
-    <path class="st0" d="M472.83,639.07l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
-    <g class="st19">
-      <g class="st19">
-        <g class="st19">
-          <g class="st19">
-            <g class="st19">
-              <g class="st19">
-                <g class="st19">
-                  <text class="st16" transform="translate(497.37 643.6)"><tspan x="0" y="0">ir_join_metadata</tspan></text>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-    </g>
-  </g>
-  <g>
-    <g>
-      <rect class="st23" x="8.56" y="486.58" width="234.17" height="41.92" rx="4.23" ry="4.23"/>
-      <rect class="st6" x="8.56" y="486.58" width="234.17" height="41.92" rx="4.23" ry="4.23"/>
-    </g>
-    <path class="st0" d="M22.88,507.54l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03Z"/>
-    <g class="st19">
-      <g class="st19">
-        <g class="st19">
-          <g class="st19">
-            <g class="st19">
-              <g class="st19">
-                <g class="st19">
-                  <text class="st16" transform="translate(47.75 512.07)"><tspan x="0" y="0">ir_export_data_to_excel</tspan></text>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-    </g>
-  </g>
-  <g>
-    <g>
-      <rect class="st23" x="426.66" y="348.88" width="240.26" height="41.92" rx="4.23" ry="4.23"/>
-      <rect class="st6" x="426.66" y="348.88" width="240.26" height="41.92" rx="4.23" ry="4.23"/>
-    </g>
-    <path class="st0" d="M440.98,369.84l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
-    <g class="st19">
-      <g class="st19">
-        <g class="st19">
-          <g class="st19">
-            <g class="st19">
-              <g class="st19">
-                <g class="st19">
-                  <text class="st16" transform="translate(465.52 374.37)"><tspan x="0" y="0">ir_save_aggregated_data</tspan></text>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-    </g>
-  </g>
-  <g>
-    <g>
-      <rect class="st23" x="426.66" y="449.43" width="240.26" height="41.92" rx="4.23" ry="4.23"/>
-      <rect class="st6" x="426.66" y="449.43" width="240.26" height="41.92" rx="4.23" ry="4.23"/>
-    </g>
-    <path class="st0" d="M440.98,470.39l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
-    <g class="st19">
-      <g class="st19">
-        <g class="st19">
-          <g class="st19">
-            <g class="st19">
-              <g class="st19">
-                <g class="st19">
-                  <text class="st16" transform="translate(465.52 474.92)"><tspan x="0" y="0">ir_load_aggregated_data</tspan></text>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-    </g>
-  </g>
-  <g>
-    <g>
-      <rect class="st23" x="458.51" y="521.85" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
-      <rect class="st6" x="458.51" y="521.85" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
-    </g>
-    <path class="st0" d="M472.83,542.81l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
-    <g class="st19">
-      <g class="st19">
-        <g class="st19">
-          <g class="st19">
-            <g class="st19">
-              <g class="st19">
-                <g class="st19">
-                  <text class="st16" transform="translate(497.37 547.34)"><tspan x="0" y="0">ir_filter_metadata</tspan></text>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-    </g>
-  </g>
-  <g>
-    <g>
-      <rect class="st23" x="458.51" y="569.97" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
-      <rect class="st6" x="458.51" y="569.97" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
-    </g>
-    <path class="st0" d="M472.83,590.93l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
-    <g class="st19">
-      <g class="st19">
-        <g class="st19">
-          <g class="st19">
-            <g class="st19">
-              <g class="st19">
-                <g class="st19">
-                  <text class="st16" transform="translate(497.37 595.46)"><tspan x="0" y="0">ir_mutate_metadata</tspan></text>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-    </g>
-  </g>
-  <g>
-    <line class="st9" x1="383.29" y1="321.46" x2="383.29" y2="693.58"/>
-    <polygon class="st13" points="371.33 690.08 383.29 710.8 395.26 690.08 371.33 690.08"/>
-  </g>
-  <g>
-    <line class="st9" x1="382.85" y1="64.12" x2="382.85" y2="84.67"/>
-    <polygon class="st13" points="370.89 81.17 382.85 101.89 394.82 81.17 370.89 81.17"/>
-  </g>
-  <g>
-    <line class="st9" x1="382.85" y1="150.15" x2="382.85" y2="170.7"/>
-    <polygon class="st13" points="370.89 167.2 382.85 187.92 394.82 167.2 370.89 167.2"/>
-  </g>
-  <g>
-    <line class="st9" x1="382.85" y1="234.95" x2="382.85" y2="255.5"/>
-    <polygon class="st13" points="370.89 252 382.85 272.72 394.82 252 370.89 252"/>
-  </g>
-  <g>
-    <line class="st1" x1="385.53" y1="630.7" x2="442.06" y2="630.7"/>
-    <polygon class="st13" points="439.14 640.67 456.42 630.7 439.14 620.73 439.14 640.67"/>
-  </g>
-  <g>
-    <line class="st1" x1="457.7" y1="646.15" x2="401.18" y2="646.15"/>
-    <polygon class="st13" points="404.08 636.18 386.82 646.15 404.08 656.12 404.08 636.18"/>
-  </g>
-  <g>
-    <line class="st1" x1="385.53" y1="583.72" x2="442.06" y2="583.72"/>
-    <polygon class="st13" points="439.14 593.69 456.42 583.72 439.14 573.75 439.14 593.69"/>
-  </g>
-  <g>
-    <line class="st1" x1="457.7" y1="599.17" x2="401.18" y2="599.17"/>
-    <polygon class="st13" points="404.08 589.2 386.82 599.17 404.08 609.14 404.08 589.2"/>
-  </g>
-  <g>
-    <line class="st1" x1="385.53" y1="537.99" x2="442.06" y2="537.99"/>
-    <polygon class="st13" points="439.14 547.96 456.42 537.99 439.14 528.02 439.14 547.96"/>
-  </g>
-  <g>
-    <line class="st1" x1="457.7" y1="553.44" x2="401.18" y2="553.44"/>
-    <polygon class="st13" points="404.08 543.47 386.82 553.44 404.08 563.41 404.08 543.47"/>
-  </g>
-  <g>
-    <line class="st1" x1="528.71" y1="217.65" x2="492.19" y2="217.65"/>
-    <polygon class="st13" points="495.09 207.68 477.83 217.65 495.09 227.62 495.09 207.68"/>
-  </g>
-  <g>
-    <line class="st1" x1="386.64" y1="369.53" x2="408.55" y2="369.53"/>
-    <polygon class="st13" points="405.64 379.5 422.91 369.53 405.64 359.56 405.64 379.5"/>
-  </g>
-  <g>
-    <line class="st1" x1="425.91" y1="471.29" x2="404" y2="471.29"/>
-    <polygon class="st13" points="406.91 461.32 389.64 471.29 406.91 481.26 406.91 461.32"/>
-  </g>
-  <g>
-    <line class="st1" x1="97.94" y1="529.27" x2="97.94" y2="580.18"/>
-    <polygon class="st13" points="87.97 577.27 97.94 594.54 107.91 577.27 87.97 577.27"/>
-  </g>
-  <g>
-    <line class="st1" x1="383.44" y1="360.54" x2="322.53" y2="360.54"/>
-    <polygon class="st13" points="325.44 350.57 308.17 360.54 325.44 370.51 325.44 350.57"/>
-  </g>
-  <g>
-    <line class="st1" x1="383.44" y1="566.59" x2="322.53" y2="566.59"/>
-    <polygon class="st13" points="325.44 556.62 308.17 566.59 325.44 576.56 325.44 556.62"/>
-  </g>
-  <g>
-    <line class="st1" x1="383.44" y1="498.07" x2="265.53" y2="498.07"/>
-    <polygon class="st13" points="268.44 488.1 251.17 498.07 268.44 508.04 268.44 488.1"/>
-  </g>
-  <g>
-    <polyline class="st1" points="525.69 36.65 581.92 36.65 581.92 70.07"/>
-    <polygon class="st13" points="571.95 67.16 581.92 84.43 591.89 67.16 571.95 67.16"/>
-  </g>
-  <g>
-    <polyline class="st1" points="265.2 518.99 286.62 518.99 286.62 546.22"/>
-    <polygon class="st13" points="268.11 509.02 250.84 518.99 268.11 528.96 268.11 509.02"/>
-  </g>
-  <g>
-    <polyline class="st1" points="720.33 441.72 720.33 470.96 686.91 470.96"/>
-    <polygon class="st13" points="689.82 460.99 672.55 470.96 689.82 480.93 689.82 460.99"/>
-  </g>
-  <g>
-    <polygon class="st4" points="665.36 269.34 603.19 269.34 572.11 299.92 603.19 330.5 665.36 330.5 696.44 299.92 665.36 269.34"/>
-    <g class="st19">
-      <g class="st19">
-        <g class="st19">
-          <g class="st19">
-            <g class="st19">
-              <g class="st19">
-                <g class="st19">
-                  <text class="st16" transform="translate(615.47 295.65)"><tspan x="0" y="0">V or A</tspan></text>
-                </g>
-                <g class="st19">
-                  <text class="st16" transform="translate(615.47 316.05)"><tspan x="0" y="0">or cps</tspan></text>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-    </g>
-    <path class="st0" d="M596.77,289.67c0-1.41,1.15-2.56,2.56-2.56s2.56,1.15,2.56,2.56-1.15,2.56-2.56,2.56-2.56-1.15-2.56-2.56ZM594.2,297.36c0-.94.76-1.71,1.71-1.71h3.42c.94,0,1.71.76,1.71,1.71v11.96h1.71c.94,0,1.71.76,1.71,1.71s-.76,1.71-1.71,1.71h-6.83c-.94,0-1.71-.76-1.71-1.71s.76-1.71,1.71-1.71h1.71v-10.25h-1.71c-.94,0-1.71-.76-1.71-1.71h-.01Z"/>
-  </g>
-  <g>
-    <g>
-      <rect class="st17" x="1.53" y="1.87" width="283.19" height="322.82" rx="16.31" ry="16.31"/>
-      <rect class="st5" x="1.53" y="1.87" width="283.19" height="322.82" rx="16.31" ry="16.31"/>
-    </g>
-    <g class="st19">
-      <g class="st19">
-        <g class="st19">
-          <g class="st19">
-            <g class="st19">
-              <g class="st19">
-                <g class="st19">
-                  <text class="st14" transform="translate(62.89 207.66)"><tspan x="0" y="0">information functions</tspan></text>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-    </g>
-    <g class="st19">
-      <g class="st19">
-        <g class="st19">
-          <g class="st19">
-            <g class="st19">
-              <g class="st19">
-                <g class="st19">
-                  <text class="st14" transform="translate(62.89 168.22)"><tspan x="0" y="0">processing functions</tspan></text>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-    </g>
-    <g class="st19">
-      <g class="st19">
-        <g class="st19">
-          <g class="st19">
-            <g class="st19">
-              <g class="st19">
-                <g class="st19">
-                  <text class="st14" transform="translate(61.69 81.85)"><tspan x="0" y="0">isoreader core functions</tspan></text>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-    </g>
-    <g class="st19">
-      <g class="st19">
-        <g class="st19">
-          <g class="st19">
-            <g class="st19">
-              <g class="st19">
-                <g class="st19">
-                  <text class="st14" transform="translate(61.69 111.61)"><tspan x="0" y="0">auxiliary functions</tspan></text>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-      <g class="st19">
-        <g class="st19">
-          <g class="st19">
-            <g class="st19">
-              <g class="st19">
-                <g class="st19">
-                  <text class="st14" transform="translate(61.69 135.54)"><tspan x="0" y="0">(optional)</tspan></text>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-    </g>
-    <g class="st19">
-      <g class="st19">
-        <g class="st19">
-          <g class="st19">
-            <g class="st19">
-              <g class="st19">
-                <g class="st19">
-                  <text class="st14" transform="translate(62.89 247.84)"><tspan x="0" y="0">visualization functions</tspan></text>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-    </g>
-    <g class="st19">
-      <g class="st19">
-        <g class="st19">
-          <g class="st19">
-            <g class="st19">
-              <g class="st19">
-                <g class="st19">
-                  <text class="st14" transform="translate(62.89 282.62)"><tspan x="0" y="0">core functions, essential</tspan></text>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-      <g class="st19">
-        <g class="st19">
-          <g class="st19">
-            <g class="st19">
-              <g class="st19">
-                <g class="st19">
-                  <text class="st14" transform="translate(62.89 306.55)"><tspan x="0" y="0">input from user</tspan></text>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-    </g>
-    <path class="st0" d="M23.03,162.9l1.23-12.12c.09-.85.67-1.49,1.38-1.49h7.29c.65,0,1.17.64,1.17,1.44,0,.17-.03.35-.07.5l-2,6.56h6.03c.87,0,1.59.87,1.59,1.95,0,.39-.1.78-.28,1.1l-8.31,14.93c-.26.46-.67.73-1.12.73h-.13c-.68,0-1.23-.68-1.23-1.51,0-.12.01-.24.04-.37l2.03-10.03h-6.23c-.77,0-1.38-.76-1.38-1.7h-.01Z"/>
-    <g>
-      <rect class="st23" x="16.79" y="60.9" width="31.26" height="31.26" rx="5.69" ry="5.69"/>
-      <rect class="st7" x="16.79" y="60.9" width="31.26" height="31.26" rx="5.69" ry="5.69"/>
-    </g>
-    <g>
-      <rect class="st23" x="16.79" y="102.63" width="31.26" height="31.26" rx="5.69" ry="5.69"/>
-      <rect class="st10" x="16.79" y="102.63" width="31.26" height="31.26" rx="5.69" ry="5.69"/>
-    </g>
-    <g>
-      <polygon class="st3" points="33.77 271.64 32.52 271.64 14.61 289.26 32.52 306.89 33.77 306.89 51.69 289.26 33.77 271.64"/>
-      <path class="st0" d="M31.89,283.36c0-.82.66-1.48,1.48-1.48s1.48.66,1.48,1.48-.66,1.48-1.48,1.48-1.48-.66-1.48-1.48ZM30.41,287.79c0-.54.44-.98.98-.98h1.97c.54,0,.98.44.98.98v6.89h.98c.54,0,.98.44.98.98s-.44.98-.98.98h-3.94c-.54,0-.98-.44-.98-.98s.44-.98.98-.98h.98v-5.91h-.98c-.54,0-.98-.44-.98-.98h0Z"/>
-    </g>
-    <path class="st0" d="M31.33,216.88c8.03,0,14.54-6.51,14.54-14.54s-6.51-14.54-14.54-14.54-14.54,6.51-14.54,14.54,6.51,14.54,14.54,14.54ZM29.06,206.88h1.36v-3.63h-1.36c-.76,0-1.36-.61-1.36-1.36s.61-1.36,1.36-1.36h2.73c.76,0,1.36.61,1.36,1.36v5h.45c.76,0,1.36.61,1.36,1.36s-.61,1.36-1.36,1.36h-4.54c-.76,0-1.36-.61-1.36-1.36s.61-1.36,1.36-1.36h0ZM31.33,195.07c1,0,1.82.81,1.82,1.82s-.81,1.82-1.82,1.82-1.82-.81-1.82-1.82.81-1.82,1.82-1.82Z"/>
-    <path class="st0" d="M21.35,232.54c0-.92-.74-1.66-1.66-1.66s-1.66.74-1.66,1.66v17.47c0,2.3,1.86,4.16,4.16,4.16h20.8c.92,0,1.66-.74,1.66-1.66s-.74-1.66-1.66-1.66h-20.8c-.46,0-.83-.37-.83-.83v-17.47h-.01,0ZM42.49,237.04c.65-.65.65-1.71,0-2.36s-1.71-.65-2.36,0l-5.47,5.48-2.98-2.98c-.65-.65-1.71-.65-2.36,0l-5.82,5.82c-.65.65-.65,1.71,0,2.36s1.71.65,2.36,0l4.65-4.64,2.98,2.98c.65.65,1.71.65,2.36,0l6.65-6.65h-.01Z"/>
-    <g class="st19">
-      <g class="st19">
-        <g class="st19">
-          <g class="st19">
-            <g class="st19">
-              <g class="st19">
-                <g class="st19">
-                  <text class="st14" transform="translate(62.82 39.65)"><tspan x="0" y="0">data files</tspan></text>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-    </g>
-    <g>
-      <rect class="st24" x="16.47" y="18.07" width="32.52" height="32.52" rx="1.55" ry="1.55"/>
-      <rect class="st8" x="16.47" y="18.07" width="32.52" height="32.52" rx="1.55" ry="1.55"/>
-    </g>
-  </g>
-  <a xlink:href="https://isoreader2.isoverse.org/reference/ir_read_isofiles.html">
-    <g>
-      <g>
-        <rect class="st23" x="299.71" y="194.41" width="172.29" height="41.92" rx="4.23" ry="4.23"/>
-        <rect class="st7" x="299.71" y="194.41" width="172.29" height="41.92" rx="4.23" ry="4.23"/>
-      </g>
-      <path class="st0" d="M314.03,215.37l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11.01-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
       <g class="st19">
         <g class="st19">
           <g class="st19">
@@ -627,7 +215,457 @@ isoreader2::ir_check_isoextract()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st16" transform="translate(339.56 219.91)"><tspan x="0" y="0">ir_read_isofiles</tspan></text>
+                    <text class="st16" transform="translate(496.84 740.48)"><tspan x="0" y="0">ir_filter</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+  <g>
+    <g>
+      <rect class="st23" x="457.98" y="763.11" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
+      <rect class="st6" x="457.98" y="763.11" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
+    </g>
+    <path class="st0" d="M472.3,784.07l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
+    <g class="st19">
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <text class="st16" transform="translate(496.84 788.6)"><tspan x="0" y="0">ir_join_metadata</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+  <g>
+    <g>
+      <rect class="st23" x="8.03" y="631.58" width="234.17" height="41.92" rx="4.23" ry="4.23"/>
+      <rect class="st6" x="8.03" y="631.58" width="234.17" height="41.92" rx="4.23" ry="4.23"/>
+    </g>
+    <path class="st0" d="M22.35,652.54l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03Z"/>
+    <g class="st19">
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <text class="st16" transform="translate(47.22 657.07)"><tspan x="0" y="0">ir_export_data_to_excel</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+  <g>
+    <g>
+      <rect class="st23" x="426.13" y="493.88" width="240.26" height="41.92" rx="4.23" ry="4.23"/>
+      <rect class="st6" x="426.13" y="493.88" width="240.26" height="41.92" rx="4.23" ry="4.23"/>
+    </g>
+    <path class="st0" d="M440.45,514.84l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
+    <g class="st19">
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <text class="st16" transform="translate(464.99 519.37)"><tspan x="0" y="0">ir_save_aggregated_data</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+  <g>
+    <g>
+      <rect class="st23" x="426.13" y="594.43" width="240.26" height="41.92" rx="4.23" ry="4.23"/>
+      <rect class="st6" x="426.13" y="594.43" width="240.26" height="41.92" rx="4.23" ry="4.23"/>
+    </g>
+    <path class="st0" d="M440.45,615.39l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
+    <g class="st19">
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <text class="st16" transform="translate(464.99 619.92)"><tspan x="0" y="0">ir_load_aggregated_data</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+  <g>
+    <g>
+      <rect class="st23" x="457.98" y="666.85" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
+      <rect class="st6" x="457.98" y="666.85" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
+    </g>
+    <path class="st0" d="M472.3,687.81l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
+    <g class="st19">
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <text class="st16" transform="translate(496.84 692.34)"><tspan x="0" y="0">ir_filter_metadata</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+  <g>
+    <g>
+      <rect class="st23" x="457.98" y="714.97" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
+      <rect class="st6" x="457.98" y="714.97" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
+    </g>
+    <path class="st0" d="M472.3,735.93l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
+    <g class="st19">
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <text class="st16" transform="translate(496.84 740.46)"><tspan x="0" y="0">ir_mutate_metadata</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+  <g>
+    <line class="st9" x1="382.76" y1="466.46" x2="382.76" y2="838.58"/>
+    <polygon class="st13" points="370.8 835.08 382.76 855.8 394.73 835.08 370.8 835.08"/>
+  </g>
+  <g>
+    <line class="st9" x1="382.32" y1="64.12" x2="382.32" y2="84.67"/>
+    <polygon class="st13" points="370.36 81.17 382.32 101.89 394.29 81.17 370.36 81.17"/>
+  </g>
+  <g>
+    <line class="st9" x1="382.32" y1="150.15" x2="382.32" y2="170.7"/>
+    <polygon class="st13" points="370.36 167.2 382.32 187.92 394.29 167.2 370.36 167.2"/>
+  </g>
+  <g>
+    <line class="st9" x1="382.32" y1="236.95" x2="382.32" y2="400.5"/>
+    <polygon class="st13" points="370.36 397 382.32 417.72 394.29 397 370.36 397"/>
+  </g>
+  <g>
+    <line class="st1" x1="385" y1="775.7" x2="441.53" y2="775.7"/>
+    <polygon class="st13" points="438.61 785.67 455.89 775.7 438.61 765.73 438.61 785.67"/>
+  </g>
+  <g>
+    <line class="st1" x1="457.17" y1="791.15" x2="400.65" y2="791.15"/>
+    <polygon class="st13" points="403.55 781.18 386.29 791.15 403.55 801.12 403.55 781.18"/>
+  </g>
+  <g>
+    <line class="st1" x1="385" y1="728.72" x2="441.53" y2="728.72"/>
+    <polygon class="st13" points="438.61 738.69 455.89 728.72 438.61 718.75 438.61 738.69"/>
+  </g>
+  <g>
+    <line class="st1" x1="457.17" y1="744.17" x2="400.65" y2="744.17"/>
+    <polygon class="st13" points="403.55 734.2 386.29 744.17 403.55 754.14 403.55 734.2"/>
+  </g>
+  <g>
+    <line class="st1" x1="385" y1="682.99" x2="441.53" y2="682.99"/>
+    <polygon class="st13" points="438.61 692.96 455.89 682.99 438.61 673.02 438.61 692.96"/>
+  </g>
+  <g>
+    <line class="st1" x1="457.17" y1="698.44" x2="400.65" y2="698.44"/>
+    <polygon class="st13" points="403.55 688.47 386.29 698.44 403.55 708.41 403.55 688.47"/>
+  </g>
+  <g>
+    <line class="st1" x1="528.18" y1="217.65" x2="491.66" y2="217.65"/>
+    <polygon class="st13" points="494.56 207.68 477.3 217.65 494.56 227.62 494.56 207.68"/>
+  </g>
+  <g>
+    <line class="st1" x1="386.11" y1="514.53" x2="408.02" y2="514.53"/>
+    <polygon class="st13" points="405.11 524.5 422.38 514.53 405.11 504.56 405.11 524.5"/>
+  </g>
+  <g>
+    <line class="st1" x1="425.38" y1="616.29" x2="403.47" y2="616.29"/>
+    <polygon class="st13" points="406.38 606.32 389.11 616.29 406.38 626.26 406.38 606.32"/>
+  </g>
+  <g>
+    <line class="st1" x1="74.41" y1="674.27" x2="74.41" y2="880.18"/>
+    <polygon class="st13" points="64.44 877.27 74.41 894.54 84.38 877.27 64.44 877.27"/>
+  </g>
+  <g>
+    <line class="st1" x1="382.91" y1="505.54" x2="322" y2="505.54"/>
+    <polygon class="st13" points="324.91 495.57 307.64 505.54 324.91 515.51 324.91 495.57"/>
+  </g>
+  <g>
+    <line class="st1" x1="382.91" y1="711.59" x2="322" y2="711.59"/>
+    <polygon class="st13" points="324.91 701.62 307.64 711.59 324.91 721.56 324.91 701.62"/>
+  </g>
+  <g>
+    <line class="st1" x1="382.91" y1="643.07" x2="265" y2="643.07"/>
+    <polygon class="st13" points="267.91 633.1 250.64 643.07 267.91 653.04 267.91 633.1"/>
+  </g>
+  <g>
+    <polyline class="st1" points="525.16 36.65 581.39 36.65 581.39 70.07"/>
+    <polygon class="st13" points="571.42 67.16 581.39 84.43 591.36 67.16 571.42 67.16"/>
+  </g>
+  <g>
+    <polyline class="st1" points="264.67 663.99 286.09 663.99 286.09 691.22"/>
+    <polygon class="st13" points="267.58 654.02 250.31 663.99 267.58 673.96 267.58 654.02"/>
+  </g>
+  <g>
+    <polyline class="st1" points="719.8 586.72 719.8 615.96 686.38 615.96"/>
+    <polygon class="st13" points="689.29 605.99 672.02 615.96 689.29 625.93 689.29 605.99"/>
+  </g>
+  <g>
+    <polygon class="st4" points="664.83 414.34 602.66 414.34 571.58 444.92 602.66 475.5 664.83 475.5 695.91 444.92 664.83 414.34"/>
+    <g class="st19">
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <text class="st16" transform="translate(614.94 440.65)"><tspan x="0" y="0">V or A</tspan></text>
+                  </g>
+                </g>
+                <g class="st19">
+                  <g class="st19">
+                    <text class="st16" transform="translate(614.94 461.05)"><tspan x="0" y="0">or cps</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <path class="st0" d="M596.24,434.67c0-1.41,1.15-2.56,2.56-2.56s2.56,1.15,2.56,2.56-1.15,2.56-2.56,2.56-2.56-1.15-2.56-2.56ZM593.67,442.36c0-.94.76-1.71,1.71-1.71h3.42c.94,0,1.71.76,1.71,1.71v11.96h1.71c.94,0,1.71.76,1.71,1.71s-.76,1.71-1.71,1.71h-6.83c-.94,0-1.71-.76-1.71-1.71s.76-1.71,1.71-1.71h1.71v-10.25h-1.71c-.94,0-1.71-.76-1.71-1.71h-.01Z"/>
+  </g>
+  <g>
+    <g>
+      <rect class="st17" x="1" y="128.96" width="283.19" height="322.82" rx="16.31" ry="16.31"/>
+      <rect class="st5" x="1" y="128.96" width="283.19" height="322.82" rx="16.31" ry="16.31"/>
+    </g>
+    <g class="st19">
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <text class="st14" transform="translate(62.36 334.76)"><tspan x="0" y="0">information functions</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g class="st19">
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <text class="st14" transform="translate(62.36 295.32)"><tspan x="0" y="0">processing functions</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g class="st19">
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <text class="st14" transform="translate(61.16 208.94)"><tspan x="0" y="0">isoreader core functions</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g class="st19">
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <text class="st14" transform="translate(61.16 238.7)"><tspan x="0" y="0">auxiliary functions</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <text class="st14" transform="translate(61.16 262.63)"><tspan x="0" y="0">(optional)</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g class="st19">
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <text class="st14" transform="translate(62.36 374.93)"><tspan x="0" y="0">visualization functions</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g class="st19">
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <text class="st14" transform="translate(62.36 409.71)"><tspan x="0" y="0">core functions, essential</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <text class="st14" transform="translate(62.36 433.64)"><tspan x="0" y="0">input from user</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <path class="st0" d="M22.5,289.99l1.23-12.12c.09-.85.67-1.49,1.38-1.49h7.29c.65,0,1.17.64,1.17,1.44,0,.17-.03.35-.07.5l-2,6.56h6.03c.87,0,1.59.87,1.59,1.95,0,.39-.1.78-.28,1.1l-8.31,14.93c-.26.46-.67.73-1.12.73h-.13c-.68,0-1.23-.68-1.23-1.51,0-.12.01-.24.04-.37l2.03-10.03h-6.23c-.77,0-1.38-.76-1.38-1.7h-.01Z"/>
+    <g>
+      <rect class="st23" x="16.26" y="188" width="31.26" height="31.26" rx="5.69" ry="5.69"/>
+      <rect class="st7" x="16.26" y="188" width="31.26" height="31.26" rx="5.69" ry="5.69"/>
+    </g>
+    <g>
+      <rect class="st23" x="16.26" y="229.72" width="31.26" height="31.26" rx="5.69" ry="5.69"/>
+      <rect class="st10" x="16.26" y="229.72" width="31.26" height="31.26" rx="5.69" ry="5.69"/>
+    </g>
+    <g>
+      <polygon class="st3" points="33.24 398.74 31.99 398.74 14.08 416.36 31.99 433.99 33.24 433.99 51.16 416.36 33.24 398.74"/>
+      <path class="st0" d="M31.36,410.45c0-.82.66-1.48,1.48-1.48s1.48.66,1.48,1.48-.66,1.48-1.48,1.48-1.48-.66-1.48-1.48ZM29.88,414.89c0-.54.44-.98.98-.98h1.97c.54,0,.98.44.98.98v6.89h.98c.54,0,.98.44.98.98s-.44.98-.98.98h-3.94c-.54,0-.98-.44-.98-.98s.44-.98.98-.98h.98v-5.91h-.98c-.54,0-.98-.44-.98-.98h0Z"/>
+    </g>
+    <path class="st0" d="M30.8,343.98c8.03,0,14.54-6.51,14.54-14.54s-6.51-14.54-14.54-14.54-14.54,6.51-14.54,14.54,6.51,14.54,14.54,14.54ZM28.53,333.98h1.36v-3.63h-1.36c-.76,0-1.36-.61-1.36-1.36s.61-1.36,1.36-1.36h2.73c.76,0,1.36.61,1.36,1.36v5h.45c.76,0,1.36.61,1.36,1.36s-.61,1.36-1.36,1.36h-4.54c-.76,0-1.36-.61-1.36-1.36s.61-1.36,1.36-1.36h0ZM30.8,322.17c1,0,1.82.81,1.82,1.82s-.81,1.82-1.82,1.82-1.82-.81-1.82-1.82.81-1.82,1.82-1.82Z"/>
+    <path class="st0" d="M20.82,359.63c0-.92-.74-1.66-1.66-1.66s-1.66.74-1.66,1.66v17.47c0,2.3,1.86,4.16,4.16,4.16h20.8c.92,0,1.66-.74,1.66-1.66s-.74-1.66-1.66-1.66h-20.8c-.46,0-.83-.37-.83-.83v-17.47h-.01,0ZM41.96,364.13c.65-.65.65-1.71,0-2.36s-1.71-.65-2.36,0l-5.47,5.48-2.98-2.98c-.65-.65-1.71-.65-2.36,0l-5.82,5.82c-.65.65-.65,1.71,0,2.36s1.71.65,2.36,0l4.65-4.64,2.98,2.98c.65.65,1.71.65,2.36,0l6.65-6.65h-.01Z"/>
+    <g class="st19">
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <text class="st14" transform="translate(62.29 166.75)"><tspan x="0" y="0">data files</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g>
+      <rect class="st24" x="15.94" y="145.16" width="32.52" height="32.52" rx="1.55" ry="1.55"/>
+      <rect class="st8" x="15.94" y="145.16" width="32.52" height="32.52" rx="1.55" ry="1.55"/>
+    </g>
+  </g>
+  <a xlink:href="https://isoreader2.isoverse.org/reference/ir_read_isofiles.html">
+    <g>
+      <g>
+        <rect class="st23" x="299.18" y="194.41" width="172.29" height="41.92" rx="4.23" ry="4.23"/>
+        <rect class="st7" x="299.18" y="194.41" width="172.29" height="41.92" rx="4.23" ry="4.23"/>
+      </g>
+      <path class="st0" d="M313.5,215.37l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11.01-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <g class="st19">
+                      <text class="st16" transform="translate(339.03 219.91)"><tspan x="0" y="0">ir_read_isofiles</tspan></text>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -640,10 +678,10 @@ isoreader2::ir_check_isoextract()
   <a xlink:href="https://isoreader2.isoverse.org/reference/ir_find_isofiles.html">
     <g>
       <g>
-        <rect class="st23" x="299.71" y="107.86" width="172.29" height="41.92" rx="4.23" ry="4.23"/>
-        <rect class="st7" x="299.71" y="107.86" width="172.29" height="41.92" rx="4.23" ry="4.23"/>
+        <rect class="st23" x="299.18" y="107.86" width="172.29" height="41.92" rx="4.23" ry="4.23"/>
+        <rect class="st7" x="299.18" y="107.86" width="172.29" height="41.92" rx="4.23" ry="4.23"/>
       </g>
-      <path class="st0" d="M314.03,128.82l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11.01-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
+      <path class="st0" d="M313.5,128.82l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11.01-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
       <g class="st19">
         <g class="st19">
           <g class="st19">
@@ -651,7 +689,9 @@ isoreader2::ir_check_isoextract()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st16" transform="translate(339.56 133.36)"><tspan x="0" y="0">ir_find_isofiles</tspan></text>
+                    <g class="st19">
+                      <text class="st16" transform="translate(339.03 133.36)"><tspan x="0" y="0">ir_find_isofiles</tspan></text>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -664,10 +704,10 @@ isoreader2::ir_check_isoextract()
   <a xlink:href="https://isoreader2.isoverse.org/reference/ir_aggregate_isofiles.html">
     <g>
       <g>
-        <rect class="st23" x="299.52" y="278.96" width="207.29" height="41.92" rx="4.23" ry="4.23"/>
-        <rect class="st7" x="299.52" y="278.96" width="207.29" height="41.92" rx="4.23" ry="4.23"/>
+        <rect class="st23" x="298.99" y="423.96" width="207.29" height="41.92" rx="4.23" ry="4.23"/>
+        <rect class="st7" x="298.99" y="423.96" width="207.29" height="41.92" rx="4.23" ry="4.23"/>
       </g>
-      <path class="st0" d="M313.84,299.92l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11.01-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
+      <path class="st0" d="M313.31,444.92l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11.01-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
       <g class="st19">
         <g class="st19">
           <g class="st19">
@@ -675,7 +715,9 @@ isoreader2::ir_check_isoextract()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st16" transform="translate(338.37 304.46)"><tspan x="0" y="0">ir_aggregate_isofiles</tspan></text>
+                    <g class="st19">
+                      <text class="st16" transform="translate(337.84 449.46)"><tspan x="0" y="0">ir_aggregate_isofiles</tspan></text>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -688,8 +730,8 @@ isoreader2::ir_check_isoextract()
   <a xlink:href="https://isoreader2.isoverse.org/reference/ir_plot_scans.html">
     <g>
       <g>
-        <path class="st23" d="M71.99,435.79h215.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H71.99c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
-        <path class="st6" d="M71.99,435.79h215.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H71.99c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
+        <path class="st23" d="M71.46,580.79h215.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H71.46c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
+        <path class="st6" d="M71.46,580.79h215.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H71.46c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
       </g>
       <g class="st19">
         <g class="st19">
@@ -698,7 +740,9 @@ isoreader2::ir_check_isoextract()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st16" transform="translate(111.19 461.28)"><tspan x="0" y="0">ir_plot_scans</tspan></text>
+                    <g class="st19">
+                      <text class="st16" transform="translate(110.66 606.28)"><tspan x="0" y="0">ir_plot_scans</tspan></text>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -706,18 +750,18 @@ isoreader2::ir_check_isoextract()
           </g>
         </g>
       </g>
-      <path class="st0" d="M76.63,446.58c0-.92-.74-1.66-1.66-1.66s-1.66.74-1.66,1.66v17.47c0,2.3,1.86,4.16,4.16,4.16h20.8c.92,0,1.66-.74,1.66-1.66s-.74-1.66-1.66-1.66h-20.8c-.46,0-.83-.37-.83-.83v-17.47h-.01,0ZM97.77,451.08c.65-.65.65-1.71,0-2.36s-1.71-.65-2.36,0l-5.47,5.48-2.98-2.98c-.65-.65-1.71-.65-2.36,0l-5.82,5.82c-.65.65-.65,1.71,0,2.36s1.71.65,2.36,0l4.65-4.64,2.98,2.98c.65.65,1.71.65,2.36,0l6.65-6.65h-.01Z"/>
+      <path class="st0" d="M76.1,591.58c0-.92-.74-1.66-1.66-1.66s-1.66.74-1.66,1.66v17.47c0,2.3,1.86,4.16,4.16,4.16h20.8c.92,0,1.66-.74,1.66-1.66s-.74-1.66-1.66-1.66h-20.8c-.46,0-.83-.37-.83-.83v-17.47h-.01,0ZM97.24,596.08c.65-.65.65-1.71,0-2.36s-1.71-.65-2.36,0l-5.47,5.48-2.98-2.98c-.65-.65-1.71-.65-2.36,0l-5.82,5.82c-.65.65-.65,1.71,0,2.36s1.71.65,2.36,0l4.65-4.64,2.98,2.98c.65.65,1.71.65,2.36,0l6.65-6.65h-.01Z"/>
     </g>
   </a>
   <g>
-    <line class="st1" x1="383.44" y1="409.35" x2="322.53" y2="409.35"/>
-    <polygon class="st13" points="325.44 399.38 308.17 409.35 325.44 419.32 325.44 399.38"/>
+    <line class="st1" x1="382.91" y1="554.35" x2="322" y2="554.35"/>
+    <polygon class="st13" points="324.91 544.38 307.64 554.35 324.91 564.32 324.91 544.38"/>
   </g>
   <a xlink:href="https://isoreader2.isoverse.org/reference/ir_plot_dual_inlet.html">
     <g>
       <g>
-        <path class="st23" d="M71.99,386.99h215.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H71.99c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
-        <path class="st6" d="M71.99,386.99h215.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H71.99c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
+        <path class="st23" d="M71.46,531.99h215.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H71.46c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
+        <path class="st6" d="M71.46,531.99h215.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H71.46c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
       </g>
       <g class="st19">
         <g class="st19">
@@ -726,7 +770,9 @@ isoreader2::ir_check_isoextract()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st16" transform="translate(111.19 412.48)"><tspan x="0" y="0">ir_plot_dual_inlet</tspan></text>
+                    <g class="st19">
+                      <text class="st16" transform="translate(110.66 557.48)"><tspan x="0" y="0">ir_plot_dual_inlet</tspan></text>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -734,18 +780,18 @@ isoreader2::ir_check_isoextract()
           </g>
         </g>
       </g>
-      <path class="st0" d="M76.63,397.78c0-.92-.74-1.66-1.66-1.66s-1.66.74-1.66,1.66v17.47c0,2.3,1.86,4.16,4.16,4.16h20.8c.92,0,1.66-.74,1.66-1.66s-.74-1.66-1.66-1.66h-20.8c-.46,0-.83-.37-.83-.83v-17.47h-.01,0ZM97.77,402.28c.65-.65.65-1.71,0-2.36s-1.71-.65-2.36,0l-5.47,5.48-2.98-2.98c-.65-.65-1.71-.65-2.36,0l-5.82,5.82c-.65.65-.65,1.71,0,2.36s1.71.65,2.36,0l4.65-4.64,2.98,2.98c.65.65,1.71.65,2.36,0l6.65-6.65h-.01Z"/>
+      <path class="st0" d="M76.1,542.78c0-.92-.74-1.66-1.66-1.66s-1.66.74-1.66,1.66v17.47c0,2.3,1.86,4.16,4.16,4.16h20.8c.92,0,1.66-.74,1.66-1.66s-.74-1.66-1.66-1.66h-20.8c-.46,0-.83-.37-.83-.83v-17.47h-.01,0ZM97.24,547.28c.65-.65.65-1.71,0-2.36s-1.71-.65-2.36,0l-5.47,5.48-2.98-2.98c-.65-.65-1.71-.65-2.36,0l-5.82,5.82c-.65.65-.65,1.71,0,2.36s1.71.65,2.36,0l4.65-4.64,2.98,2.98c.65.65,1.71.65,2.36,0l6.65-6.65h-.01Z"/>
     </g>
   </a>
   <g>
-    <line class="st1" x1="383.44" y1="457.22" x2="322.53" y2="457.22"/>
-    <polygon class="st13" points="325.44 447.25 308.17 457.22 325.44 467.19 325.44 447.25"/>
+    <line class="st1" x1="382.91" y1="602.22" x2="322" y2="602.22"/>
+    <polygon class="st13" points="324.91 592.25 307.64 602.22 324.91 612.19 324.91 592.25"/>
   </g>
   <a xlink:href="https://isoreader2.isoverse.org/reference/ir_plot_continuous_flow.html">
     <g>
       <g>
-        <path class="st23" d="M71.99,339.11h215.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H71.99c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
-        <path class="st6" d="M71.99,339.11h215.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H71.99c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
+        <path class="st23" d="M71.46,484.11h215.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H71.46c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
+        <path class="st6" d="M71.46,484.11h215.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H71.46c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
       </g>
       <g class="st19">
         <g class="st19">
@@ -754,7 +800,9 @@ isoreader2::ir_check_isoextract()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st16" transform="translate(111.19 364.6)"><tspan x="0" y="0">ir_plot_continuous_flow</tspan></text>
+                    <g class="st19">
+                      <text class="st16" transform="translate(110.66 509.6)"><tspan x="0" y="0">ir_plot_continuous_flow</tspan></text>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -762,16 +810,16 @@ isoreader2::ir_check_isoextract()
           </g>
         </g>
       </g>
-      <path class="st0" d="M76.63,349.9c0-.92-.74-1.66-1.66-1.66s-1.66.74-1.66,1.66v17.47c0,2.3,1.86,4.16,4.16,4.16h20.8c.92,0,1.66-.74,1.66-1.66s-.74-1.66-1.66-1.66h-20.8c-.46,0-.83-.37-.83-.83v-17.47h-.01,0ZM97.77,354.4c.65-.65.65-1.71,0-2.36s-1.71-.65-2.36,0l-5.47,5.48-2.98-2.98c-.65-.65-1.71-.65-2.36,0l-5.82,5.82c-.65.65-.65,1.71,0,2.36s1.71.65,2.36,0l4.65-4.64,2.98,2.98c.65.65,1.71.65,2.36,0l6.65-6.65h-.01Z"/>
+      <path class="st0" d="M76.1,494.9c0-.92-.74-1.66-1.66-1.66s-1.66.74-1.66,1.66v17.47c0,2.3,1.86,4.16,4.16,4.16h20.8c.92,0,1.66-.74,1.66-1.66s-.74-1.66-1.66-1.66h-20.8c-.46,0-.83-.37-.83-.83v-17.47h-.01,0ZM97.24,499.4c.65-.65.65-1.71,0-2.36s-1.71-.65-2.36,0l-5.47,5.48-2.98-2.98c-.65-.65-1.71-.65-2.36,0l-5.82,5.82c-.65.65-.65,1.71,0,2.36s1.71.65,2.36,0l4.65-4.64,2.98,2.98c.65.65,1.71.65,2.36,0l6.65-6.65h-.01Z"/>
     </g>
   </a>
   <a xlink:href="https://isoreader2.isoverse.org/reference/ir_find_isofiles.html">
     <g>
       <g>
-        <rect class="st23" x="529.22" y="95.23" width="224.14" height="41.92" rx="4.23" ry="4.23"/>
-        <rect class="st2" x="529.22" y="95.23" width="224.14" height="41.92" rx="4.23" ry="4.23"/>
+        <rect class="st23" x="528.69" y="95.23" width="224.14" height="41.92" rx="4.23" ry="4.23"/>
+        <rect class="st2" x="528.69" y="95.23" width="224.14" height="41.92" rx="4.23" ry="4.23"/>
       </g>
-      <path class="st0" d="M543.54,117.19l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
+      <path class="st0" d="M543.01,117.19l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
       <g class="st19">
         <g class="st19">
           <g class="st19">
@@ -779,31 +827,9 @@ isoreader2::ir_check_isoextract()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st16" transform="translate(565.33 121.72)"><tspan x="0" y="0">ir_find_continuous_flow</tspan></text>
-                  </g>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-    </g>
-  </a>
-  <a xlink:href="https://isoreader2.isoverse.org/reference/ir_find_isofiles.html">
-    <g>
-      <g>
-        <rect class="st23" x="529.41" y="145.61" width="178.14" height="41.92" rx="4.23" ry="4.23"/>
-        <rect class="st2" x="529.41" y="145.61" width="178.14" height="41.92" rx="4.23" ry="4.23"/>
-      </g>
-      <path class="st0" d="M543.73,167.57l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
-      <g class="st19">
-        <g class="st19">
-          <g class="st19">
-            <g class="st19">
-              <g class="st19">
-                <g class="st19">
-                  <g class="st19">
-                    <text class="st16" transform="translate(565.39 172.1)"><tspan x="0" y="0">ir_find_dual_inlet</tspan></text>
+                    <g class="st19">
+                      <text class="st16" transform="translate(564.8 121.72)"><tspan x="0" y="0">ir_find_continuous_flow</tspan></text>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -816,10 +842,10 @@ isoreader2::ir_check_isoextract()
   <a xlink:href="https://isoreader2.isoverse.org/reference/ir_find_isofiles.html">
     <g>
       <g>
-        <rect class="st23" x="528.79" y="196.69" width="156.14" height="41.92" rx="4.23" ry="4.23"/>
-        <rect class="st2" x="528.79" y="196.69" width="156.14" height="41.92" rx="4.23" ry="4.23"/>
+        <rect class="st23" x="38.18" y="49.11" width="195.14" height="41.92" rx="4.23" ry="4.23"/>
+        <rect class="st2" x="38.18" y="49.11" width="195.14" height="41.92" rx="4.23" ry="4.23"/>
       </g>
-      <path class="st0" d="M543.11,218.65l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
+      <path class="st0" d="M52.5,71.07l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
       <g class="st19">
         <g class="st19">
           <g class="st19">
@@ -827,7 +853,61 @@ isoreader2::ir_check_isoextract()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st16" transform="translate(568.64 223.18)"><tspan x="0" y="0">ir_find_scans</tspan></text>
+                    <g class="st19">
+                      <text class="st16" transform="translate(74.29 75.6)"><tspan x="0" y="0">ir_examples_folder</tspan></text>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </a>
+  <a xlink:href="https://isoreader2.isoverse.org/reference/ir_find_isofiles.html">
+    <g>
+      <g>
+        <rect class="st23" x="528.88" y="145.61" width="178.14" height="41.92" rx="4.23" ry="4.23"/>
+        <rect class="st2" x="528.88" y="145.61" width="178.14" height="41.92" rx="4.23" ry="4.23"/>
+      </g>
+      <path class="st0" d="M543.2,167.57l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <g class="st19">
+                      <text class="st16" transform="translate(564.86 172.1)"><tspan x="0" y="0">ir_find_dual_inlet</tspan></text>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </a>
+  <a xlink:href="https://isoreader2.isoverse.org/reference/ir_find_isofiles.html">
+    <g>
+      <g>
+        <rect class="st23" x="528.26" y="196.69" width="156.14" height="41.92" rx="4.23" ry="4.23"/>
+        <rect class="st2" x="528.26" y="196.69" width="156.14" height="41.92" rx="4.23" ry="4.23"/>
+      </g>
+      <path class="st0" d="M542.58,218.65l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <g class="st19">
+                      <text class="st16" transform="translate(568.11 223.18)"><tspan x="0" y="0">ir_find_scans</tspan></text>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -840,8 +920,8 @@ isoreader2::ir_check_isoextract()
   <a xlink:href="https://isoreader2.isoverse.org/reference/ir_get_data.html">
     <g>
       <g>
-        <rect class="st23" x="138.15" y="544.42" width="160.52" height="41.92" rx="5.08" ry="5.08"/>
-        <rect class="st12" x="138.15" y="544.42" width="160.52" height="41.92" rx="5.08" ry="5.08"/>
+        <rect class="st23" x="114.62" y="689.42" width="187.52" height="41.92" rx="5.08" ry="5.08"/>
+        <rect class="st12" x="114.62" y="689.42" width="187.52" height="41.92" rx="5.08" ry="5.08"/>
       </g>
       <g class="st19">
         <g class="st19">
@@ -850,7 +930,9 @@ isoreader2::ir_check_isoextract()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st16" transform="translate(183 569.91)"><tspan x="0" y="0">ir_get_data</tspan></text>
+                    <g class="st19">
+                      <text class="st16" transform="translate(159.47 714.91)"><tspan x="0" y="0">ir_get_data</tspan></text>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -858,13 +940,91 @@ isoreader2::ir_check_isoextract()
           </g>
         </g>
       </g>
-      <path class="st0" d="M159.24,579.92c8.03,0,14.54-6.51,14.54-14.54s-6.51-14.54-14.54-14.54-14.54,6.51-14.54,14.54,6.51,14.54,14.54,14.54ZM156.97,569.92h1.36v-3.63h-1.36c-.76,0-1.36-.61-1.36-1.36s.61-1.36,1.36-1.36h2.73c.76,0,1.36.61,1.36,1.36v5h.45c.76,0,1.36.61,1.36,1.36s-.61,1.36-1.36,1.36h-4.54c-.76,0-1.36-.61-1.36-1.36s.61-1.36,1.36-1.36h0ZM159.24,558.11c1,0,1.82.81,1.82,1.82s-.81,1.82-1.82,1.82-1.82-.81-1.82-1.82.81-1.82,1.82-1.82Z"/>
+      <path class="st0" d="M135.71,724.92c8.03,0,14.54-6.51,14.54-14.54s-6.51-14.54-14.54-14.54-14.54,6.51-14.54,14.54,6.51,14.54,14.54,14.54ZM133.44,714.92h1.36v-3.63h-1.36c-.76,0-1.36-.61-1.36-1.36s.61-1.36,1.36-1.36h2.73c.76,0,1.36.61,1.36,1.36v5h.45c.76,0,1.36.61,1.36,1.36s-.61,1.36-1.36,1.36h-4.54c-.76,0-1.36-.61-1.36-1.36s.61-1.36,1.36-1.36h0ZM135.71,703.11c1,0,1.82.81,1.82,1.82s-.81,1.82-1.82,1.82-1.82-.81-1.82-1.82.81-1.82,1.82-1.82Z"/>
+    </g>
+  </a>
+  <a xlink:href="https://isoreader2.isoverse.org/reference/ir_get_data.html">
+    <g>
+      <g>
+        <rect class="st23" x="114.62" y="739.27" width="206.52" height="41.92" rx="5.08" ry="5.08"/>
+        <rect class="st12" x="114.62" y="739.27" width="206.52" height="41.92" rx="5.08" ry="5.08"/>
+      </g>
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <g class="st19">
+                      <text class="st16" transform="translate(159.47 764.76)"><tspan x="0" y="0">ir_get_metadata</tspan></text>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <path class="st0" d="M135.71,774.77c8.03,0,14.54-6.51,14.54-14.54s-6.51-14.54-14.54-14.54-14.54,6.51-14.54,14.54,6.51,14.54,14.54,14.54ZM133.44,764.77h1.36v-3.63h-1.36c-.76,0-1.36-.61-1.36-1.36s.61-1.36,1.36-1.36h2.73c.76,0,1.36.61,1.36,1.36v5h.45c.76,0,1.36.61,1.36,1.36s-.61,1.36-1.36,1.36h-4.54c-.76,0-1.36-.61-1.36-1.36s.61-1.36,1.36-1.36h0ZM135.71,752.96c1,0,1.82.81,1.82,1.82s-.81,1.82-1.82,1.82-1.82-.81-1.82-1.82.81-1.82,1.82-1.82Z"/>
+    </g>
+  </a>
+  <a xlink:href="https://isoreader2.isoverse.org/reference/ir_get_data.html">
+    <g>
+      <g>
+        <rect class="st23" x="114.62" y="789.12" width="252.52" height="41.92" rx="5.08" ry="5.08"/>
+        <rect class="st12" x="114.62" y="789.12" width="252.52" height="41.92" rx="5.08" ry="5.08"/>
+      </g>
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <g class="st19">
+                      <text class="st16" transform="translate(159.47 814.61)"><tspan x="0" y="0">ir_get_traces/cycles/scans</tspan></text>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <path class="st0" d="M135.71,824.62c8.03,0,14.54-6.51,14.54-14.54s-6.51-14.54-14.54-14.54-14.54,6.51-14.54,14.54,6.51,14.54,14.54,14.54ZM133.44,814.62h1.36v-3.63h-1.36c-.76,0-1.36-.61-1.36-1.36s.61-1.36,1.36-1.36h2.73c.76,0,1.36.61,1.36,1.36v5h.45c.76,0,1.36.61,1.36,1.36s-.61,1.36-1.36,1.36h-4.54c-.76,0-1.36-.61-1.36-1.36s.61-1.36,1.36-1.36h0ZM135.71,802.81c1,0,1.82.81,1.82,1.82s-.81,1.82-1.82,1.82-1.82-.81-1.82-1.82.81-1.82,1.82-1.82Z"/>
+    </g>
+  </a>
+  <a xlink:href="https://isoreader2.isoverse.org/reference/ir_get_data.html">
+    <g>
+      <g>
+        <rect class="st23" x="114.62" y="837.16" width="171.52" height="41.92" rx="5.08" ry="5.08"/>
+        <rect class="st12" x="114.62" y="837.16" width="171.52" height="41.92" rx="5.08" ry="5.08"/>
+      </g>
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <g class="st19">
+                      <text class="st16" transform="translate(159.47 862.65)"><tspan x="0" y="0">ir_get_resistors</tspan></text>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+      <path class="st0" d="M135.71,872.66c8.03,0,14.54-6.51,14.54-14.54s-6.51-14.54-14.54-14.54-14.54,6.51-14.54,14.54,6.51,14.54,14.54,14.54ZM133.44,862.66h1.36v-3.63h-1.36c-.76,0-1.36-.61-1.36-1.36s.61-1.36,1.36-1.36h2.73c.76,0,1.36.61,1.36,1.36v5h.45c.76,0,1.36.61,1.36,1.36s-.61,1.36-1.36,1.36h-4.54c-.76,0-1.36-.61-1.36-1.36s.61-1.36,1.36-1.36h0ZM135.71,850.85c1,0,1.82.81,1.82,1.82s-.81,1.82-1.82,1.82-1.82-.81-1.82-1.82.81-1.82,1.82-1.82Z"/>
     </g>
   </a>
   <g>
     <g>
-      <rect class="st24" x="299.92" y="9.25" width="224.34" height="53.98" rx="4.45" ry="4.45"/>
-      <rect class="st8" x="299.92" y="9.25" width="224.34" height="53.98" rx="4.45" ry="4.45"/>
+      <rect class="st24" x="299.39" y="9.25" width="224.34" height="53.98" rx="4.45" ry="4.45"/>
+      <rect class="st8" x="299.39" y="9.25" width="224.34" height="53.98" rx="4.45" ry="4.45"/>
     </g>
     <g class="st19">
       <g class="st19">
@@ -873,7 +1033,9 @@ isoreader2::ir_check_isoextract()
             <g class="st19">
               <g class="st19">
                 <g class="st19">
-                  <text class="st16" transform="translate(313.61 57.15)"><tspan x="0" y="0">isotope data files/archives</tspan></text>
+                  <g class="st19">
+                    <text class="st16" transform="translate(313.08 57.15)"><tspan x="0" y="0">isotope data files/archives</tspan></text>
+                  </g>
                 </g>
               </g>
             </g>
@@ -881,126 +1043,144 @@ isoreader2::ir_check_isoextract()
         </g>
       </g>
     </g>
-    <path class="st0" d="M323.35,39.84c.47,0,.86-.39.86-.86v-15.44h-4.29c-.95,0-1.72-.77-1.72-1.72v-4.29h-8.58c-.47,0-.86.39-.86.86v20.58c0,.47.39.86.86.86h13.73ZM306.2,18.4c0-1.89,1.54-3.43,3.43-3.43h8.87c.91,0,1.78.36,2.43,1l4.85,4.85c.64.64,1,1.52,1,2.43v15.73c0,1.89-1.54,3.43-3.43,3.43h-13.72c-1.89,0-3.43-1.54-3.43-3.43v-20.58h0Z"/>
+    <path class="st0" d="M322.82,39.84c.47,0,.86-.39.86-.86v-15.44h-4.29c-.95,0-1.72-.77-1.72-1.72v-4.29h-8.58c-.47,0-.86.39-.86.86v20.58c0,.47.39.86.86.86h13.73ZM305.67,18.4c0-1.89,1.54-3.43,3.43-3.43h8.87c.91,0,1.78.36,2.43,1l4.85,4.85c.64.64,1,1.52,1,2.43v15.73c0,1.89-1.54,3.43-3.43,3.43h-13.72c-1.89,0-3.43-1.54-3.43-3.43v-20.58h0Z"/>
     <g class="st19">
       <g class="st19">
         <g class="st19">
           <g class="st19">
             <g class="st19">
               <g class="st19">
-                <text class="st20" transform="translate(316.49 38.54) rotate(-90)"><tspan x="0" y="0">dxf</tspan></text>
+                <g class="st19">
+                  <text class="st20" transform="translate(315.96 38.54) rotate(-90)"><tspan x="0" y="0">dxf</tspan></text>
+                </g>
               </g>
             </g>
           </g>
         </g>
       </g>
     </g>
-    <path class="st0" d="M347.09,39.83c.47,0,.86-.39.86-.86v-15.44h-4.29c-.95,0-1.72-.77-1.72-1.72v-4.29h-8.58c-.47,0-.86.39-.86.86v20.58c0,.47.39.86.86.86h13.73ZM329.94,18.39c0-1.89,1.54-3.43,3.43-3.43h8.87c.91,0,1.78.36,2.43,1l4.85,4.85c.64.64,1,1.52,1,2.43v15.73c0,1.89-1.54,3.43-3.43,3.43h-13.72c-1.89,0-3.43-1.54-3.43-3.43v-20.58h0Z"/>
+    <path class="st0" d="M346.56,39.83c.47,0,.86-.39.86-.86v-15.44h-4.29c-.95,0-1.72-.77-1.72-1.72v-4.29h-8.58c-.47,0-.86.39-.86.86v20.58c0,.47.39.86.86.86h13.73ZM329.41,18.39c0-1.89,1.54-3.43,3.43-3.43h8.87c.91,0,1.78.36,2.43,1l4.85,4.85c.64.64,1,1.52,1,2.43v15.73c0,1.89-1.54,3.43-3.43,3.43h-13.72c-1.89,0-3.43-1.54-3.43-3.43v-20.58h0Z"/>
     <g class="st19">
       <g class="st19">
         <g class="st19">
           <g class="st19">
             <g class="st19">
               <g class="st19">
-                <text class="st20" transform="translate(340.23 38.53) rotate(-90)"><tspan x="0" y="0">cf</tspan></text>
+                <g class="st19">
+                  <text class="st20" transform="translate(339.7 38.53) rotate(-90)"><tspan x="0" y="0">cf</tspan></text>
+                </g>
               </g>
             </g>
           </g>
         </g>
       </g>
     </g>
-    <path class="st0" d="M370.99,39.83c.47,0,.86-.39.86-.86v-15.44h-4.29c-.95,0-1.72-.77-1.72-1.72v-4.29h-8.58c-.47,0-.86.39-.86.86v20.58c0,.47.39.86.86.86h13.73ZM353.84,18.39c0-1.89,1.54-3.43,3.43-3.43h8.87c.91,0,1.78.36,2.43,1l4.85,4.85c.64.64,1,1.52,1,2.43v15.73c0,1.89-1.54,3.43-3.43,3.43h-13.72c-1.89,0-3.43-1.54-3.43-3.43v-20.58h0Z"/>
+    <path class="st0" d="M370.46,39.83c.47,0,.86-.39.86-.86v-15.44h-4.29c-.95,0-1.72-.77-1.72-1.72v-4.29h-8.58c-.47,0-.86.39-.86.86v20.58c0,.47.39.86.86.86h13.73ZM353.31,18.39c0-1.89,1.54-3.43,3.43-3.43h8.87c.91,0,1.78.36,2.43,1l4.85,4.85c.64.64,1,1.52,1,2.43v15.73c0,1.89-1.54,3.43-3.43,3.43h-13.72c-1.89,0-3.43-1.54-3.43-3.43v-20.58h0Z"/>
     <g class="st19">
       <g class="st19">
         <g class="st19">
           <g class="st19">
             <g class="st19">
               <g class="st19">
-                <text class="st20" transform="translate(364.13 38.53) rotate(-90)"><tspan x="0" y="0">bch</tspan></text>
+                <g class="st19">
+                  <text class="st20" transform="translate(363.6 38.53) rotate(-90)"><tspan x="0" y="0">bch</tspan></text>
+                </g>
               </g>
             </g>
           </g>
         </g>
       </g>
     </g>
-    <path class="st0" d="M395.21,39.84c.47,0,.86-.39.86-.86v-15.44h-4.29c-.95,0-1.72-.77-1.72-1.72v-4.29h-8.58c-.47,0-.86.39-.86.86v20.58c0,.47.39.86.86.86h13.73ZM378.06,18.4c0-1.89,1.54-3.43,3.43-3.43h8.87c.91,0,1.78.36,2.43,1l4.85,4.85c.64.64,1,1.52,1,2.43v15.73c0,1.89-1.54,3.43-3.43,3.43h-13.72c-1.89,0-3.43-1.54-3.43-3.43v-20.58h0Z"/>
+    <path class="st0" d="M394.68,39.84c.47,0,.86-.39.86-.86v-15.44h-4.29c-.95,0-1.72-.77-1.72-1.72v-4.29h-8.58c-.47,0-.86.39-.86.86v20.58c0,.47.39.86.86.86h13.73ZM377.53,18.4c0-1.89,1.54-3.43,3.43-3.43h8.87c.91,0,1.78.36,2.43,1l4.85,4.85c.64.64,1,1.52,1,2.43v15.73c0,1.89-1.54,3.43-3.43,3.43h-13.72c-1.89,0-3.43-1.54-3.43-3.43v-20.58h0Z"/>
     <g class="st19">
       <g class="st19">
         <g class="st19">
           <g class="st19">
             <g class="st19">
               <g class="st19">
-                <text class="st20" transform="translate(388.35 38.54) rotate(-90)"><tspan x="0" y="0">iarc</tspan></text>
+                <g class="st19">
+                  <text class="st20" transform="translate(387.82 38.54) rotate(-90)"><tspan x="0" y="0">iarc</tspan></text>
+                </g>
               </g>
             </g>
           </g>
         </g>
       </g>
     </g>
-    <path class="st0" d="M419.29,39.84c.47,0,.86-.39.86-.86v-15.44h-4.29c-.95,0-1.72-.77-1.72-1.72v-4.29h-8.58c-.47,0-.86.39-.86.86v20.58c0,.47.39.86.86.86h13.73ZM402.14,18.4c0-1.89,1.54-3.43,3.43-3.43h8.87c.91,0,1.78.36,2.43,1l4.85,4.85c.64.64,1,1.52,1,2.43v15.73c0,1.89-1.54,3.43-3.43,3.43h-13.72c-1.89,0-3.43-1.54-3.43-3.43v-20.58h0Z"/>
+    <path class="st0" d="M418.76,39.84c.47,0,.86-.39.86-.86v-15.44h-4.29c-.95,0-1.72-.77-1.72-1.72v-4.29h-8.58c-.47,0-.86.39-.86.86v20.58c0,.47.39.86.86.86h13.73ZM401.61,18.4c0-1.89,1.54-3.43,3.43-3.43h8.87c.91,0,1.78.36,2.43,1l4.85,4.85c.64.64,1,1.52,1,2.43v15.73c0,1.89-1.54,3.43-3.43,3.43h-13.72c-1.89,0-3.43-1.54-3.43-3.43v-20.58h0Z"/>
     <g class="st19">
       <g class="st19">
         <g class="st19">
           <g class="st19">
             <g class="st19">
               <g class="st19">
-                <text class="st20" transform="translate(412.43 38.54) rotate(-90)"><tspan x="0" y="0">larc</tspan></text>
+                <g class="st19">
+                  <text class="st20" transform="translate(411.9 38.54) rotate(-90)"><tspan x="0" y="0">larc</tspan></text>
+                </g>
               </g>
             </g>
           </g>
         </g>
       </g>
     </g>
-    <path class="st0" d="M443.03,39.83c.47,0,.86-.39.86-.86v-15.44h-4.29c-.95,0-1.72-.77-1.72-1.72v-4.29h-8.58c-.47,0-.86.39-.86.86v20.58c0,.47.39.86.86.86h13.73ZM425.88,18.39c0-1.89,1.54-3.43,3.43-3.43h8.87c.91,0,1.78.36,2.43,1l4.85,4.85c.64.64,1,1.52,1,2.43v15.73c0,1.89-1.54,3.43-3.43,3.43h-13.72c-1.89,0-3.43-1.54-3.43-3.43v-20.58h0Z"/>
+    <path class="st0" d="M442.5,39.83c.47,0,.86-.39.86-.86v-15.44h-4.29c-.95,0-1.72-.77-1.72-1.72v-4.29h-8.58c-.47,0-.86.39-.86.86v20.58c0,.47.39.86.86.86h13.73ZM425.35,18.39c0-1.89,1.54-3.43,3.43-3.43h8.87c.91,0,1.78.36,2.43,1l4.85,4.85c.64.64,1,1.52,1,2.43v15.73c0,1.89-1.54,3.43-3.43,3.43h-13.72c-1.89,0-3.43-1.54-3.43-3.43v-20.58h0Z"/>
     <g class="st19">
       <g class="st19">
         <g class="st19">
           <g class="st19">
             <g class="st19">
               <g class="st19">
-                <text class="st21" transform="translate(434.17 38.53) rotate(-90)"><tspan x="0" y="0">imexp</tspan></text>
+                <g class="st19">
+                  <text class="st21" transform="translate(433.64 38.53) rotate(-90)"><tspan x="0" y="0">imexp</tspan></text>
+                </g>
               </g>
             </g>
           </g>
         </g>
       </g>
     </g>
-    <path class="st0" d="M466.93,39.83c.47,0,.86-.39.86-.86v-15.44h-4.29c-.95,0-1.72-.77-1.72-1.72v-4.29h-8.58c-.47,0-.86.39-.86.86v20.58c0,.47.39.86.86.86h13.73ZM449.78,18.39c0-1.89,1.54-3.43,3.43-3.43h8.87c.91,0,1.78.36,2.43,1l4.85,4.85c.64.64,1,1.52,1,2.43v15.73c0,1.89-1.54,3.43-3.43,3.43h-13.72c-1.89,0-3.43-1.54-3.43-3.43v-20.58h0Z"/>
+    <path class="st0" d="M466.4,39.83c.47,0,.86-.39.86-.86v-15.44h-4.29c-.95,0-1.72-.77-1.72-1.72v-4.29h-8.58c-.47,0-.86.39-.86.86v20.58c0,.47.39.86.86.86h13.73ZM449.25,18.39c0-1.89,1.54-3.43,3.43-3.43h8.87c.91,0,1.78.36,2.43,1l4.85,4.85c.64.64,1,1.52,1,2.43v15.73c0,1.89-1.54,3.43-3.43,3.43h-13.72c-1.89,0-3.43-1.54-3.43-3.43v-20.58h0Z"/>
     <g class="st19">
       <g class="st19">
         <g class="st19">
           <g class="st19">
             <g class="st19">
               <g class="st19">
-                <text class="st20" transform="translate(460.07 38.53) rotate(-90)"><tspan x="0" y="0">did</tspan></text>
+                <g class="st19">
+                  <text class="st20" transform="translate(459.54 38.53) rotate(-90)"><tspan x="0" y="0">did</tspan></text>
+                </g>
               </g>
             </g>
           </g>
         </g>
       </g>
     </g>
-    <path class="st0" d="M491.14,39.84c.47,0,.86-.39.86-.86v-15.44h-4.29c-.95,0-1.72-.77-1.72-1.72v-4.29h-8.58c-.47,0-.86.39-.86.86v20.58c0,.47.39.86.86.86h13.73ZM473.99,18.4c0-1.89,1.54-3.43,3.43-3.43h8.87c.91,0,1.78.36,2.43,1l4.85,4.85c.64.64,1,1.52,1,2.43v15.73c0,1.89-1.54,3.43-3.43,3.43h-13.72c-1.89,0-3.43-1.54-3.43-3.43v-20.58h0Z"/>
+    <path class="st0" d="M490.61,39.84c.47,0,.86-.39.86-.86v-15.44h-4.29c-.95,0-1.72-.77-1.72-1.72v-4.29h-8.58c-.47,0-.86.39-.86.86v20.58c0,.47.39.86.86.86h13.73ZM473.46,18.4c0-1.89,1.54-3.43,3.43-3.43h8.87c.91,0,1.78.36,2.43,1l4.85,4.85c.64.64,1,1.52,1,2.43v15.73c0,1.89-1.54,3.43-3.43,3.43h-13.72c-1.89,0-3.43-1.54-3.43-3.43v-20.58h0Z"/>
     <g class="st19">
       <g class="st19">
         <g class="st19">
           <g class="st19">
             <g class="st19">
               <g class="st19">
-                <text class="st20" transform="translate(484.28 38.54) rotate(-90)"><tspan x="0" y="0">caf</tspan></text>
+                <g class="st19">
+                  <text class="st20" transform="translate(483.75 38.54) rotate(-90)"><tspan x="0" y="0">caf</tspan></text>
+                </g>
               </g>
             </g>
           </g>
         </g>
       </g>
     </g>
-    <path class="st0" d="M514.8,39.84c.47,0,.86-.39.86-.86v-15.44h-4.29c-.95,0-1.72-.77-1.72-1.72v-4.29h-8.58c-.47,0-.86.39-.86.86v20.58c0,.47.39.86.86.86h13.73ZM497.65,18.4c0-1.89,1.54-3.43,3.43-3.43h8.87c.91,0,1.78.36,2.43,1l4.85,4.85c.64.64,1,1.52,1,2.43v15.73c0,1.89-1.54,3.43-3.43,3.43h-13.72c-1.89,0-3.43-1.54-3.43-3.43v-20.58h0Z"/>
+    <path class="st0" d="M514.27,39.84c.47,0,.86-.39.86-.86v-15.44h-4.29c-.95,0-1.72-.77-1.72-1.72v-4.29h-8.58c-.47,0-.86.39-.86.86v20.58c0,.47.39.86.86.86h13.73ZM497.12,18.4c0-1.89,1.54-3.43,3.43-3.43h8.87c.91,0,1.78.36,2.43,1l4.85,4.85c.64.64,1,1.52,1,2.43v15.73c0,1.89-1.54,3.43-3.43,3.43h-13.72c-1.89,0-3.43-1.54-3.43-3.43v-20.58h0Z"/>
     <g class="st19">
       <g class="st19">
         <g class="st19">
           <g class="st19">
             <g class="st19">
               <g class="st19">
-                <text class="st20" transform="translate(507.94 38.54) rotate(-90)"><tspan x="0" y="0">scn</tspan></text>
+                <g class="st19">
+                  <text class="st20" transform="translate(507.41 38.54) rotate(-90)"><tspan x="0" y="0">scn</tspan></text>
+                </g>
               </g>
             </g>
           </g>
@@ -1010,8 +1190,8 @@ isoreader2::ir_check_isoextract()
   </g>
   <g>
     <g>
-      <rect class="st24" x="545.85" y="399.15" width="209.29" height="41.92" rx="4.73" ry="4.73"/>
-      <rect class="st7" x="545.85" y="399.15" width="209.29" height="41.92" rx="4.73" ry="4.73"/>
+      <rect class="st24" x="545.32" y="544.15" width="209.29" height="41.92" rx="4.73" ry="4.73"/>
+      <rect class="st7" x="545.32" y="544.15" width="209.29" height="41.92" rx="4.73" ry="4.73"/>
     </g>
     <g class="st19">
       <g class="st19">
@@ -1019,7 +1199,9 @@ isoreader2::ir_check_isoextract()
           <g class="st19">
             <g class="st19">
               <g class="st19">
-                <text class="st16" transform="translate(586.27 424.68)"><tspan x="0" y="0">storage file (parquet)</tspan></text>
+                <g class="st19">
+                  <text class="st16" transform="translate(585.74 569.68)"><tspan x="0" y="0">storage file (parquet)</tspan></text>
+                </g>
               </g>
             </g>
           </g>
@@ -1028,25 +1210,25 @@ isoreader2::ir_check_isoextract()
     </g>
     <g>
       <g>
-        <line class="st11" x1="560.44" y1="418.69" x2="575.29" y2="418.69"/>
-        <line class="st11" x1="560.43" y1="421.69" x2="575.28" y2="421.69"/>
-        <line class="st11" x1="560.46" y1="424.68" x2="575.3" y2="424.68"/>
-        <line class="st11" x1="560.45" y1="427.68" x2="575.29" y2="427.68"/>
-        <line class="st11" x1="563.84" y1="418.69" x2="563.84" y2="431.37"/>
-        <line class="st11" x1="567.85" y1="418.69" x2="567.85" y2="431.37"/>
-        <line class="st11" x1="572.07" y1="418.69" x2="572.07" y2="431.37"/>
+        <line class="st11" x1="559.91" y1="563.69" x2="574.76" y2="563.69"/>
+        <line class="st11" x1="559.9" y1="566.69" x2="574.75" y2="566.69"/>
+        <line class="st11" x1="559.93" y1="569.68" x2="574.77" y2="569.68"/>
+        <line class="st11" x1="559.92" y1="572.68" x2="574.76" y2="572.68"/>
+        <line class="st11" x1="563.31" y1="563.69" x2="563.31" y2="576.37"/>
+        <line class="st11" x1="567.32" y1="563.69" x2="567.32" y2="576.37"/>
+        <line class="st11" x1="571.54" y1="563.69" x2="571.54" y2="576.37"/>
       </g>
-      <path class="st0" d="M560.49,429.8v-19.72c0-.46.37-.82.82-.82h8.22v4.1c0,.91.74,1.65,1.65,1.65h4.1v14.79c0,.46-.37.82-.82.82h-13.15c-.46,0-.82-.37-.82-.82h0ZM561.31,406.8c-1.81,0-3.28,1.47-3.28,3.28v19.72c0,1.81,1.47,3.28,3.28,3.28h13.15c1.81,0,3.28-1.47,3.28-3.28v-15.07c0-.88-.34-1.71-.96-2.33l-4.65-4.65c-.61-.61-1.44-.96-2.32-.96h-8.5Z"/>
+      <path class="st0" d="M559.96,574.8v-19.72c0-.46.37-.82.82-.82h8.22v4.1c0,.91.74,1.65,1.65,1.65h4.1v14.79c0,.46-.37.82-.82.82h-13.15c-.46,0-.82-.37-.82-.82h0ZM560.78,551.8c-1.81,0-3.28,1.47-3.28,3.28v19.72c0,1.81,1.47,3.28,3.28,3.28h13.15c1.81,0,3.28-1.47,3.28-3.28v-15.07c0-.88-.34-1.71-.96-2.33l-4.65-4.65c-.61-.61-1.44-.96-2.32-.96h-8.5Z"/>
     </g>
   </g>
   <g>
-    <line class="st9" x1="573.83" y1="299.92" x2="530.62" y2="299.92"/>
-    <polygon class="st13" points="534.13 287.95 513.4 299.92 534.13 311.89 534.13 287.95"/>
+    <line class="st9" x1="573.3" y1="444.92" x2="530.09" y2="444.92"/>
+    <polygon class="st13" points="533.6 432.95 512.87 444.92 533.6 456.89 533.6 432.95"/>
   </g>
   <g>
     <g>
-      <rect class="st24" x="1.5" y="601.33" width="248.29" height="41.92" rx="4.73" ry="4.73"/>
-      <rect class="st7" x="1.5" y="601.33" width="248.29" height="41.92" rx="4.73" ry="4.73"/>
+      <rect class="st24" x="7.94" y="901.82" width="248.29" height="41.92" rx="4.73" ry="4.73"/>
+      <rect class="st7" x="7.94" y="901.82" width="248.29" height="41.92" rx="4.73" ry="4.73"/>
     </g>
     <g class="st19">
       <g class="st19">
@@ -1054,7 +1236,9 @@ isoreader2::ir_check_isoextract()
           <g class="st19">
             <g class="st19">
               <g class="st19">
-                <text class="st16" transform="translate(41.92 626.86)"><tspan x="0" y="0">output spreadsheet (xlsx)</tspan></text>
+                <g class="st19">
+                  <text class="st16" transform="translate(48.36 927.35)"><tspan x="0" y="0">output spreadsheet (xlsx)</tspan></text>
+                </g>
               </g>
             </g>
           </g>
@@ -1063,21 +1247,23 @@ isoreader2::ir_check_isoextract()
     </g>
     <g>
       <g>
-        <line class="st11" x1="16.09" y1="620.87" x2="30.94" y2="620.87"/>
-        <line class="st11" x1="16.08" y1="623.87" x2="30.93" y2="623.87"/>
-        <line class="st11" x1="16.11" y1="626.86" x2="30.95" y2="626.86"/>
-        <line class="st11" x1="16.1" y1="629.86" x2="30.94" y2="629.86"/>
-        <line class="st11" x1="19.49" y1="620.87" x2="19.49" y2="633.55"/>
-        <line class="st11" x1="23.5" y1="620.87" x2="23.5" y2="633.55"/>
-        <line class="st11" x1="27.72" y1="620.87" x2="27.72" y2="633.55"/>
+        <line class="st11" x1="22.53" y1="921.36" x2="37.38" y2="921.36"/>
+        <line class="st11" x1="22.52" y1="924.36" x2="37.37" y2="924.36"/>
+        <line class="st11" x1="22.55" y1="927.35" x2="37.39" y2="927.35"/>
+        <line class="st11" x1="22.54" y1="930.35" x2="37.38" y2="930.35"/>
+        <line class="st11" x1="25.93" y1="921.36" x2="25.93" y2="934.04"/>
+        <line class="st11" x1="29.94" y1="921.36" x2="29.94" y2="934.04"/>
+        <line class="st11" x1="34.16" y1="921.36" x2="34.16" y2="934.04"/>
       </g>
-      <path class="st0" d="M16.14,631.98v-19.72c0-.46.37-.82.82-.82h8.22v4.1c0,.91.74,1.65,1.65,1.65h4.1v14.79c0,.46-.37.82-.82.82h-13.15c-.46,0-.82-.37-.82-.82h0ZM16.96,608.98c-1.81,0-3.28,1.47-3.28,3.28v19.72c0,1.81,1.47,3.28,3.28,3.28h13.15c1.81,0,3.28-1.47,3.28-3.28v-15.07c0-.88-.34-1.71-.96-2.33l-4.65-4.65c-.61-.61-1.44-.96-2.32-.96h-8.5Z"/>
+      <path class="st0" d="M22.58,932.47v-19.72c0-.46.37-.82.82-.82h8.22v4.1c0,.91.74,1.65,1.65,1.65h4.1v14.79c0,.46-.37.82-.82.82h-13.15c-.46,0-.82-.37-.82-.82h0ZM23.4,909.47c-1.81,0-3.28,1.47-3.28,3.28v19.72c0,1.81,1.47,3.28,3.28,3.28h13.15c1.81,0,3.28-1.47,3.28-3.28v-15.07c0-.88-.34-1.71-.96-2.33l-4.65-4.65c-.61-.61-1.44-.96-2.32-.96h-8.5Z"/>
       <g class="st19">
         <g class="st19">
           <g class="st19">
             <g class="st19">
               <g class="st19">
-                <text class="st18" transform="translate(22.94 631.56) rotate(-90)"><tspan x="0" y="0">xlsx</tspan></text>
+                <g class="st19">
+                  <text class="st18" transform="translate(29.38 932.05) rotate(-90)"><tspan x="0" y="0">xlsx</tspan></text>
+                </g>
               </g>
             </g>
           </g>
@@ -1092,7 +1278,9 @@ isoreader2::ir_check_isoextract()
           <g class="st19">
             <g class="st19">
               <g class="st19">
-                <text class="st15" transform="translate(258.2 731.57)"><tspan x="0" y="0">to downstream processing</tspan></text>
+                <g class="st19">
+                  <text class="st15" transform="translate(265 967.52)"><tspan x="0" y="0">to downstream processing</tspan></text>
+                </g>
               </g>
             </g>
           </g>
@@ -1101,8 +1289,105 @@ isoreader2::ir_check_isoextract()
     </g>
   </g>
   <g>
-    <polyline class="st1" points="667.52 368.02 719.75 368.02 719.75 382.44"/>
-    <polygon class="st13" points="709.78 379.53 719.75 396.8 729.72 379.53 709.78 379.53"/>
+    <polyline class="st1" points="666.99 513.02 719.22 513.02 719.22 527.44"/>
+    <polygon class="st13" points="709.25 524.53 719.22 541.8 729.19 524.53 709.25 524.53"/>
+  </g>
+  <g>
+    <g>
+      <rect class="st23" x="426.13" y="252.46" width="174.26" height="41.92" rx="4.23" ry="4.23"/>
+      <rect class="st6" x="426.13" y="252.46" width="174.26" height="41.92" rx="4.23" ry="4.23"/>
+    </g>
+    <path class="st0" d="M440.45,273.42l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
+    <g class="st19">
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <text class="st16" transform="translate(464.99 277.95)"><tspan x="0" y="0">ir_save_isofiles</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+  <g>
+    <g>
+      <rect class="st23" x="426.13" y="354.01" width="176.26" height="41.92" rx="4.23" ry="4.23"/>
+      <rect class="st6" x="426.13" y="354.01" width="176.26" height="41.92" rx="4.23" ry="4.23"/>
+    </g>
+    <path class="st0" d="M440.45,374.97l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
+    <g class="st19">
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <text class="st16" transform="translate(464.99 379.5)"><tspan x="0" y="0">ir_load_isofiles</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+  <g>
+    <line class="st1" x1="386.11" y1="273.11" x2="408.02" y2="273.11"/>
+    <polygon class="st13" points="405.11 283.08 422.38 273.11 405.11 263.14 405.11 283.08"/>
+  </g>
+  <g>
+    <line class="st1" x1="425.38" y1="375.87" x2="403.47" y2="375.87"/>
+    <polygon class="st13" points="406.38 365.9 389.11 375.87 406.38 385.84 406.38 365.9"/>
+  </g>
+  <g>
+    <polyline class="st1" points="232.62 72.14 323.86 72.14 323.86 84.56"/>
+    <polygon class="st13" points="313.89 81.65 323.86 98.92 333.83 81.65 313.89 81.65"/>
+  </g>
+  <g>
+    <g>
+      <rect class="st24" x="545.32" y="303.73" width="182.29" height="41.92" rx="4.73" ry="4.73"/>
+      <rect class="st7" x="545.32" y="303.73" width="182.29" height="41.92" rx="4.73" ry="4.73"/>
+    </g>
+    <g class="st19">
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <text class="st16" transform="translate(585.74 329.26)"><tspan x="0" y="0">storage file (rds)</tspan></text>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g>
+      <g>
+        <line class="st11" x1="559.91" y1="323.27" x2="574.76" y2="323.27"/>
+        <line class="st11" x1="559.9" y1="326.27" x2="574.75" y2="326.27"/>
+        <line class="st11" x1="559.93" y1="329.26" x2="574.77" y2="329.26"/>
+        <line class="st11" x1="559.92" y1="332.26" x2="574.76" y2="332.26"/>
+        <line class="st11" x1="563.31" y1="323.27" x2="563.31" y2="335.95"/>
+        <line class="st11" x1="567.32" y1="323.27" x2="567.32" y2="335.95"/>
+        <line class="st11" x1="571.54" y1="323.27" x2="571.54" y2="335.95"/>
+      </g>
+      <path class="st0" d="M559.96,334.38v-19.72c0-.46.37-.82.82-.82h8.22v4.1c0,.91.74,1.65,1.65,1.65h4.1v14.79c0,.46-.37.82-.82.82h-13.15c-.46,0-.82-.37-.82-.82h0ZM560.78,311.38c-1.81,0-3.28,1.47-3.28,3.28v19.72c0,1.81,1.47,3.28,3.28,3.28h13.15c1.81,0,3.28-1.47,3.28-3.28v-15.07c0-.88-.34-1.71-.96-2.33l-4.65-4.65c-.61-.61-1.44-.96-2.32-.96h-8.5Z"/>
+    </g>
+  </g>
+  <g>
+    <polyline class="st1" points="600.99 271.6 657.22 271.6 657.22 286.02"/>
+    <polygon class="st13" points="647.25 283.11 657.22 300.38 667.19 283.11 647.25 283.11"/>
   </g>
 </svg>
 
