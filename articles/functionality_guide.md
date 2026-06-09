@@ -86,12 +86,12 @@ isofiles <- file_paths |> ir_read_isofiles()
 ``` fansi
 → Trying to install isoextract for your operating system isoextract-linux-x64
   (this requires an internet connection and may take a moment)...
-✔ [1.1s] ir_check_isoextract() successfully installed isoextract version
+✔ [1.2s] ir_check_isoextract() successfully installed isoextract version
 0.2.0.0
 
-✔ [195ms] ir_extract_isofiles() finished extracting 2 files/archives
+✔ [193ms] ir_extract_isofiles() finished extracting 2 files/archives
 
-✔ [189ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+✔ [190ms] ir_read_isofiles() finished reading 2 isotope data files/archives
 ```
 
 ``` r
@@ -148,7 +148,7 @@ isofiles |> ir_save_isofiles(file.path("tmp", "my_isofiles"))
 ```
 
 ``` fansi
-✔ [49ms] ir_save_isofiles() saved 2 isofiles to tmp/my_isofiles.rds
+✔ [70ms] ir_save_isofiles() saved 2 isofiles to tmp/my_isofiles.rds
 ```
 
 ``` r
@@ -176,7 +176,7 @@ dataset <- isofiles |> ir_aggregate_isofiles()
 ```
 
 ``` fansi
-✔ [261ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+✔ [239ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 intensity in mV) from 2 files using the standard aggregator
 ```
 
@@ -411,7 +411,7 @@ isofiles |> ir_aggregate_isofiles(aggregator = "my_aggregator")
 ```
 
 ``` fansi
-✔ [153ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+✔ [149ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 intensity in mV) from 2 files using the my_aggregator aggregator
 ```
 
@@ -542,7 +542,7 @@ dataset |>
 ```
 
 ``` fansi
-✔ [10ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [11ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
@@ -605,7 +605,7 @@ dataset |> ir_get_traces()
 ```
 
 ``` fansi
-✔ [9ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [10ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
@@ -675,7 +675,9 @@ reloaded <- ir_load_aggregated_data(file.path("tmp", "my_dataset"))
 
 isoreader2 provides quick-look plotting functions for each measurement
 type. They operate on aggregated data and return regular `ggplot`
-objects that you can further customize.
+objects that you can further customize. To add your own ggplot2 layers
+(e.g. `+ labs(...)` or `+ theme(...)`), attach ggplot2 with
+[`library(ggplot2)`](https://ggplot2.tidyverse.org) first.
 
 ### `ir_plot_continuous_flow()`
 
@@ -698,15 +700,15 @@ data_folder |>
 ```
 
 ``` fansi
-✔ [138ms] ir_extract_isofiles() finished extracting 2 files/archives
+✔ [161ms] ir_extract_isofiles() finished extracting 2 files/archives
 ```
 
 ``` fansi
-✔ [134ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+✔ [143ms] ir_read_isofiles() finished reading 2 isotope data files/archives
 ```
 
 ``` fansi
-✔ [247ms] ir_aggregate_isofiles() aggregated metadata (2) and cycles (192,
+✔ [264ms] ir_aggregate_isofiles() aggregated metadata (2) and cycles (192,
 intensity in V) from 2 files using the standard aggregator
 ```
 
@@ -726,15 +728,15 @@ data_folder |>
 ```
 
 ``` fansi
-✔ [117ms] ir_extract_isofiles() finished extracting 4 files/archives
+✔ [133ms] ir_extract_isofiles() finished extracting 4 files/archives
 ```
 
 ``` fansi
-✔ [174ms] ir_read_isofiles() finished reading 4 isotope data files/archives
+✔ [228ms] ir_read_isofiles() finished reading 4 isotope data files/archives
 ```
 
 ``` fansi
-✔ [349ms] ir_aggregate_isofiles() aggregated metadata (4) and scans (17.8k,
+✔ [362ms] ir_aggregate_isofiles() aggregated metadata (4) and scans (17.8k,
 intensity in V) from 4 files using the standard aggregator
 ```
 
@@ -763,11 +765,11 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [9ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [18ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
 ``` fansi
-✔ [1.1s] ir_export_to_excel() exported 2 rows of metadata and 24.5k rows of
+✔ [1.2s] ir_export_to_excel() exported 2 rows of metadata and 24.5k rows of
 traces to tmp/my_dataset.xlsx
 ```

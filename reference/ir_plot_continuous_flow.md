@@ -127,4 +127,6 @@ ir_plot_continuous_flow(
 
 ## Value
 
-a `ggplot` object
+a `ggplot` object. To further customize the plot by adding ggplot2
+layers (e.g. `+ ggplot2::labs(...)`), attach ggplot2 with
+[`library(ggplot2)`](https://ggplot2.tidyverse.org) first.
