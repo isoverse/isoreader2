@@ -11,7 +11,8 @@
 #' @param reextract whether to re-extract files (uses isoextract to read files
 #'   from scratch), if `FALSE` (default when `pretty_json = FALSE`) only
 #'   extract files not previously extracted
-#' @return a tibble data frame where each row holds the file path and nested tibbles of datasets extracted from the isodat files. Use [ir_aggregate_isofiles()] to aggregate data safely across files.
+#' @return a tibble data frame (an `ir_isofiles` object) where each row holds the file path and nested tibbles of datasets extracted from the isodat files. Use [ir_aggregate_isofiles()] to aggregate data safely across files. Multiple such collections can be combined into one with a simple [c()] (see [c.ir_isofiles()]).
+#' @seealso [c.ir_isofiles()] to combine collections of isofiles
 #' @export
 ir_read_isofiles <- function(
   file_paths,

@@ -30,8 +30,11 @@ from scratch), if \code{FALSE} (default when \code{pretty_json = FALSE}) only
 extract files not previously extracted}
 }
 \value{
-a tibble data frame where each row holds the file path and nested tibbles of datasets extracted from the isodat files. Use \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}} to aggregate data safely across files.
+a tibble data frame (an \code{ir_isofiles} object) where each row holds the file path and nested tibbles of datasets extracted from the isodat files. Use \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}} to aggregate data safely across files. Multiple such collections can be combined into one with a simple \code{\link[=c]{c()}} (see \code{\link[=c.ir_isofiles]{c.ir_isofiles()}}).
 }
 \description{
 Read isotope data files
+}
+\seealso{
+\code{\link[=c.ir_isofiles]{c.ir_isofiles()}} to combine collections of isofiles
 }

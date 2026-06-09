@@ -5,16 +5,18 @@
 \alias{ir_filter_metadata}
 \alias{ir_mutate_metadata}
 \alias{ir_join_metadata}
-\title{Filter, mutate, or join the metadata of aggregated isofiles}
+\title{Filter, mutate, or join the metadata of isofiles}
 \usage{
-ir_filter_metadata(aggregated_data, ...)
+ir_filter_metadata(isofiles, ...)
 
-ir_mutate_metadata(aggregated_data, ...)
+ir_mutate_metadata(isofiles, ...)
 
-ir_join_metadata(aggregated_data, y, by)
+ir_join_metadata(isofiles, y, by)
 }
 \arguments{
-\item{aggregated_data}{datasets aggregated from \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}}}
+\item{isofiles}{datasets aggregated from \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}}
+(\code{ir_aggregated_data}) or a collection of isofiles from \code{\link[=ir_read_isofiles]{ir_read_isofiles()}}
+(\code{ir_isofiles})}
 
 \item{...}{passed to \code{\link[dplyr:filter]{dplyr::filter()}}, \code{\link[dplyr:mutate]{dplyr::mutate()}}, or \code{\link[dplyr:left_join]{dplyr::left_join()}} respectively}
 
@@ -23,15 +25,36 @@ ir_join_metadata(aggregated_data, y, by)
 \item{by}{character vector of columns to join by (passed to \code{\link[dplyr:left_join]{dplyr::left_join()}})}
 }
 \value{
-the \code{aggregated_data} object with an updated \verb{$metadata}
+the \code{isofiles} object (of the same type as the input) with updated metadata
 }
 \description{
-These functions operate on the \verb{$metadata} component of an \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}} result.
-\code{ir_filter_metadata()} additionally cascades the filter to all other datasets:
-\code{traces}, \code{cycles}, and \code{scans} are filtered by the remaining \code{uidx} + \code{analysis} combinations;
-\code{resistors} and \code{problems} are filtered by the remaining \code{uidx} values.
+These functions modify the metadata of either an \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}}
+result (\code{ir_aggregated_data}) or a collection of isofiles read with
+\code{\link[=ir_read_isofiles]{ir_read_isofiles()}} (\code{ir_isofiles}).
+}
+\details{
+For \code{ir_aggregated_data}, the operation is applied once to the combined
+\verb{$metadata} data frame. For \code{ir_filter_metadata()}, the filter then cascades
+to all other datasets: \code{traces}, \code{cycles}, and \code{scans} are filtered by the
+remaining \code{uidx} + \code{analysis} combinations; \code{resistors} and \code{problems} are
+filtered by the remaining \code{uidx} values.
+
+For \code{ir_isofiles}, the same operation is instead applied \strong{individually to
+each row} (i.e. to each file's own nested datasets), since an \code{ir_isofiles}
+object has no combined metadata to operate on. Within each row, the filter
+cascade uses whichever linking columns are present (typically \code{analysis}).
+For \code{ir_filter_metadata()}, any file whose metadata ends up with 0 rows after
+the filter is removed from the \code{ir_isofiles} collection entirely.
+
+Operating on an unaggregated \code{ir_isofiles} object is supported for convenience,
+but is \strong{significantly slower} than operating on an \code{ir_aggregated_data}
+result, because the operation has to be carried out separately on every file
+rather than once on the combined metadata. For anything beyond small
+collections, prefer aggregating first with \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}} and then
+applying these functions to the result.
+
 After filtering, columns that are entirely \code{NA} across all remaining rows are
-dropped from every dataset.
+dropped from every (non-empty) dataset.
 All three functions also clear the \emph{not-aggregated} column information (columns
 present in the source files but not included in the aggregator) from every
 dataset, since that information is no longer meaningful after the metadata has
@@ -39,7 +62,7 @@ been modified.
 }
 \section{Functions}{
 \itemize{
-\item \code{ir_filter_metadata()}: filter rows of the metadata (and cascade to other datasets)
+\item \code{ir_filter_metadata()}: filter rows of the metadata (and cascade to the other datasets)
 
 \item \code{ir_mutate_metadata()}: add or modify columns in the metadata
 
