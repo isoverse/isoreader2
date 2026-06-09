@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">isoreader2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,7 +15,9 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../index.html#show-me-some-code">Quick Start</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/functionality_guide.html">Functionality Guide</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/isoverse/isoreader2" aria-label="View on GitHub"><span class="fa fa-github fa-lg"></span></a></li>
       </ul></div>
 
@@ -76,7 +78,11 @@ extract files not previously extracted</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>a tibble data frame where each row holds the file path and nested tibbles of datasets extracted from the isodat files. Use <code><a href="ir_aggregate_isofiles.html">ir_aggregate_isofiles()</a></code> to aggregate data safely across files.</p>
+    <p>a tibble data frame (an <code>ir_isofiles</code> object) where each row holds the file path and nested tibbles of datasets extracted from the isodat files. Use <code><a href="ir_aggregate_isofiles.html">ir_aggregate_isofiles()</a></code> to aggregate data safely across files. Multiple such collections can be combined into one with a simple <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code> (see <code><a href="c.ir_isofiles.html">c.ir_isofiles()</a></code>).</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="c.ir_isofiles.html">c.ir_isofiles()</a></code> to combine collections of isofiles</p></div>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

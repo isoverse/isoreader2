@@ -15,16 +15,20 @@ a factor it is converted to one with levels sorted in numerical order.
 ``` r
 ir_plot_continuous_flow(
   dataset,
-  panel = file_name,
-  color = mass,
-  linetype = species,
+  facet = file_name,
+  scales = "free",
+  nrow = NULL,
+  ncol = 1,
+  color = trace,
+  linetype = NULL,
   color_values = palette.colors(),
   scientific = FALSE,
   time_window = NULL,
   short_time_labels = FALSE,
   n_time_breaks = 5,
   n_y_breaks = 5,
-  theme = ir_default_theme()
+  theme = ir_default_theme(),
+  ...
 )
 ```
 
@@ -37,18 +41,43 @@ ir_plot_continuous_flow(
   or a plain data frame with `time.s`, `mass`, and an `intensity.*`
   column
 
-- panel:
+- facet:
 
-  column or expression for faceting (default: `file_name`). Set to
-  `NULL` to suppress panels.
+  column or expression to facet by (default: `file_name`). A plain
+  column or expression (e.g. `file_name` or `paste(species, mass)`) is
+  faceted with
+  [`ggplot2::facet_wrap()`](https://ggplot2.tidyverse.org/reference/facet_wrap.html);
+  a two-sided formula (e.g. `species ~ mass`) is faceted with
+  [`ggplot2::facet_grid()`](https://ggplot2.tidyverse.org/reference/facet_grid.html).
+  Set to `NULL` to suppress faceting.
+
+- scales:
+
+  whether facet scales should be `"free"` (default), `"fixed"`,
+  `"free_x"`, or `"free_y"`; passed on to
+  [`ggplot2::facet_wrap()`](https://ggplot2.tidyverse.org/reference/facet_wrap.html)
+  /
+  [`ggplot2::facet_grid()`](https://ggplot2.tidyverse.org/reference/facet_grid.html).
+
+- nrow, ncol:
+
+  number of rows and columns of facet panels (`nrow` default `NULL` lets
+  ggplot2 choose; `ncol` default `1` stacks the panels in a single
+  column). Only applies when `facet` is a single variable or expression
+  (faceted with
+  [`ggplot2::facet_wrap()`](https://ggplot2.tidyverse.org/reference/facet_wrap.html));
+  ignored with a warning when `facet` is a formula (faceted with
+  [`ggplot2::facet_grid()`](https://ggplot2.tidyverse.org/reference/facet_grid.html)).
 
 - color:
 
-  column or expression for the colour aesthetic (default: `mass`)
+  column or expression for the colour aesthetic (default: `trace`, the
+  per-species/mass trace identifier, e.g. `"CO2: 44"`)
 
 - linetype:
 
-  column or expression for the linetype aesthetic (default: `species`)
+  column or expression for the linetype aesthetic (default: `NULL`, i.e.
+  no linetype aesthetic)
 
 - color_values:
 
@@ -87,6 +116,14 @@ ir_plot_continuous_flow(
 
   ggplot2 theme to apply (default:
   [`ir_default_theme()`](https://isoreader2.isoverse.org/reference/ir_default_theme.md))
+
+- ...:
+
+  additional arguments passed on to
+  [`ggplot2::facet_wrap()`](https://ggplot2.tidyverse.org/reference/facet_wrap.html)
+  or
+  [`ggplot2::facet_grid()`](https://ggplot2.tidyverse.org/reference/facet_grid.html)
+  (e.g. `labeller`)
 
 ## Value
 

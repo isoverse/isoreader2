@@ -26,6 +26,32 @@ ir_get_data(
   resistors = NULL,
   by = c("uidx", "analysis", "config", "species", "channel", "mass")
 )
+
+ir_get_metadata(aggregated_data, metadata = everything())
+
+ir_get_resistors(
+  aggregated_data,
+  metadata = c("file_name"),
+  by = c("uidx", "analysis")
+)
+
+ir_get_traces(
+  aggregated_data,
+  metadata = c("file_name"),
+  by = c("uidx", "analysis")
+)
+
+ir_get_cycles(
+  aggregated_data,
+  metadata = c("file_name"),
+  by = c("uidx", "analysis")
+)
+
+ir_get_scans(
+  aggregated_data,
+  metadata = c("file_name"),
+  by = c("uidx", "config")
+)
 ```
 
 ## Arguments
@@ -74,3 +100,21 @@ ir_get_data(
 ## Value
 
 a tibble
+
+## Functions
+
+- `ir_get_metadata()`: shortcut for retrieving all `metadata` columns
+  (i.e. `metadata = dplyr::everything()`)
+
+- `ir_get_resistors()`: shortcut for retrieving all `resistors` columns
+  (i.e. `resistors = dplyr::everything()`), keyed by the selected
+  `metadata`
+
+- `ir_get_traces()`: shortcut for retrieving all `traces` columns (i.e.
+  `traces = dplyr::everything()`), keyed by the selected `metadata`
+
+- `ir_get_cycles()`: shortcut for retrieving all `cycles` columns (i.e.
+  `cycles = dplyr::everything()`), keyed by the selected `metadata`
+
+- `ir_get_scans()`: shortcut for retrieving all `scans` columns (i.e.
+  `scans = dplyr::everything()`), keyed by the selected `metadata`

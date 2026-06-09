@@ -4,6 +4,8 @@
 
 These functions allows reading of stable isotope data files/archives
 
+- [`ir_examples_folder()`](https://isoreader2.isoverse.org/reference/ir_examples_folder.md)
+  : Path to the bundled example files
 - [`ir_find_isofiles()`](https://isoreader2.isoverse.org/reference/ir_find_isofiles.md)
   [`ir_find_continuous_flow()`](https://isoreader2.isoverse.org/reference/ir_find_isofiles.md)
   [`ir_find_dual_inlet()`](https://isoreader2.isoverse.org/reference/ir_find_isofiles.md)
@@ -11,6 +13,8 @@ These functions allows reading of stable isotope data files/archives
   : Find isodat files
 - [`ir_read_isofiles()`](https://isoreader2.isoverse.org/reference/ir_read_isofiles.md)
   : Read isotope data files
+- [`c(`*`<ir_isofiles>`*`)`](https://isoreader2.isoverse.org/reference/c.ir_isofiles.md)
+  : Combine isofiles
 - [`ir_check_isoextract()`](https://isoreader2.isoverse.org/reference/ir_check_isoextract.md)
   : Check for the isoextract executable
 - [`ir_extract_isofiles()`](https://isoreader2.isoverse.org/reference/ir_extract_isofiles.md)
@@ -36,6 +40,11 @@ These functions combine the data from multiple isofiles for combined use
   [`ir_get_aggregator()`](https://isoreader2.isoverse.org/reference/ir_aggregator.md)
   : Dynamic data agreggator
 - [`ir_get_data()`](https://isoreader2.isoverse.org/reference/ir_get_data.md)
+  [`ir_get_metadata()`](https://isoreader2.isoverse.org/reference/ir_get_data.md)
+  [`ir_get_resistors()`](https://isoreader2.isoverse.org/reference/ir_get_data.md)
+  [`ir_get_traces()`](https://isoreader2.isoverse.org/reference/ir_get_data.md)
+  [`ir_get_cycles()`](https://isoreader2.isoverse.org/reference/ir_get_data.md)
+  [`ir_get_scans()`](https://isoreader2.isoverse.org/reference/ir_get_data.md)
   : Get data frame from aggregated data
 
 ## Metadata operations
@@ -46,7 +55,7 @@ isofiles.
 - [`ir_filter_metadata()`](https://isoreader2.isoverse.org/reference/ir_metadata.md)
   [`ir_mutate_metadata()`](https://isoreader2.isoverse.org/reference/ir_metadata.md)
   [`ir_join_metadata()`](https://isoreader2.isoverse.org/reference/ir_metadata.md)
-  : Filter, mutate, or join the metadata of aggregated isofiles
+  : Filter, mutate, or join the metadata of isofiles
 
 ## Visualize isofiles data
 
@@ -70,6 +79,9 @@ These functions save aggregated isofiles data to disk.
 - [`ir_save_aggregated_data()`](https://isoreader2.isoverse.org/reference/ir_storage.md)
   [`ir_load_aggregated_data()`](https://isoreader2.isoverse.org/reference/ir_storage.md)
   : Save and load aggregated isofile data
+- [`ir_save_isofiles()`](https://isoreader2.isoverse.org/reference/ir_isofiles_storage.md)
+  [`ir_load_isofiles()`](https://isoreader2.isoverse.org/reference/ir_isofiles_storage.md)
+  : Save and load isofiles
 
 ## Package options
 

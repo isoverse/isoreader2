@@ -9,7 +9,7 @@ If data from more than one dataset is selected (e.g. some columns from traces AN
 
     <a class="navbar-brand me-2" href="../index.html">isoreader2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -17,7 +17,9 @@ If data from more than one dataset is selected (e.g. some columns from traces AN
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../index.html#show-me-some-code">Quick Start</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/functionality_guide.html">Functionality Guide</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/isoverse/isoreader2" aria-label="View on GitHub"><span class="fa fa-github fa-lg"></span></a></li>
       </ul></div>
 
@@ -46,6 +48,32 @@ If data from more than one dataset is selected (e.g. some columns from <code>tra
 <span>  scans <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  resistors <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"uidx"</span>, <span class="st">"analysis"</span>, <span class="st">"config"</span>, <span class="st">"species"</span>, <span class="st">"channel"</span>, <span class="st">"mass"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">ir_get_metadata</span><span class="op">(</span><span class="va">aggregated_data</span>, metadata <span class="op">=</span> <span class="fu">everything</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">ir_get_resistors</span><span class="op">(</span></span>
+<span>  <span class="va">aggregated_data</span>,</span>
+<span>  metadata <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"file_name"</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"uidx"</span>, <span class="st">"analysis"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">ir_get_traces</span><span class="op">(</span></span>
+<span>  <span class="va">aggregated_data</span>,</span>
+<span>  metadata <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"file_name"</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"uidx"</span>, <span class="st">"analysis"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">ir_get_cycles</span><span class="op">(</span></span>
+<span>  <span class="va">aggregated_data</span>,</span>
+<span>  metadata <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"file_name"</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"uidx"</span>, <span class="st">"analysis"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">ir_get_scans</span><span class="op">(</span></span>
+<span>  <span class="va">aggregated_data</span>,</span>
+<span>  metadata <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"file_name"</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"uidx"</span>, <span class="st">"config"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -85,6 +113,15 @@ If data from more than one dataset is selected (e.g. some columns from <code>tra
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>a tibble</p>
     </div>
+    <div class="section level2">
+    <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>
+
+<ul><li><p><code>ir_get_metadata()</code>: shortcut for retrieving all <code>metadata</code> columns (i.e. <code>metadata = dplyr::everything()</code>)</p></li>
+<li><p><code>ir_get_resistors()</code>: shortcut for retrieving all <code>resistors</code> columns (i.e. <code>resistors = dplyr::everything()</code>), keyed by the selected <code>metadata</code></p></li>
+<li><p><code>ir_get_traces()</code>: shortcut for retrieving all <code>traces</code> columns (i.e. <code>traces = dplyr::everything()</code>), keyed by the selected <code>metadata</code></p></li>
+<li><p><code>ir_get_cycles()</code>: shortcut for retrieving all <code>cycles</code> columns (i.e. <code>cycles = dplyr::everything()</code>), keyed by the selected <code>metadata</code></p></li>
+<li><p><code>ir_get_scans()</code>: shortcut for retrieving all <code>scans</code> columns (i.e. <code>scans = dplyr::everything()</code>), keyed by the selected <code>metadata</code></p></li>
+</ul></div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

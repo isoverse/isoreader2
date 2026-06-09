@@ -54,7 +54,16 @@ ir_read_isofiles(
 
 ## Value
 
-a tibble data frame where each row holds the file path and nested
-tibbles of datasets extracted from the isodat files. Use
+a tibble data frame (an `ir_isofiles` object) where each row holds the
+file path and nested tibbles of datasets extracted from the isodat
+files. Use
 [`ir_aggregate_isofiles()`](https://isoreader2.isoverse.org/reference/ir_aggregate_isofiles.md)
-to aggregate data safely across files.
+to aggregate data safely across files. Multiple such collections can be
+combined into one with a simple [`c()`](https://rdrr.io/r/base/c.html)
+(see
+[`c.ir_isofiles()`](https://isoreader2.isoverse.org/reference/c.ir_isofiles.md)).
+
+## See also
+
+[`c.ir_isofiles()`](https://isoreader2.isoverse.org/reference/c.ir_isofiles.md)
+to combine collections of isofiles

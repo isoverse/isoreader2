@@ -15,7 +15,7 @@ additional modification of the `aggregator`.
 ``` r
 ir_aggregate_isofiles(
   isofiles,
-  intensity_units = c("mV", "V", "fA", "pA", "nA", "\u00b5A", "mA", "A", "cps"),
+  intensity_units = c("mV", "V", "fA", "pA", "nA", "µA", "mA", "A", "cps"),
   aggregator = "standard",
   show_progress = is_interactive(),
   show_problems = TRUE

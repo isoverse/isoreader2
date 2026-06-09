@@ -59,11 +59,11 @@ of the files that are present)
 
 ``` r
 ir_find_continuous_flow(system.file("extdata", package = "isoreader2"))
-#> [1] "/home/runner/work/_temp/Library/isoreader2/extdata/continuous_flow_example.cf" 
-#> [2] "/home/runner/work/_temp/Library/isoreader2/extdata/continuous_flow_example.dxf"
+#> [1] "/home/runner/work/_temp/Library/isoreader2/extdata/continuous_flow_ea_example.dxf"
+#> [2] "/home/runner/work/_temp/Library/isoreader2/extdata/continuous_flow_gc_example.cf" 
 ir_find_dual_inlet(system.file("extdata", package = "isoreader2"))
-#> [1] "/home/runner/work/_temp/Library/isoreader2/extdata/dual_inlet_example.caf"
-#> [2] "/home/runner/work/_temp/Library/isoreader2/extdata/dual_inlet_example.did"
+#> [1] "/home/runner/work/_temp/Library/isoreader2/extdata/caf_dual_inlet_example.caf"
+#> [2] "/home/runner/work/_temp/Library/isoreader2/extdata/did_dual_inlet_example.did"
 ir_find_scans(system.file("extdata", package = "isoreader2"))
 #> [1] "/home/runner/work/_temp/Library/isoreader2/extdata/background_scan_example.scn"
 #> [2] "/home/runner/work/_temp/Library/isoreader2/extdata/full_scan_example.scn"      

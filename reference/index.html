@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">isoreader2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,7 +15,9 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../index.html#show-me-some-code">Quick Start</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/functionality_guide.html">Functionality Guide</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/isoverse/isoreader2" aria-label="View on GitHub"><span class="fa fa-github fa-lg"></span></a></li>
       </ul></div>
 
@@ -39,6 +41,13 @@
 
       <dl><dt>
 
+          <code><a href="ir_examples_folder.html">ir_examples_folder()</a></code>
+
+        </dt>
+        <dd>Path to the bundled example files</dd>
+
+        <dt>
+
           <code><a href="ir_find_isofiles.html">ir_find_isofiles()</a></code> <code><a href="ir_find_isofiles.html">ir_find_continuous_flow()</a></code> <code><a href="ir_find_isofiles.html">ir_find_dual_inlet()</a></code> <code><a href="ir_find_isofiles.html">ir_find_scans()</a></code>
 
         </dt>
@@ -50,6 +59,13 @@
 
         </dt>
         <dd>Read isotope data files</dd>
+
+        <dt>
+
+          <code><a href="c.ir_isofiles.html">c(<i>&lt;ir_isofiles&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Combine isofiles</dd>
 
         <dt>
 
@@ -111,7 +127,7 @@
 
         <dt>
 
-          <code><a href="ir_get_data.html">ir_get_data()</a></code>
+          <code><a href="ir_get_data.html">ir_get_data()</a></code> <code><a href="ir_get_data.html">ir_get_metadata()</a></code> <code><a href="ir_get_data.html">ir_get_resistors()</a></code> <code><a href="ir_get_data.html">ir_get_traces()</a></code> <code><a href="ir_get_data.html">ir_get_cycles()</a></code> <code><a href="ir_get_data.html">ir_get_scans()</a></code>
 
         </dt>
         <dd>Get data frame from aggregated data</dd>
@@ -130,7 +146,7 @@
           <code><a href="ir_metadata.html">ir_filter_metadata()</a></code> <code><a href="ir_metadata.html">ir_mutate_metadata()</a></code> <code><a href="ir_metadata.html">ir_join_metadata()</a></code>
 
         </dt>
-        <dd>Filter, mutate, or join the metadata of aggregated isofiles</dd>
+        <dd>Filter, mutate, or join the metadata of isofiles</dd>
       </dl></div><div class="section level2">
       <h2 id="visualize-isofiles-data">Visualize isofiles data<a class="anchor" aria-label="anchor" href="#visualize-isofiles-data"></a></h2>
 
@@ -191,6 +207,13 @@
 
         </dt>
         <dd>Save and load aggregated isofile data</dd>
+
+        <dt>
+
+          <code><a href="ir_isofiles_storage.html">ir_save_isofiles()</a></code> <code><a href="ir_isofiles_storage.html">ir_load_isofiles()</a></code>
+
+        </dt>
+        <dd>Save and load isofiles</dd>
       </dl></div><div class="section level2">
       <h2 id="package-options">Package options<a class="anchor" aria-label="anchor" href="#package-options"></a></h2>
 

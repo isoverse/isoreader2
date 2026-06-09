@@ -4,8 +4,11 @@ Exports a data frame or an
 [`ir_aggregate_isofiles()`](https://isoreader2.isoverse.org/reference/ir_aggregate_isofiles.md)
 result to an Excel file. Each dataset in the aggregated data becomes its
 own sheet. The `include` parameter controls which datasets are exported
-(default: all non-empty datasets). Recursively creates the output
-directory if it does not exist.
+(default: just the metadata). Possibilities: `"metadata"`, `"traces"`
+(for continuous flow data), `"cycles"` (for dual inlet data), "`scans`"
+(for scan data), `"resistors"` (all file formats), and
+`"isodat_data_table"` (only available from isodat .dxf, .cf .did, and
+.caf files).
 
 ## Usage
 
@@ -61,5 +64,5 @@ ir_export_to_excel(
 
 ## Details
 
-Requires the openxlsx package (suggested). If not installed, one
-installation attempt from CRAN is made automatically.
+Requires the openxlsx package. If not installed, one installation
+attempt from CRAN is made automatically.
