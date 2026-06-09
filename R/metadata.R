@@ -168,7 +168,7 @@ join_metadata_datasets <- function(datasets, y, by, .env = caller_env()) {
   if (nrow(datasets$metadata) > n_before) {
     cli_abort(
       c(
-        "joining {.arg y} to metadata by {.field {by}} duplicated rows ({n_before} → {nrow(datasets$metadata)})",
+        "joining {.arg y} to metadata by {.field {by}} duplicated rows ({n_before} \u2192 {nrow(datasets$metadata)})",
         "i" = "make sure {.arg y} has at most one row per unique combination of {.field {by}}"
       ),
       call = .env

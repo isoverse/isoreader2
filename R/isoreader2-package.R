@@ -14,6 +14,7 @@
 #' @importFrom grDevices palette.colors
 #' @importFrom utils tail
 #' @importFrom stats setNames
+#' @importFrom dplyr everything
 ## usethis namespace: end
 utils::globalVariables(c("file_name", "mass", "species", "type"))
 NULL
