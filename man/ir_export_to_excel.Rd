@@ -5,9 +5,8 @@
 \title{Export data to Excel}
 \usage{
 ir_export_to_excel(
-  data,
+  ...,
   file,
-  include = "metadata",
   dbl_digits = 2,
   int_format = "0",
   dbl_format = sprintf(sprintf("\%\%.\%sf", dbl_digits), 0),
@@ -15,12 +14,10 @@ ir_export_to_excel(
 )
 }
 \arguments{
-\item{data}{a data frame or an \code{ir_aggregated_data} object from \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}}}
+\item{...}{one or more data frames / tibbles to export, one per sheet. Named
+arguments set the sheet name; unnamed arguments use \code{"Sheet{position}"}.}
 
 \item{file}{path to the \code{.xlsx} file (\code{.xlsx} extension added if absent)}
-
-\item{include}{for \code{ir_aggregated_data} only: character vector of dataset
-names to include as sheets. Default \code{"metadata"} exports only the metadata.}
 
 \item{dbl_digits}{number of decimal places shown for double columns (all
 digits are stored; this only affects display formatting in Excel)}
@@ -33,18 +30,34 @@ automatically from \code{dbl_digits} if not set)}
 \item{show_progress}{whether to show a progress indicator}
 }
 \value{
-\code{data} invisibly, for use in pipes
+the exported data invisibly (the single data frame if one was
+provided, otherwise the list of data frames), for use in pipes
 }
 \description{
-Exports a data frame or an \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}} result to an Excel file.
-Each dataset in the aggregated data becomes its own sheet. The \code{include}
-parameter controls which datasets are exported (default: just the metadata).
-Possibilities: \code{"metadata"}, \code{"traces"} (for continuous flow data), \code{"cycles"}
-(for dual inlet data), "\code{scans}" (for scan data), \code{"resistors"} (all file
-formats), and \code{"isodat_data_table"} (only available from isodat .dxf, .cf
-.did, and .caf files).
+Exports one or more data frames / tibbles (typically retrieved with the
+\verb{ir_get_*()} functions, e.g. \code{\link[=ir_get_metadata]{ir_get_metadata()}}, \code{\link[=ir_get_traces]{ir_get_traces()}}) to an
+Excel file, one sheet per data frame. Pass the data frames as \code{...}: \strong{named}
+arguments use the name as the sheet name, \strong{unnamed} arguments are placed in
+a sheet named after their position (e.g. the 3rd unnamed data frame goes into
+\code{"Sheet3"}).
 }
 \details{
+This function only accepts data frames. To store a complete
+\code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}} result use \code{\link[=ir_save_aggregated_data]{ir_save_aggregated_data()}} instead.
+
 Requires the \pkg{openxlsx} package. If not installed, one
 installation attempt from CRAN is made automatically.
+}
+\examples{
+\dontrun{
+agg <- ir_examples_folder() |>
+  ir_find_continuous_flow() |>
+  ir_read_isofiles() |>
+  ir_aggregate_isofiles()
+ir_export_to_excel(
+  metadata = ir_get_metadata(agg),
+  traces = ir_get_traces(agg),
+  file = "my_export.xlsx"
+)
+}
 }
