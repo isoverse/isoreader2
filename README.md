@@ -113,18 +113,25 @@ file_paths <- ir_examples_folder() |> ir_find_dual_inlet()
 
 # read the files
 isofiles <- file_paths |> ir_read_isofiles()
-✔ [303ms] ir_extract_isofiles() finished extracting 2 files/archives
-✔ [192ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+```
+
+    > ✔ [365ms] ir_extract_isofiles() finished extracting 2 files/archives
+
+    > ✔ [156ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+
+``` r
 # show information about the files
 isofiles
-─────── 2 isofiles with 2 analyses - combine with ir_aggregate_isofiles() ──────
-1. caf_dual_inlet_example.caf: with 8 sample/standard cycles for CO2clump
-(masses 44, 45, 46, 47, 48, 49, 44, 45, 46, 47, 48, 49, 44, 45, 46, 47, 48, 49,
-…, 48, and 49); 21 metadata columns
-2. did_dual_inlet_example.did: with 7 sample/standard cycles for CO2+ (masses
-44, 45, 46, 47, 48, 49, 44, 45, 46, 47, 48, 49, 44, 45, 46, 47, 48, 49, …, 48,
-and 49); 17 metadata columns
 ```
+
+    > ─────── 2 isofiles with 2 analyses - combine with ir_aggregate_isofiles() ──────
+
+    > 1. caf_dual_inlet_example.caf: with 8 sample/standard cycles for CO2clump
+    > (masses 44, 45, 46, 47, 48, 49, 44, 45, 46, 47, 48, 49, 44, 45, 46, 47, 48, 49,
+    > …, 48, and 49); 21 metadata columns
+    > 2. did_dual_inlet_example.did: with 7 sample/standard cycles for CO2+ (masses
+    > 44, 45, 46, 47, 48, 49, 44, 45, 46, 47, 48, 49, 44, 45, 46, 47, 48, 49, …, 48,
+    > and 49); 17 metadata columns
 
 ### Aggregate the data
 
@@ -132,20 +139,28 @@ and 49); 17 metadata columns
 # aggregate the data from the read files specifying which units to use
 # (mV, V, nA, A, cps, etc.), conversion via resistor values happens automatically
 dataset <- isofiles |> ir_aggregate_isofiles("V")
-✔ [79ms] ir_aggregate_isofiles() aggregated metadata (2) and cycles (192,
-intensity in V) from 2 files using the standard aggregator
+```
+
+    > ✔ [84ms] ir_aggregate_isofiles() aggregated metadata (2) and cycles (192,
+    > intensity in V) from 2 files using the standard aggregator
+
+``` r
 # show the available data that was aggregated  metadata is all the available
 # sequence information from the different file types
 dataset
-─ aggregated data from 2 isofiles with 2 analyses - retrieve with ir_get_data( ─
-→ metadata (2): uidx, file_path, file_name, analysis, timestamp, type,
-h3_factor (all NA), Line, Peak Center, Pressadjust, Background, Reference
-Refill (1 NA), Weight [mg] (1 NA), Sample (1 NA), Identifier 1, Identifier 2,
-Analysis, Comment, Preparation, Pre Script (1 NA), Post Script, Method
-→ cycles (192): uidx, analysis, species, cycle, type, mass, trace, intensity.V;
-(not aggregated: channel)
-→ problems: has no issues
 ```
+
+    > ─ aggregated data from 2 isofiles with 2 analyses - retrieve with ir_get_data( ─
+
+    > → metadata (2): uidx, file_path, file_name, analysis, timestamp, type,
+    > h3_factor (all NA), Line, Peak Center, Pressadjust, Background, Reference
+    > Refill (1 NA), Weight [mg] (1 NA), Sample (1 NA), Identifier 1, Identifier 2,
+    > Analysis, Comment, Preparation, Pre Script (1 NA), Post Script, Method
+
+    > → cycles (192): uidx, analysis, species, cycle, type, mass, trace, intensity.V;
+    > (not aggregated: channel)
+
+    > → problems: has no issues
 
 ### Visualize the data
 
@@ -169,12 +184,15 @@ ir_export_to_excel(
   cycles = dataset |> ir_get_cycles(),
   file = "my_export.xlsx"
 )
-✔ [2ms] ir_get_data() retrieved 2 records from metadata
-✔ [3ms] ir_get_data() retrieved 192 records from the combination of metadata
-(2) and cycles (192) via uidx and analysis
-✔ [84ms] ir_export_to_excel() exported 2 rows of metadata and 192 rows of
-cycles to 'my_export.xlsx'
 ```
+
+    > ✔ [2ms] ir_get_data() retrieved 2 records from metadata
+
+    > ✔ [3ms] ir_get_data() retrieved 192 records from the combination of metadata
+    > (2) and cycles (192) via uidx and analysis
+
+    > ✔ [287ms] ir_export_to_excel() exported 2 rows of metadata and 192 rows of
+    > cycles to 'my_export.xlsx'
 
 ## Package structure
 
