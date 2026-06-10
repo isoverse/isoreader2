@@ -185,6 +185,18 @@ dataset |> ir_get_metadata()
 dataset |> ir_get_traces()
 ```
 
+### bonus `ir_get_vendor_data_table()`
+
+Some file formats also store the vendor's own computed results table (the table Isodat shows in its results view: per-peak or per-cycle intensities, retention times, ratios, deltas, etc.). This `vendor_data_table` is **only available from a few formats** — the isodat `.dxf`, `.cf`, `.did`, and `.caf` files — and it is **only aggregated by the `"extended"` aggregator** (it is dropped by the default `"standard"` and `"minimal"` aggregators). Its columns are kept under their original names (with units, e.g. `"Rt [s]"`), numeric by default with the rare string/integer columns (e.g. `"Ref. Name"`, `"Nr."`) kept as-is.
+
+```{r}
+# aggregate with the extended aggregator so the vendor data table is included
+dataset_ext <- isofiles |> ir_aggregate_isofiles(aggregator = "extended")
+
+# retrieve the vendor data table (joined with the file metadata)
+dataset_ext |> ir_get_vendor_data_table()
+```
+
 ## `ir_filter_metadata()` / `ir_mutate_metadata()` / `ir_join_metadata()`
 
 You can filter, add to, or join into the metadata while keeping the rest of the datasets consistent. `ir_filter_metadata()` cascades the filter to all other datasets so they always stay in sync.
