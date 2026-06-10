@@ -132,12 +132,12 @@ stored in nested columns.</p>
 <span><span class="va">isofiles</span> <span class="op">&lt;-</span> <span class="va">file_paths</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_read_isofiles.html">ir_read_isofiles</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre class="fansi fansi-message"><code>→ Trying to install isoextract for your operating system <span style="color: #0000BB;">isoextract-linux-x64</span>
   (this requires an internet connection and may take a moment)...
-<span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[1.9s]</span> <span style="font-weight: bold;">ir_check_isoextract()</span> successfully installed isoextract version
+<span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[1.1s]</span> <span style="font-weight: bold;">ir_check_isoextract()</span> successfully installed isoextract version
 0.2.1.0
 
-<span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[191ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> finished extracting 2 files/archives
+<span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[203ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> finished extracting 2 files/archives
 
-<span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[489ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 2 isotope data files/archives
+<span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[491ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 2 isotope data files/archives
 </code></pre>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># show what was read</span></span>
@@ -179,7 +179,7 @@ the original data files.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># save and reload the read isofiles</span></span>
 <span><span class="va">isofiles</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_isofiles_storage.html">ir_save_isofiles</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"tmp"</span>, <span class="st">"my_isofiles"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[52ms]</span> <span style="font-weight: bold;">ir_save_isofiles()</span> saved 2 isofiles to <span style="color: #0000BB;">tmp/my_isofiles.rds</span>
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[50ms]</span> <span style="font-weight: bold;">ir_save_isofiles()</span> saved 2 isofiles to <span style="color: #0000BB;">tmp/my_isofiles.rds</span>
 </code></pre>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">reloaded</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ir_isofiles_storage.html">ir_load_isofiles</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"tmp"</span>, <span class="st">"my_isofiles"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
@@ -202,7 +202,7 @@ that are easy to work with.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># aggregate the data</span></span>
 <span><span class="va">dataset</span> <span class="op">&lt;-</span> <span class="va">isofiles</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[252ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2) and <span style="color: #0000BB;">traces</span> (24.5k,
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[253ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2) and <span style="color: #0000BB;">traces</span> (24.5k,
 <span style="color: #00BB00;">intensity</span> in <span style="color: #BB00BB;">mV</span>) from 2 files using the <span style="font-weight: bold; font-style: italic;">standard</span> aggregator
 </code></pre>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
@@ -314,7 +314,7 @@ from the data files.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># using the extended aggregator instead of the default (standard)</span></span>
 <span><span class="va">isofiles</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles</a></span><span class="op">(</span>aggregator <span class="op">=</span> <span class="st">"extended"</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[573ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2), <span style="color: #0000BB;">traces</span> (24.5k,
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[582ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2), <span style="color: #0000BB;">traces</span> (24.5k,
 <span style="color: #00BB00;">intensity</span> in <span style="color: #BB00BB;">mV</span>), <span style="color: #0000BB;">resistors</span> (8), and <span style="color: #0000BB;">vendor_data_table</span> (25) from 2 files using
 the <span style="font-weight: bold; font-style: italic;">extended</span> aggregator
 </code></pre>
@@ -412,7 +412,7 @@ structure flowchart.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># use it</span></span>
 <span><span class="va">isofiles</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles</a></span><span class="op">(</span>aggregator <span class="op">=</span> <span class="st">"my_aggregator"</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[163ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2) and <span style="color: #0000BB;">traces</span> (24.5k,
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[158ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2) and <span style="color: #0000BB;">traces</span> (24.5k,
 <span style="color: #00BB00;">intensity</span> in <span style="color: #BB00BB;">mV</span>) from 2 files using the <span style="font-weight: bold; font-style: italic;">my_aggregator</span> aggregator
 </code></pre>
 <pre class="fansi fansi-message"><code>─ <span style="font-weight: bold;">aggregated data from 2 isofiles with 2 analyses - retrieve with ir_get_data(</span> ─
@@ -591,14 +591,14 @@ default with the rare string/integer columns
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># aggregate with the extended aggregator so the vendor data table is included</span></span>
 <span><span class="va">dataset_ext</span> <span class="op">&lt;-</span> <span class="va">isofiles</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles</a></span><span class="op">(</span>aggregator <span class="op">=</span> <span class="st">"extended"</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[590ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2), <span style="color: #0000BB;">traces</span> (24.5k,
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[591ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2), <span style="color: #0000BB;">traces</span> (24.5k,
 <span style="color: #00BB00;">intensity</span> in <span style="color: #BB00BB;">mV</span>), <span style="color: #0000BB;">resistors</span> (8), and <span style="color: #0000BB;">vendor_data_table</span> (25) from 2 files using
 the <span style="font-weight: bold; font-style: italic;">extended</span> aggregator
 </code></pre>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># retrieve the vendor data table (joined with the file metadata)</span></span>
 <span><span class="va">dataset_ext</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_get_data.html">ir_get_vendor_data_table</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[8ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 25 records from the combination of <span style="color: #0000BB;">metadata</span> (2)
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[9ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 25 records from the combination of <span style="color: #0000BB;">metadata</span> (2)
 and <span style="color: #0000BB;">vendor_data_table</span> (25) via <span style="color: #00BB00;">uidx</span> and <span style="color: #00BB00;">analysis</span>
 </code></pre>
 <pre class="fansi fansi-output"><code><span style="color: #949494;"># A tibble: 25 × 80</span>
@@ -692,11 +692,11 @@ own ggplot2 layers (e.g. <code>+ labs(...)</code> or
 <span>  <span class="fu"><a href="../reference/ir_read_isofiles.html">ir_read_isofiles</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles</a></span><span class="op">(</span><span class="st">"V"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/ir_plot_dual_inlet.html">ir_plot_dual_inlet</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[138ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> finished extracting 2 files/archives
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[145ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> finished extracting 2 files/archives
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[546ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 2 isotope data files/archives
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[535ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 2 isotope data files/archives
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[272ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2) and <span style="color: #0000BB;">cycles</span> (192,
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[266ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2) and <span style="color: #0000BB;">cycles</span> (192,
 <span style="color: #00BB00;">intensity</span> in <span style="color: #BB00BB;">V</span>) from 2 files using the <span style="font-weight: bold; font-style: italic;">standard</span> aggregator
 </code></pre>
 <p><img src="functionality_guide_files/figure-html/unnamed-chunk-20-1.png" class="r-plt" alt="" width="768"></p>
@@ -713,11 +713,11 @@ plot.</p>
 <span>  <span class="fu"><a href="../reference/ir_read_isofiles.html">ir_read_isofiles</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles</a></span><span class="op">(</span><span class="st">"V"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/ir_plot_scans.html">ir_plot_scans</a></span><span class="op">(</span>scan_type <span class="op">=</span> <span class="st">"high voltage"</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[125ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> finished extracting 4 files/archives
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[123ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> finished extracting 4 files/archives
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[190ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 4 isotope data files/archives
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[186ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 4 isotope data files/archives
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[378ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (4) and <span style="color: #0000BB;">scans</span> (17.8k,
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[372ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (4) and <span style="color: #0000BB;">scans</span> (17.8k,
 <span style="color: #00BB00;">intensity</span> in <span style="color: #BB00BB;">V</span>) from 4 files using the <span style="font-weight: bold; font-style: italic;">standard</span> aggregator
 </code></pre>
 <p><img src="functionality_guide_files/figure-html/unnamed-chunk-21-1.png" class="r-plt" alt="" width="768"></p>
@@ -741,7 +741,7 @@ per data frame. Named arguments set the sheet names; unnamed ones use
 <span>  traces <span class="op">=</span> <span class="va">dataset</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_get_data.html">ir_get_traces</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  file <span class="op">=</span> <span class="st">"tmp/my_dataset.xlsx"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[5ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 2 records from <span style="color: #0000BB;">metadata</span>
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[4ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 2 records from <span style="color: #0000BB;">metadata</span>
 </code></pre>
 <pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[9ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 24.5k records from the combination of <span style="color: #0000BB;">metadata</span>
 (2) and <span style="color: #0000BB;">traces</span> (24.5k) via <span style="color: #00BB00;">uidx</span> and <span style="color: #00BB00;">analysis</span>
