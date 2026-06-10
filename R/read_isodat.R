@@ -314,6 +314,375 @@ read_isodat_seq_line_grid <- function(json_path, grid_ptr) {
     dplyr::mutate(analysis = 1L, .before = 1L) # always a single analysis
 }
 
+# vendor data table readers ==========
+#
+# These read the computed/evaluated "vendor data table" that Isodat displays in
+# its results view (peak-by-peak results for continuous flow, cycle-by-cycle
+# results for dual inlet), stored per file as `vendor_data_table` (only the
+# isodat .dxf/.cf/.did/.caf formats carry one).
+#
+# JSON locations (mapped from the old isoreader binary C-block navigation):
+#   .dxf  -> CResultArray/.../CResultForGas/{gas}/CGCPeakList/.../CSPeak/{i}
+#   .cf   -> CBlockDataContext/.../CGCPeakList/.../CSPeak/{i}
+#   .caf  -> CResultDataList/{gas}/.../CResultData/{i}
+#   .did  -> CDualInletEvaluatedDataCollect/.../CDualInletEvaluatedData/{col}
+#
+# For .dxf/.cf/.caf each row's cells live under a CEvalDataItemListTransferPart
+# as typed CEvalData{Double,Int,String}TransferPart entries — numeric (Double,
+# Int) and string (e.g. "Ref. Name") columns are all read. Rows are enumerated
+# by index via scalar pointers (n_objects / gas_name).
+
+# Read the cells of one CEvalDataItemListTransferPart `objects` node into a named
+# list (column name -> value), ordered by the cells' idx. Double/Int cells become
+# numeric values, String cells character values (so the returned list is mixed
+# type). For Double/Int the value is at `p/data`; for String at `data_string`;
+# the column name is at `p/p/name` and its (already bracketed) units, when any,
+# at `p/p/units` — these are combined into "name [units]".
+read_isodat_eval_cells <- function(json_path, objects_ptr) {
+  # normalise an RcppSimdJson result (a data frame of cells for multiple, or a
+  # single named list for one) to a plain list of per-cell objects
+  as_cell_list <- function(parts) {
+    if (is.data.frame(parts)) {
+      lapply(seq_len(nrow(parts)), function(i) {
+        cell <- as.list(parts[i, ])
+        cell$p <- cell$p[[1]] # unwrap the length-1 list-column element
+        cell
+      })
+    } else {
+      list(parts)
+    }
+  }
+  collect <- function(type, value_fun) {
+    parts <- query_json(
+      json_path,
+      paste0(objects_ptr, "/", type),
+      required = FALSE
+    )
+    if (json_missing(parts)) {
+      return(NULL)
+    }
+    cells <- as_cell_list(parts)
+    tibble(
+      idx = as.integer(vapply(
+        cells,
+        function(c) c$idx %||% NA_integer_,
+        numeric(1)
+      )),
+      # append the (already bracketed) units to the column name when present,
+      # e.g. "rIntensity 28" + "[mVs]" -> "rIntensity 28 [mVs]"
+      name = vapply(
+        cells,
+        function(c) {
+          nm <- trimws(c$p$p$name %||% NA_character_)
+          un <- trimws(c$p$p$units %||% "")
+          if (!is.na(nm) && nzchar(un)) paste0(nm, " ", un) else nm
+        },
+        character(1)
+      ),
+      value = lapply(cells, value_fun)
+    )
+  }
+  cells <- dplyr::bind_rows(
+    collect("CEvalDataDoubleTransferPart", function(c) {
+      as.numeric(c$p$data %||% NA_real_)
+    }),
+    collect("CEvalDataIntTransferPart", function(c) {
+      as.integer(c$p$data %||% NA_integer_)
+    }),
+    collect("CEvalDataStringTransferPart", function(c) {
+      as.character(c$data_string %||% NA_character_)
+    })
+  )
+  if (is.null(cells) || nrow(cells) == 0L) {
+    return(NULL)
+  }
+  cells <- cells[order(cells$idx), ]
+  cells <- cells[
+    !is.na(cells$name) & nzchar(cells$name) & !duplicated(cells$name),
+  ]
+  stats::setNames(cells$value, cells$name)
+}
+
+# Read a CGCPeakList into a data table (one row per CSPeak). `species` comes from
+# each peak's gas_name. Returns NULL if the peak list is absent/empty.
+read_isodat_gc_peak_table <- function(json_path, peaklist_ptr) {
+  n_peaks <- query_json(
+    json_path,
+    paste0(peaklist_ptr, "/p/n_objects"),
+    required = FALSE
+  )
+  if (json_missing(n_peaks) || as.integer(n_peaks) == 0L) {
+    return(NULL)
+  }
+  rows <- purrr::map(seq_len(as.integer(n_peaks)) - 1L, function(pk) {
+    cspeak_ptr <- sprintf("%s/p/objects/CSPeak/%d", peaklist_ptr, pk)
+    species <- query_json(
+      json_path,
+      sprintf("%s/p/gas_name", cspeak_ptr),
+      required = FALSE
+    )
+    # retention-time / amplitude / background geometry (stored separately from
+    # the evaluated cells, in the per-trace CGCPeak objects)
+    geometry <- read_isodat_gc_peak_geometry(json_path, cspeak_ptr)
+    # evaluated results table cells
+    cells <- read_isodat_eval_cells(
+      json_path,
+      sprintf("%s/p/CEvalDataItemListTransferPart/p/objects", cspeak_ptr)
+    )
+    if (is.null(cells) && is.null(geometry)) {
+      return(NULL)
+    }
+    tibble::as_tibble_row(c(
+      list(
+        analysis = 1L,
+        species = if (json_missing(species)) {
+          NA_character_
+        } else {
+          as.character(species)
+        }
+      ),
+      geometry,
+      cells
+    ))
+  })
+  out <- dplyr::bind_rows(rows)
+  if (nrow(out) == 0L) NULL else out
+}
+
+# Read the retention-time geometry of one CSPeak from its per-trace CGCPeak
+# objects: shared chromatographic window `Start`/`Rt`/`End` (seconds, taken from
+# the first/major trace, as Isodat reports it) plus per-mass apex amplitude
+# (`Ampl <mass>`) and background (`BGD <mass>`) in mV. Returns NULL if absent.
+read_isodat_gc_peak_geometry <- function(json_path, cspeak_ptr) {
+  gc <- query_json(
+    json_path,
+    sprintf("%s/p/p/objects/CGCPeak", cspeak_ptr),
+    required = FALSE
+  )
+  if (json_missing(gc)) {
+    return(NULL)
+  }
+  # normalise to parallel per-trace vectors (data frame for >1 trace, else a
+  # single named list)
+  if (is.data.frame(gc)) {
+    p <- gc$p
+    start_rt <- gc$start_rt
+    apex_rt <- gc$apex_rt
+    end_rt <- gc$end_rt
+    apex_signal <- gc$apex_signal
+  } else {
+    p <- list(gc$p)
+    start_rt <- gc$start_rt
+    apex_rt <- gc$apex_rt
+    end_rt <- gc$end_rt
+    apex_signal <- gc$apex_signal
+  }
+  mass <- vapply(
+    p,
+    function(x) as.character(x$mass %||% NA_character_),
+    character(1)
+  )
+  bgd <- vapply(p, function(x) as.numeric(x$bgd0 %||% NA_real_), numeric(1))
+  if (length(mass) == 0L) {
+    return(NULL)
+  }
+  c(
+    list(
+      `Start [s]` = as.numeric(start_rt[1]),
+      `Rt [s]` = as.numeric(apex_rt[1]),
+      `End [s]` = as.numeric(end_rt[1])
+    ),
+    stats::setNames(
+      as.list(as.numeric(apex_signal)),
+      sprintf("Ampl %s [mV]", mass)
+    ),
+    stats::setNames(as.list(bgd), sprintf("BGD %s [mV]", mass))
+  )
+}
+
+# .dxf — peak lists are grouped per gas under CResultArray/CResultForGas in the
+# "Results" CBlockData.
+read_dxf_data_table <- function(json_path) {
+  block_query <- "/CContiniousFlowBlockData/p/objects/CBlockData"
+  block_idx <- find_json_block_idx_by_value(
+    json_path,
+    block_query,
+    "Results",
+    required = FALSE
+  )
+  if (is.na(block_idx)) {
+    return(NULL)
+  }
+  base <- sprintf(
+    "%s/%d/objects/CResultArray/p/objects/CResultForGas",
+    block_query,
+    block_idx
+  )
+  tables <- list()
+  g <- 0L
+  repeat {
+    peaklist_ptr <- sprintf("%s/%d/CGCPeakList", base, g)
+    if (
+      json_missing(query_json(
+        json_path,
+        paste0(peaklist_ptr, "/p/n_objects"),
+        required = FALSE
+      ))
+    ) {
+      break
+    }
+    tables[[length(tables) + 1L]] <- read_isodat_gc_peak_table(
+      json_path,
+      peaklist_ptr
+    )
+    g <- g + 1L
+  }
+  out <- dplyr::bind_rows(tables)
+  if (is.null(out) || nrow(out) == 0L) NULL else out
+}
+
+# .cf — single CGCPeakList in the "Data Block" CBlockData.
+read_cf_data_table <- function(json_path) {
+  block_idx <- find_json_block_idx_by_value(
+    json_path,
+    "/CBlockData",
+    "Data Block",
+    required = FALSE
+  )
+  if (is.na(block_idx)) {
+    return(NULL)
+  }
+  read_isodat_gc_peak_table(
+    json_path,
+    sprintf(
+      "/CBlockData/%d/objects/CBlockDataContext/p/objects/CGCPeakList",
+      block_idx
+    )
+  )
+}
+
+# .caf — rows are CResultData entries grouped per gas under CResultDataList in
+# the "Result Data List Block" CBlockData.
+read_caf_data_table <- function(json_path) {
+  block_query <- "/CBlockDataContext/p/objects/CBlockData"
+  block_idx <- find_json_block_idx_by_value(
+    json_path,
+    block_query,
+    "Result Data List Block",
+    required = FALSE
+  )
+  if (is.na(block_idx)) {
+    return(NULL)
+  }
+  base <- sprintf("%s/%d/objects/CResultDataList", block_query, block_idx)
+  tables <- list()
+  g <- 0L
+  repeat {
+    n_rows <- query_json(
+      json_path,
+      sprintf("%s/%d/p/n_objects", base, g),
+      required = FALSE
+    )
+    if (json_missing(n_rows)) {
+      break
+    }
+    rows <- purrr::map(seq_len(as.integer(n_rows)) - 1L, function(i) {
+      species <- query_json(
+        json_path,
+        sprintf("%s/%d/p/objects/CResultData/%d/gas_name", base, g, i),
+        required = FALSE
+      )
+      cells <- read_isodat_eval_cells(
+        json_path,
+        sprintf(
+          "%s/%d/p/objects/CResultData/%d/CEvalDataItemListTransferPart/p/objects",
+          base,
+          g,
+          i
+        )
+      )
+      if (is.null(cells)) {
+        return(NULL)
+      }
+      tibble::as_tibble_row(c(
+        list(
+          analysis = 1L,
+          species = if (json_missing(species)) {
+            NA_character_
+          } else {
+            as.character(species)
+          }
+        ),
+        cells
+      ))
+    })
+    tables[[length(tables) + 1L]] <- dplyr::bind_rows(rows)
+    g <- g + 1L
+  }
+  out <- dplyr::bind_rows(tables)
+  if (is.null(out) || nrow(out) == 0L) NULL else out
+}
+
+# .did — evaluated columns (CTwoDoublesArrayData) of cycle/value pairs, one column
+# per computed quantity (e.g. "d 45CO2/44CO2"), in the "Evaluated Results"
+# CBlockData. Pivoted to wide cycle x columns.
+read_did_data_table <- function(json_path) {
+  block_query <- "/CDualInletBlockData/p/objects/CBlockData"
+  block_idx <- find_json_block_idx_by_value(
+    json_path,
+    block_query,
+    "Evaluated Results",
+    required = FALSE
+  )
+  if (is.na(block_idx)) {
+    return(NULL)
+  }
+  base <- sprintf(
+    "%s/%d/objects/CDualInletEvaluatedDataCollect/p/objects/CDualInletEvaluatedData",
+    block_query,
+    block_idx
+  )
+  out <- NULL
+  i <- 0L
+  repeat {
+    name <- query_json(
+      json_path,
+      sprintf("%s/%d/p/p/v", base, i),
+      required = FALSE
+    )
+    if (json_missing(name)) {
+      break
+    }
+    x <- query_json(
+      json_path,
+      sprintf("%s/%d/p/objects/CTwoDoublesArrayData/x_data", base, i),
+      required = FALSE
+    )
+    y <- query_json(
+      json_path,
+      sprintf("%s/%d/p/objects/CTwoDoublesArrayData/y_data", base, i),
+      required = FALSE
+    )
+    if (!json_missing(x) && !json_missing(y)) {
+      col <- tibble(
+        analysis = 1L,
+        cycle = as.integer(x) + 1L, # 0-based in the file
+        !!trimws(as.character(name)) := as.numeric(y)
+      )
+      out <- if (is.null(out)) {
+        col
+      } else {
+        dplyr::full_join(out, col, by = c("analysis", "cycle"))
+      }
+    }
+    i <- i + 1L
+  }
+  if (is.null(out) || nrow(out) == 0L) {
+    return(NULL)
+  }
+  dplyr::arrange(out, .data$cycle)
+}
+
 # file type specific readers ==========
 
 ## dxf =====================
@@ -351,13 +720,17 @@ read_dxf_json <- function(json_path) {
     match_channels_to_masses(resistors$result) |>
     try_catch_cnds()
 
+  # isodat computed data table
+  vendor_data_table <- read_dxf_data_table(json_path) |> try_catch_cnds()
+
   # problems
   problems <- dplyr::bind_rows(
     empty_cnds_tibble(),
     metadata$conditions,
     gas_names$conditions,
     resistors$conditions,
-    traces$conditions
+    traces$conditions,
+    vendor_data_table$conditions
   )
 
   # return value
@@ -365,6 +738,7 @@ read_dxf_json <- function(json_path) {
     metadata = list(metadata$result),
     resistors = list(resistors$result),
     traces = list(traces$result),
+    vendor_data_table = list(vendor_data_table$result),
     problems = list(problems)
   )
 }
@@ -462,13 +836,17 @@ read_cf_json <- function(json_path) {
     match_channels_to_masses(resistors$result) |>
     try_catch_cnds()
 
+  # isodat computed data table
+  vendor_data_table <- read_cf_data_table(json_path) |> try_catch_cnds()
+
   # problems
   problems <- dplyr::bind_rows(
     empty_cnds_tibble(),
     metadata$conditions,
     gas_names$conditions,
     resistors$conditions,
-    traces$conditions
+    traces$conditions,
+    vendor_data_table$conditions
   )
 
   # return value
@@ -476,6 +854,7 @@ read_cf_json <- function(json_path) {
     metadata = list(metadata$result),
     resistors = list(resistors$result),
     traces = list(traces$result),
+    vendor_data_table = list(vendor_data_table$result),
     problems = list(problems)
   )
 }
@@ -586,13 +965,17 @@ read_did_json <- function(json_path) {
     match_channels_to_masses(resistors$result) |>
     try_catch_cnds()
 
+  # isodat computed data table
+  vendor_data_table <- read_did_data_table(json_path) |> try_catch_cnds()
+
   # problems
   problems <- dplyr::bind_rows(
     empty_cnds_tibble(),
     metadata$conditions,
     gas_name$conditions,
     resistors$conditions,
-    cycles$conditions
+    cycles$conditions,
+    vendor_data_table$conditions
   )
 
   # return value
@@ -600,6 +983,7 @@ read_did_json <- function(json_path) {
     metadata = list(metadata$result),
     resistors = list(resistors$result),
     cycles = list(cycles$result),
+    vendor_data_table = list(vendor_data_table$result),
     problems = list(problems)
   )
 }
@@ -652,13 +1036,17 @@ read_caf_json <- function(json_path) {
     match_channels_to_masses(resistors$result) |>
     try_catch_cnds()
 
+  # isodat computed data table
+  vendor_data_table <- read_caf_data_table(json_path) |> try_catch_cnds()
+
   # problems
   problems <- dplyr::bind_rows(
     empty_cnds_tibble(),
     metadata$conditions,
     gas_name$conditions,
     resistors$conditions,
-    cycles$conditions
+    cycles$conditions,
+    vendor_data_table$conditions
   )
 
   # return value
@@ -666,6 +1054,7 @@ read_caf_json <- function(json_path) {
     metadata = list(metadata$result),
     resistors = list(resistors$result),
     cycles = list(cycles$result),
+    vendor_data_table = list(vendor_data_table$result),
     problems = list(problems)
   )
 }

@@ -7,6 +7,7 @@
 \alias{ir_get_traces}
 \alias{ir_get_cycles}
 \alias{ir_get_scans}
+\alias{ir_get_vendor_data_table}
 \title{Get data frame from aggregated data}
 \usage{
 ir_get_data(
@@ -16,6 +17,7 @@ ir_get_data(
   cycles = NULL,
   scans = NULL,
   resistors = NULL,
+  vendor_data_table = NULL,
   by = c("uidx", "analysis", "config", "species", "channel", "mass")
 )
 
@@ -44,6 +46,12 @@ ir_get_scans(
   metadata = c("file_name"),
   by = c("uidx", "config")
 )
+
+ir_get_vendor_data_table(
+  aggregated_data,
+  metadata = c("file_name"),
+  by = c("uidx", "analysis")
+)
 }
 \arguments{
 \item{aggregated_data}{datasets aggregated from \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}}}
@@ -58,13 +66,15 @@ ir_get_scans(
 
 \item{resistors}{columns to get from the aggregated \code{resistors}, all \code{\link[dplyr:select]{dplyr::select()}} syntax is supported}
 
+\item{vendor_data_table}{columns to get from the aggregated \code{vendor_data_table}, all \code{\link[dplyr:select]{dplyr::select()}} syntax is supported}
+
 \item{by}{character vector of column names used as join keys when combining data from more than one dataset (default covers the standard linking columns; only keys actually present in both datasets are used)}
 }
 \value{
 a tibble
 }
 \description{
-Retrieve a specific subset of the aggregated data into a single data frame by specifying which columns to take from each dataset (metadata, traces, cycles, scans, resistors) using \code{\link[dplyr:select]{dplyr::select()}} syntax.
+Retrieve a specific subset of the aggregated data into a single data frame by specifying which columns to take from each dataset (metadata, traces, cycles, scans, resistors, vendor_data_table) using \code{\link[dplyr:select]{dplyr::select()}} syntax.
 If data from more than one dataset is selected (e.g. some columns from \code{traces} AND some from \code{resistors}), the datasets are combined with an \code{\link[dplyr:inner_join]{dplyr::inner_join()}} using the columns listed in \code{by} (only the ones actually in the datasets). Joins that would lead to duplicated data entries (i.e. many-to-many joins) are not allowed and will throw an error to avoid unexpected replications of individual datapoints. If you really want to do such a join, you'll have to do it manually.
 }
 \section{Functions}{
@@ -78,5 +88,7 @@ If data from more than one dataset is selected (e.g. some columns from \code{tra
 \item \code{ir_get_cycles()}: shortcut for retrieving all \code{cycles} columns (i.e. \code{cycles = dplyr::everything()}), keyed by the selected \code{metadata}
 
 \item \code{ir_get_scans()}: shortcut for retrieving all \code{scans} columns (i.e. \code{scans = dplyr::everything()}), keyed by the selected \code{metadata}
+
+\item \code{ir_get_vendor_data_table()}: shortcut for retrieving all \code{vendor_data_table} columns (i.e. \code{vendor_data_table = dplyr::everything()}), keyed by the selected \code{metadata}. Only available when aggregated with the \code{"extended"} aggregator.
 
 }}

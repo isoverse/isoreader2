@@ -2,7 +2,7 @@
 
 #' Get data frame from aggregated data
 #'
-#' Retrieve a specific subset of the aggregated data into a single data frame by specifying which columns to take from each dataset (metadata, traces, cycles, scans, resistors) using [dplyr::select()] syntax.
+#' Retrieve a specific subset of the aggregated data into a single data frame by specifying which columns to take from each dataset (metadata, traces, cycles, scans, resistors, vendor_data_table) using [dplyr::select()] syntax.
 #' If data from more than one dataset is selected (e.g. some columns from `traces` AND some from `resistors`), the datasets are combined with an [dplyr::inner_join()] using the columns listed in `by` (only the ones actually in the datasets). Joins that would lead to duplicated data entries (i.e. many-to-many joins) are not allowed and will throw an error to avoid unexpected replications of individual datapoints. If you really want to do such a join, you'll have to do it manually.
 #' @param aggregated_data datasets aggregated from [ir_aggregate_isofiles()]
 #' @param metadata columns to get from the aggregated `metadata`, all [dplyr::select()] syntax is supported
@@ -10,6 +10,7 @@
 #' @param cycles columns to get from the aggregated `cycles`, all [dplyr::select()] syntax is supported
 #' @param scans columns to get from the aggregated `scans`, all [dplyr::select()] syntax is supported
 #' @param resistors columns to get from the aggregated `resistors`, all [dplyr::select()] syntax is supported
+#' @param vendor_data_table columns to get from the aggregated `vendor_data_table`, all [dplyr::select()] syntax is supported
 #' @param by character vector of column names used as join keys when combining data from more than one dataset (default covers the standard linking columns; only keys actually present in both datasets are used)
 #' @return a tibble
 #' @export
@@ -20,6 +21,7 @@ ir_get_data <- function(
   cycles = NULL,
   scans = NULL,
   resistors = NULL,
+  vendor_data_table = NULL,
   by = c("uidx", "analysis", "config", "species", "channel", "mass")
 ) {
   aggregated_data |>
@@ -31,17 +33,18 @@ ir_get_data <- function(
   req_traces <- quo_is_null(enquo(traces))
   req_cycles <- quo_is_null(enquo(cycles))
   req_scans <- quo_is_null(enquo(scans))
-  req_resistors <- quo_is_null(enquo(resistors))
+  req_vendor <- quo_is_null(enquo(vendor_data_table))
 
-  # only one of traces/cycles/scans allowed
-  data_series <- c("traces", "cycles", "scans")
+  # only one of traces/cycles/scans/vendor_data_table allowed (they are all
+  # per-row data series whose mutual joins would duplicate datapoints)
+  data_series <- c("traces", "cycles", "scans", "vendor_data_table")
   provided <- data_series[
-    !c(req_traces, req_cycles, req_scans)
+    !c(req_traces, req_cycles, req_scans, req_vendor)
   ]
   if (length(provided) > 1) {
     cli_abort(
       c(
-        "only one of {.field traces}, {.field cycles}, or {.field scans} can be requested at a time",
+        "only one of {.field {data_series}} can be requested at a time",
         "i" = "you specified: {.field {provided}}"
       )
     )
@@ -55,6 +58,7 @@ ir_get_data <- function(
     cycles = {{ cycles }},
     scans = {{ scans }},
     resistors = {{ resistors }},
+    vendor_data_table = {{ vendor_data_table }},
     by = by
   )
   return(out)
@@ -133,6 +137,22 @@ ir_get_scans <- function(
     aggregated_data,
     metadata = {{ metadata }},
     scans = dplyr::everything(),
+    by = by
+  )
+}
+
+#' @describeIn ir_get_data shortcut for retrieving all `vendor_data_table` columns (i.e. `vendor_data_table = dplyr::everything()`), keyed by the selected `metadata`. Only available when aggregated with the `"extended"` aggregator.
+#' @export
+ir_get_vendor_data_table <- function(
+  aggregated_data,
+  metadata = c("file_name"),
+  by = c("uidx", "analysis")
+) {
+  check_aggregated_dataset(aggregated_data, "vendor_data_table")
+  ir_get_data(
+    aggregated_data,
+    metadata = {{ metadata }},
+    vendor_data_table = dplyr::everything(),
     by = by
   )
 }

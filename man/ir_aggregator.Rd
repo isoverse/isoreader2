@@ -11,7 +11,7 @@ ir_start_aggregator(name)
 
 ir_add_to_aggregator(
   aggregator,
-  dataset = c("metadata", "traces", "cycles", "scans", "resistors"),
+  dataset = c("metadata", "traces", "cycles", "scans", "resistors", "vendor_data_table"),
   column,
   source = column,
   default = NA,

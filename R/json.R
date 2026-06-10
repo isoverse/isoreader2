@@ -76,12 +76,14 @@ diagnose_json_path <- function(json_path, query) {
 }
 
 # Find the integer index of a named CBlockData object by its p/v value.
-# Aborts if no entry is found within max_idx blocks.
+# Aborts if no entry is found within max_idx blocks, unless `required = FALSE`,
+# in which case `NA_integer_` is returned.
 find_json_block_idx_by_value <- function(
   json_path,
   block_query,
   value,
-  max_idx = 100L
+  max_idx = 100L,
+  required = TRUE
 ) {
   i <- 0L
   while (i < max_idx) {
@@ -99,6 +101,9 @@ find_json_block_idx_by_value <- function(
       return(i)
     }
     i <- i + 1L
+  }
+  if (!required) {
+    return(NA_integer_)
   }
   cli_abort(
     "searched {i+1} CBlockData entr{?y/ies} but one with value {.val {value}} was not found in {col_green({block_query})}"

@@ -73,6 +73,20 @@ drop_empty_datasets <- function(agg_data) {
   ]
 }
 
+# aggregator `cast` that keeps already-typed values as-is: character and integer
+# columns are returned unchanged, everything else is coerced to numeric. Useful
+# for aggregating datasets whose columns are already correctly typed by the
+# reader (e.g. the `vendor_data_table`, with its dynamically named numeric
+# columns plus a few string/integer ones), where the only goal of casting is to
+# normalise stragglers (e.g. a column that ended up all-NA/logical) to numeric.
+keep_as_is <- function(x) {
+  if (is.character(x) || is.integer(x)) {
+    x
+  } else {
+    as.numeric(x)
+  }
+}
+
 # design aggregators (general) ========
 
 # helper function to turn something into an aggregator tibble
@@ -123,7 +137,14 @@ ir_start_aggregator <- function(name) {
 #' @export
 ir_add_to_aggregator <- function(
   aggregator,
-  dataset = c("metadata", "traces", "cycles", "scans", "resistors"),
+  dataset = c(
+    "metadata",
+    "traces",
+    "cycles",
+    "scans",
+    "resistors",
+    "vendor_data_table"
+  ),
   column,
   source = column,
   default = NA,

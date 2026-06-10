@@ -90,6 +90,16 @@
     ir_add_to_aggregator("resistors", "cup", cast = "as.integer") |>
     ir_add_to_aggregator("resistors", "resistance.Ohm", cast = "as.numeric") |>
     ir_add_to_aggregator("resistors", "nominal.Ohm", cast = "as.numeric") |>
+    # VENDOR DATA TABLE section ====================
+    # preserve all (dynamically named) columns; keep the rare string/integer
+    # columns as-is and cast everything else to numeric (see keep_as_is())
+    ir_add_to_aggregator(
+      "vendor_data_table",
+      "\\1",
+      source = "(.*)",
+      regexp = TRUE,
+      cast = "keep_as_is"
+    ) |>
     ir_register_aggregator("extended")
 
   # if we're knitting, enable full ansi output (turn off with ir_options(auto_use_ansi = FALSE))

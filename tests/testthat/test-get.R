@@ -1,6 +1,11 @@
 test_that("ir_get_data()", {
   fake_agg <- structure(
-    list(traces = tibble(), cycles = tibble(), scans = tibble()),
+    list(
+      traces = tibble(),
+      cycles = tibble(),
+      scans = tibble(),
+      vendor_data_table = tibble()
+    ),
     class = "ir_aggregated_data"
   )
   ir_get_data(fake_agg, traces = everything(), cycles = everything()) |>
@@ -9,6 +14,12 @@ test_that("ir_get_data()", {
     expect_error("only one of.*traces.*cycles.*scans")
   ir_get_data(fake_agg, cycles = everything(), scans = everything()) |>
     expect_error("only one of.*traces.*cycles.*scans")
+  ir_get_data(
+    fake_agg,
+    traces = everything(),
+    vendor_data_table = everything()
+  ) |>
+    expect_error("only one of.*vendor_data_table")
 })
 
 test_that("check_aggregated_dataset()", {
@@ -41,7 +52,14 @@ test_that("ir_get_*() shortcuts", {
       resistors = tibble(uidx = c(1L, 1L, 2L), mass = c(44, 45, 44), Ohm = 1:3),
       traces = tibble(uidx = c(1L, 2L), time = c(0, 0), v44 = c(10, 30)),
       cycles = tibble(uidx = c(1L, 2L), d13C = c(-25, -10)),
-      scans = tibble(uidx = c(1L, 2L), config = c("a", "b"), x = c(5, 6))
+      scans = tibble(uidx = c(1L, 2L), config = c("a", "b"), x = c(5, 6)),
+      vendor_data_table = tibble(
+        uidx = c(1L, 2L),
+        analysis = c(1L, 1L),
+        species = c("N2", "CO2"),
+        Nr. = c(1L, 1L),
+        `Rt [s]` = c(60, 300)
+      )
     ),
     class = "ir_aggregated_data"
   )
@@ -55,6 +73,8 @@ test_that("ir_get_*() shortcuts", {
   ir_get_traces(empty) |> expect_error("does not include a.*traces")
   ir_get_cycles(empty) |> expect_error("does not include a.*cycles")
   ir_get_scans(empty) |> expect_error("does not include a.*scans")
+  ir_get_vendor_data_table(empty) |>
+    expect_error("does not include a.*vendor_data_table")
   ir_get_metadata(c("a.dxf")) |>
     expect_error("must be a set of aggregated isofiles")
   ir_get_scans() |>
@@ -87,6 +107,16 @@ test_that("ir_get_*() shortcuts", {
     ir_get_scans(agg) |> suppressMessages() |> names(),
     c("uidx", "file_name", "config", "x")
   )
+
+  # vendor_data_table join metadata file_name by uidx, preserving column types
+  vdt <- ir_get_vendor_data_table(agg) |> suppressMessages()
+  expect_equal(
+    names(vdt),
+    c("uidx", "file_name", "analysis", "species", "Nr.", "Rt [s]")
+  )
+  expect_type(vdt$Nr., "integer")
+  expect_type(vdt[["Rt [s]"]], "double")
+  expect_equal(vdt$file_name, c("a", "b"))
 })
 
 test_that("get_data()", {
