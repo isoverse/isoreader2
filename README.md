@@ -113,8 +113,8 @@ file_paths <- ir_examples_folder() |> ir_find_dual_inlet()
 
 # read the files
 isofiles <- file_paths |> ir_read_isofiles()
-✔ [335ms] ir_extract_isofiles() finished extracting 2 files/archives
-✔ [153ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+✔ [311ms] ir_extract_isofiles() finished extracting 2 files/archives
+✔ [159ms] ir_read_isofiles() finished reading 2 isotope data files/archives
 # show information about the files
 isofiles
 ─────────────────── 2 isofiles with 2 analyses - combine with ir_aggregate_isofiles() ───────────────────
@@ -130,7 +130,7 @@ isofiles
 # aggregate the data from the read files specifying which units to use
 # (mV, V, nA, A, cps, etc.), conversion via resistor values happens automatically
 dataset <- isofiles |> ir_aggregate_isofiles("V")
-✔ [88ms] ir_aggregate_isofiles() aggregated metadata (2) and cycles (192, intensity in V) from 2 files
+✔ [91ms] ir_aggregate_isofiles() aggregated metadata (2) and cycles (192, intensity in V) from 2 files
 using the standard aggregator
 # show the available data that was aggregated  metadata is all the available
 # sequence information from the different file types
@@ -169,7 +169,7 @@ ir_export_to_excel(
 ✔ [2ms] ir_get_data() retrieved 2 records from metadata
 ✔ [3ms] ir_get_data() retrieved 192 records from the combination of metadata (2) and cycles (192) via
 uidx and analysis
-✔ [320ms] ir_export_to_excel() exported 2 rows of metadata and 192 rows of cycles to ']8;;file:///Users/seko0922/Dropbox/Tools/software/R/isoreader2/my_export.xlsxmy_export.xlsx]8;;'
+✔ [90ms] ir_export_to_excel() exported 2 rows of metadata and 192 rows of cycles to 'my_export.xlsx'
 ```
 
 ## Package structure

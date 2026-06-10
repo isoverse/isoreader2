@@ -14,6 +14,14 @@ knitr::opts_chunk$set(
   out.width = "100%",
   dpi = 300
 )
+
+# README.md is plain GitHub markdown, which cannot render terminal colors or
+# hyperlinks — force cli to plain text so the cli output is not littered with
+# raw ANSI escape codes and broken file-link sequences. The pkgdown index keeps
+# its fansi-rendered colors (it is built with `generating_pkgdown_index = TRUE`).
+if (!isTRUE(params$generating_pkgdown_index)) {
+  options(cli.num_colors = 1, cli.hyperlink = FALSE)
+}
 ```
 
 # isoreader2 <a href='https://isoreader2.isoverse.org/'> <img src="man/figures/isoreader_logo_thumb.png" align="right" width="100" alt="isoreader logo"/> </a>
