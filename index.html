@@ -191,9 +191,9 @@ plot of chunk continuous_flow_example
 <span></span>
 <span><span class="co"># read the files</span></span>
 <span><span class="va">isofiles</span> <span class="op">&lt;-</span> <span class="va">file_paths</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/ir_read_isofiles.html">ir_read_isofiles</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[313ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> finished extracting 2 files/archives
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[315ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> finished extracting 2 files/archives
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[194ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 2 isotope data files/archives
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[202ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 2 isotope data files/archives
 </code></pre>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># show information about the files</span></span>
@@ -215,7 +215,7 @@ and <span style="color: #00BB00;">49</span>); <span style="color: #00BBBB;">17</
 <code class="sourceCode R"><span><span class="co"># aggregate the data from the read files specifying which units to use</span></span>
 <span><span class="co"># (mV, V, nA, A, cps, etc.), conversion via resistor values happens automatically</span></span>
 <span><span class="va">dataset</span> <span class="op">&lt;-</span> <span class="va">isofiles</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles</a></span><span class="op">(</span><span class="st">"V"</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[83ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2) and <span style="color: #0000BB;">cycles</span> (192,
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[87ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2) and <span style="color: #0000BB;">cycles</span> (192,
 <span style="color: #00BB00;">intensity</span> in <span style="color: #BB00BB;">V</span>) from 2 files using the <span style="font-weight: bold; font-style: italic;">standard</span> aggregator
 </code></pre>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -263,10 +263,10 @@ plot of chunk dual_inlet_example
 <span><span class="op">)</span></span></code></pre></div>
 <pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[2ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 2 records from <span style="color: #0000BB;">metadata</span>
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[3ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 192 records from the combination of <span style="color: #0000BB;">metadata</span>
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[4ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 192 records from the combination of <span style="color: #0000BB;">metadata</span>
 (2) and <span style="color: #0000BB;">cycles</span> (192) via <span style="color: #00BB00;">uidx</span> and <span style="color: #00BB00;">analysis</span>
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[379ms]</span> <span style="font-weight: bold;">ir_export_to_excel()</span> exported 2 rows of <span style="color: #00BB00;">metadata</span> and 192 rows of
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[223ms]</span> <span style="font-weight: bold;">ir_export_to_excel()</span> exported 2 rows of <span style="color: #00BB00;">metadata</span> and 192 rows of
 <span style="color: #00BB00;">cycles</span> to <span style="color: #0000BB;">my_export.xlsx</span>
 </code></pre>
 </div>

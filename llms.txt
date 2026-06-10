@@ -112,11 +112,11 @@ isofiles <- file_paths |> ir_read_isofiles()
 ```
 
 ``` fansi
-✔ [313ms] ir_extract_isofiles() finished extracting 2 files/archives
+✔ [315ms] ir_extract_isofiles() finished extracting 2 files/archives
 ```
 
 ``` fansi
-✔ [194ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+✔ [202ms] ir_read_isofiles() finished reading 2 isotope data files/archives
 ```
 
 ``` r
@@ -148,7 +148,7 @@ dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
 ``` fansi
-✔ [83ms] ir_aggregate_isofiles() aggregated metadata (2) and cycles (192,
+✔ [87ms] ir_aggregate_isofiles() aggregated metadata (2) and cycles (192,
 intensity in V) from 2 files using the standard aggregator
 ```
 
@@ -213,12 +213,12 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [3ms] ir_get_data() retrieved 192 records from the combination of metadata
+✔ [4ms] ir_get_data() retrieved 192 records from the combination of metadata
 (2) and cycles (192) via uidx and analysis
 ```
 
 ``` fansi
-✔ [379ms] ir_export_to_excel() exported 2 rows of metadata and 192 rows of
+✔ [223ms] ir_export_to_excel() exported 2 rows of metadata and 192 rows of
 cycles to my_export.xlsx
 ```
 
