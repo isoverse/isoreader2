@@ -111,8 +111,8 @@ file_paths <- ir_examples_folder() |> ir_find_dual_inlet()
 isofiles <- file_paths |> ir_read_isofiles()
 ```
 
-<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[313ms]</span> <span style='font-weight: bold;'>ir_extract_isofiles()</span> finished extracting 2 files/archives
-</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[194ms]</span> <span style='font-weight: bold;'>ir_read_isofiles()</span> finished reading 2 isotope data files/archives
+<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[315ms]</span> <span style='font-weight: bold;'>ir_extract_isofiles()</span> finished extracting 2 files/archives
+</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[202ms]</span> <span style='font-weight: bold;'>ir_read_isofiles()</span> finished reading 2 isotope data files/archives
 </CODE></PRE>
 
 ``` r
@@ -138,7 +138,7 @@ and <span style='color: #00BB00;'>49</span>); <span style='color: #00BBBB;'>17</
 dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
-<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[83ms]</span> <span style='font-weight: bold;'>ir_aggregate_isofiles()</span> aggregated <span style='color: #0000BB;'>metadata</span> (2) and <span style='color: #0000BB;'>cycles</span> (192,
+<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[87ms]</span> <span style='font-weight: bold;'>ir_aggregate_isofiles()</span> aggregated <span style='color: #0000BB;'>metadata</span> (2) and <span style='color: #0000BB;'>cycles</span> (192,
 <span style='color: #00BB00;'>intensity</span> in <span style='color: #BB00BB;'>V</span>) from 2 files using the <span style='font-weight: bold; font-style: italic;'>standard</span> aggregator
 </CODE></PRE>
 
@@ -188,9 +188,9 @@ ir_export_to_excel(
 ```
 
 <PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[2ms]</span> <span style='font-weight: bold;'>ir_get_data()</span> retrieved 2 records from <span style='color: #0000BB;'>metadata</span>
-</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[3ms]</span> <span style='font-weight: bold;'>ir_get_data()</span> retrieved 192 records from the combination of <span style='color: #0000BB;'>metadata</span>
+</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[4ms]</span> <span style='font-weight: bold;'>ir_get_data()</span> retrieved 192 records from the combination of <span style='color: #0000BB;'>metadata</span>
 (2) and <span style='color: #0000BB;'>cycles</span> (192) via <span style='color: #00BB00;'>uidx</span> and <span style='color: #00BB00;'>analysis</span>
-</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[379ms]</span> <span style='font-weight: bold;'>ir_export_to_excel()</span> exported 2 rows of <span style='color: #00BB00;'>metadata</span> and 192 rows of
+</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[223ms]</span> <span style='font-weight: bold;'>ir_export_to_excel()</span> exported 2 rows of <span style='color: #00BB00;'>metadata</span> and 192 rows of
 <span style='color: #00BB00;'>cycles</span> to <span style='color: #0000BB;'>my_export.xlsx</span>
 </CODE></PRE>
 

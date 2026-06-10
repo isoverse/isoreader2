@@ -19,8 +19,15 @@ knitr::opts_chunk$set(
 # hyperlinks — force cli to plain text so the cli output is not littered with
 # raw ANSI escape codes and broken file-link sequences. The pkgdown index keeps
 # its fansi-rendered colors (it is built with `generating_pkgdown_index = TRUE`).
+# The previous option values are restored once the document is knit (via the
+# `document` hook) so rendering the README in an interactive session does not
+# leave cli colors/hyperlinks permanently disabled.
 if (!isTRUE(params$generating_pkgdown_index)) {
-  options(cli.num_colors = 1, cli.hyperlink = FALSE)
+  old_cli_opts <- options(cli.num_colors = 1, cli.hyperlink = FALSE)
+  knitr::knit_hooks$set(document = function(x) {
+    options(old_cli_opts)
+    x
+  })
 }
 ```
 
