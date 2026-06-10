@@ -170,6 +170,8 @@ ir_get_options()
 #>  → cup = as.integer(cup)
 #>  → resistance.Ohm = as.numeric(resistance.Ohm)
 #>  → nominal.Ohm = as.numeric(nominal.Ohm)
+#> Dataset vendor_data_table:
+#>  → (.*) = keep_as_is(all_matches("(.*)"))
 #> 
 #> 
 #> $debug

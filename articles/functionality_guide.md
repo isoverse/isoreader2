@@ -86,12 +86,12 @@ isofiles <- file_paths |> ir_read_isofiles()
 ``` fansi
 → Trying to install isoextract for your operating system isoextract-linux-x64
   (this requires an internet connection and may take a moment)...
-✔ [868ms] ir_check_isoextract() successfully installed isoextract version
-0.2.0.0
+✔ [1.9s] ir_check_isoextract() successfully installed isoextract version
+0.2.1.0
 
-✔ [182ms] ir_extract_isofiles() finished extracting 2 files/archives
+✔ [191ms] ir_extract_isofiles() finished extracting 2 files/archives
 
-✔ [189ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+✔ [489ms] ir_read_isofiles() finished reading 2 isotope data files/archives
 ```
 
 ``` r
@@ -148,7 +148,7 @@ isofiles |> ir_save_isofiles(file.path("tmp", "my_isofiles"))
 ```
 
 ``` fansi
-✔ [67ms] ir_save_isofiles() saved 2 isofiles to tmp/my_isofiles.rds
+✔ [52ms] ir_save_isofiles() saved 2 isofiles to tmp/my_isofiles.rds
 ```
 
 ``` r
@@ -176,7 +176,7 @@ dataset <- isofiles |> ir_aggregate_isofiles()
 ```
 
 ``` fansi
-✔ [237ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+✔ [252ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 intensity in mV) from 2 files using the standard aggregator
 ```
 
@@ -306,6 +306,8 @@ Dataset resistors:
  → cup = as.integer(cup)
  → resistance.Ohm = as.numeric(resistance.Ohm)
  → nominal.Ohm = as.numeric(nominal.Ohm)
+Dataset vendor_data_table:
+ → (.*) = keep_as_is(all_matches("(.*)"))
 ```
 
 ``` r
@@ -315,8 +317,9 @@ isofiles |> ir_aggregate_isofiles(aggregator = "extended")
 ```
 
 ``` fansi
-✔ [280ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
-intensity in mV), and resistors (8) from 2 files using the extended aggregator
+✔ [573ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
+intensity in mV), resistors (8), and vendor_data_table (25) from 2 files using
+the extended aggregator
 ```
 
 ``` fansi
@@ -340,6 +343,33 @@ channel, config (all NA)
 ``` fansi
 → resistors (8): uidx, species, config (all NA), channel, mass, cup,
 resistance.Ohm, nominal.Ohm (all NA)
+```
+
+``` fansi
+→ vendor_data_table (25): uidx, analysis, species, Start [s], Rt [s], End [s],
+Ampl 28 [mV] (22 NA), Ampl 29 [mV] (22 NA), Ampl 30 [mV] (22 NA), BGD 28 [mV]
+(22 NA), BGD 29 [mV] (22 NA), BGD 30 [mV] (22 NA), Nr., rIntensity 28 [mVs] (22
+NA), rIntensity 29 [mVs] (22 NA), rIntensity 30 [mVs] (22 NA), rIntensity All
+[mVs], Intensity 28 [Vs] (22 NA), Intensity 29 [Vs] (22 NA), Intensity 30 [Vs]
+(22 NA), Intensity All [Vs], Sample Dilution [%] (19 NA), List First Peak (22
+NA), rR 29N2/28N2 (22 NA), Is Ref.?, R 29N2/28N2 (22 NA), Ref. Name, rd
+29N2/28N2 [per mil] (22 NA), d 29N2/28N2 [per mil] (22 NA), R 15N/14N (22 NA),
+δ 15N/14N [per mil] (22 NA), AT% 15N/14N [%] (22 NA), Rps 29N2/28N2 (24 NA),
+Ampl 44 [mV] (22 NA), Ampl 45 [mV] (22 NA), Ampl 46 [mV] (22 NA), BGD 44 [mV]
+(22 NA), BGD 45 [mV] (22 NA), BGD 46 [mV] (22 NA), rIntensity 44 [mVs] (22 NA),
+rIntensity 45 [mVs] (22 NA), rIntensity 46 [mVs] (22 NA), Intensity 44 [Vs] (22
+NA), Intensity 45 [Vs] (22 NA), Intensity 46 [Vs] (22 NA), rR 45CO2/44CO2 (22
+NA), rR 46CO2/44CO2 (22 NA), R 45CO2/44CO2 (22 NA), rd 45CO2/44CO2 [per mil]
+(22 NA), d 45CO2/44CO2 [per mil] (22 NA), R 46CO2/44CO2 (22 NA), rd 46CO2/44CO2
+[per mil] (22 NA), d 46CO2/44CO2 [per mil] (22 NA), R 13C/12C (22 NA), δ
+13C/12C [per mil] (22 NA), AT% 13C/12C [%] (22 NA), R 18O/16O (22 NA), δ
+18O/16O [per mil] (22 NA), AT% 18O/16O [%] (22 NA), R 17O/16O (22 NA), d
+17O/16O (22 NA), Rps 45CO2/44CO2 (24 NA), Rps 46CO2/44CO2 (24 NA), Ampl 2 [mV]
+(6 NA), Ampl 3 [mV] (6 NA), BGD 2 [mV] (6 NA), BGD 3 [mV] (6 NA), rIntensity 2
+[mVs] (6 NA), rIntensity 3 [mVs] (6 NA), Intensity 2 [Vs] (6 NA), Intensity 3
+[Vs] (6 NA), rR 3H2/2H2 (6 NA), R 3H2/2H2 (6 NA), rd 3H2/2H2 [per mil] (6 NA),
+d 3H2/2H2 [per mil] (6 NA), R 2H/1H (6 NA), δ 2H/1H [per mil] (6 NA), AT% 2H/1H
+[%] (6 NA), Rps 3H2/2H2 (20 NA)
 ```
 
 ``` fansi
@@ -411,7 +441,7 @@ isofiles |> ir_aggregate_isofiles(aggregator = "my_aggregator")
 ```
 
 ``` fansi
-✔ [147ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+✔ [163ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 intensity in mV) from 2 files using the my_aggregator aggregator
 ```
 
@@ -581,7 +611,7 @@ dataset |> ir_get_metadata()
 ```
 
 ``` fansi
-✔ [4ms] ir_get_data() retrieved 2 records from metadata
+✔ [5ms] ir_get_data() retrieved 2 records from metadata
 ```
 
 ``` fansi
@@ -605,7 +635,7 @@ dataset |> ir_get_traces()
 ```
 
 ``` fansi
-✔ [9ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [10ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
@@ -624,6 +654,65 @@ dataset |> ir_get_traces()
  9     1        1 continuous_flow_ea_ex… N2      28    N2: …  1.88          21.1
 10     1        1 continuous_flow_ea_ex… N2      28    N2: …  2.09          21.0
 # ℹ 24,505 more rows
+```
+
+#### bonus `ir_get_vendor_data_table()`
+
+Some file formats also store the vendor’s own computed results table
+(the table Isodat shows in its results view: per-peak or per-cycle
+intensities, retention times, ratios, deltas, etc.). This
+`vendor_data_table` is **only available from a few formats** — the
+isodat `.dxf`, `.cf`, `.did`, and `.caf` files — and it is **only
+aggregated by the `"extended"` aggregator** (it is dropped by the
+default `"standard"` and `"minimal"` aggregators). Its columns are kept
+under their original names (with units, e.g. `"Rt [s]"`), numeric by
+default with the rare string/integer columns (e.g. `"Ref. Name"`,
+`"Nr."`) kept as-is.
+
+``` r
+
+# aggregate with the extended aggregator so the vendor data table is included
+dataset_ext <- isofiles |> ir_aggregate_isofiles(aggregator = "extended")
+```
+
+``` fansi
+✔ [590ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
+intensity in mV), resistors (8), and vendor_data_table (25) from 2 files using
+the extended aggregator
+```
+
+``` r
+
+# retrieve the vendor data table (joined with the file metadata)
+dataset_ext |> ir_get_vendor_data_table()
+```
+
+``` fansi
+✔ [8ms] ir_get_data() retrieved 25 records from the combination of metadata (2)
+and vendor_data_table (25) via uidx and analysis
+```
+
+``` fansi
+# A tibble: 25 × 80
+    uidx analysis file_name               species `Start [s]` `Rt [s]` `End [s]`
+   <int>    <int> <chr>                   <chr>         <dbl>    <dbl>     <dbl>
+ 1     1        1 continuous_flow_ea_exa… N2             40.1     60.0      63.3
+ 2     1        1 continuous_flow_ea_exa… N2             90.9    111.      114. 
+ 3     1        1 continuous_flow_ea_exa… N2            126.     155.      217. 
+ 4     1        1 continuous_flow_ea_exa… CO2           274.     300.      366. 
+ 5     1        1 continuous_flow_ea_exa… CO2           417.     436.      446. 
+ 6     1        1 continuous_flow_ea_exa… CO2           467.     487.      497. 
+ 7     2        1 continuous_flow_gc_exa… H2            283.     286.      293. 
+ 8     2        1 continuous_flow_gc_exa… H2            318.     321.      328. 
+ 9     2        1 continuous_flow_gc_exa… H2            606.     612.      635. 
+10     2        1 continuous_flow_gc_exa… H2            666.     672.      699. 
+# ℹ 15 more rows
+# ℹ 73 more variables: `Ampl 28 [mV]` <dbl>, `Ampl 29 [mV]` <dbl>,
+#   `Ampl 30 [mV]` <dbl>, `BGD 28 [mV]` <dbl>, `BGD 29 [mV]` <dbl>,
+#   `BGD 30 [mV]` <dbl>, Nr. <int>, `rIntensity 28 [mVs]` <dbl>,
+#   `rIntensity 29 [mVs]` <dbl>, `rIntensity 30 [mVs]` <dbl>,
+#   `rIntensity All [mVs]` <dbl>, `Intensity 28 [Vs]` <dbl>,
+#   `Intensity 29 [Vs]` <dbl>, `Intensity 30 [Vs]` <dbl>, …
 ```
 
 ### `ir_filter_metadata()` / `ir_mutate_metadata()` / `ir_join_metadata()`
@@ -686,7 +775,7 @@ objects that you can further customize. To add your own ggplot2 layers
 dataset |> ir_plot_continuous_flow()
 ```
 
-![](functionality_guide_files/figure-html/unnamed-chunk-18-1.png)
+![](functionality_guide_files/figure-html/unnamed-chunk-19-1.png)
 
 ### `ir_plot_dual_inlet()`
 
@@ -700,19 +789,19 @@ data_folder |>
 ```
 
 ``` fansi
-✔ [139ms] ir_extract_isofiles() finished extracting 2 files/archives
+✔ [138ms] ir_extract_isofiles() finished extracting 2 files/archives
 ```
 
 ``` fansi
-✔ [137ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+✔ [546ms] ir_read_isofiles() finished reading 2 isotope data files/archives
 ```
 
 ``` fansi
-✔ [245ms] ir_aggregate_isofiles() aggregated metadata (2) and cycles (192,
+✔ [272ms] ir_aggregate_isofiles() aggregated metadata (2) and cycles (192,
 intensity in V) from 2 files using the standard aggregator
 ```
 
-![](functionality_guide_files/figure-html/unnamed-chunk-19-1.png)
+![](functionality_guide_files/figure-html/unnamed-chunk-20-1.png)
 
 ### `ir_plot_scans()`
 
@@ -728,19 +817,19 @@ data_folder |>
 ```
 
 ``` fansi
-✔ [120ms] ir_extract_isofiles() finished extracting 4 files/archives
+✔ [125ms] ir_extract_isofiles() finished extracting 4 files/archives
 ```
 
 ``` fansi
-✔ [204ms] ir_read_isofiles() finished reading 4 isotope data files/archives
+✔ [190ms] ir_read_isofiles() finished reading 4 isotope data files/archives
 ```
 
 ``` fansi
-✔ [347ms] ir_aggregate_isofiles() aggregated metadata (4) and scans (17.8k,
+✔ [378ms] ir_aggregate_isofiles() aggregated metadata (4) and scans (17.8k,
 intensity in V) from 4 files using the standard aggregator
 ```
 
-![](functionality_guide_files/figure-html/unnamed-chunk-20-1.png)
+![](functionality_guide_files/figure-html/unnamed-chunk-21-1.png)
 
 ## Exporting data
 
@@ -770,6 +859,6 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [1.1s] ir_export_to_excel() exported 2 rows of metadata and 24.5k rows of
+✔ [969ms] ir_export_to_excel() exported 2 rows of metadata and 24.5k rows of
 traces to tmp/my_dataset.xlsx
 ```

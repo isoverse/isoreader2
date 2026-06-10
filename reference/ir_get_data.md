@@ -2,7 +2,7 @@
 
 Retrieve a specific subset of the aggregated data into a single data
 frame by specifying which columns to take from each dataset (metadata,
-traces, cycles, scans, resistors) using
+traces, cycles, scans, resistors, vendor_data_table) using
 [`dplyr::select()`](https://dplyr.tidyverse.org/reference/select.html)
 syntax. If data from more than one dataset is selected (e.g. some
 columns from `traces` AND some from `resistors`), the datasets are
@@ -24,6 +24,7 @@ ir_get_data(
   cycles = NULL,
   scans = NULL,
   resistors = NULL,
+  vendor_data_table = NULL,
   by = c("uidx", "analysis", "config", "species", "channel", "mass")
 )
 
@@ -51,6 +52,12 @@ ir_get_scans(
   aggregated_data,
   metadata = c("file_name"),
   by = c("uidx", "config")
+)
+
+ir_get_vendor_data_table(
+  aggregated_data,
+  metadata = c("file_name"),
+  by = c("uidx", "analysis")
 )
 ```
 
@@ -91,6 +98,12 @@ ir_get_scans(
   [`dplyr::select()`](https://dplyr.tidyverse.org/reference/select.html)
   syntax is supported
 
+- vendor_data_table:
+
+  columns to get from the aggregated `vendor_data_table`, all
+  [`dplyr::select()`](https://dplyr.tidyverse.org/reference/select.html)
+  syntax is supported
+
 - by:
 
   character vector of column names used as join keys when combining data
@@ -118,3 +131,9 @@ a tibble
 
 - `ir_get_scans()`: shortcut for retrieving all `scans` columns (i.e.
   `scans = dplyr::everything()`), keyed by the selected `metadata`
+
+- `ir_get_vendor_data_table()`: shortcut for retrieving all
+  `vendor_data_table` columns (i.e.
+  `vendor_data_table = dplyr::everything()`), keyed by the selected
+  `metadata`. Only available when aggregated with the `"extended"`
+  aggregator.

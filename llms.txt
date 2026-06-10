@@ -302,6 +302,7 @@ These functions combine the data from multiple isofiles for combined use
   [`ir_get_traces()`](https://isoreader2.isoverse.org/reference/ir_get_data.md)
   [`ir_get_cycles()`](https://isoreader2.isoverse.org/reference/ir_get_data.md)
   [`ir_get_scans()`](https://isoreader2.isoverse.org/reference/ir_get_data.md)
+  [`ir_get_vendor_data_table()`](https://isoreader2.isoverse.org/reference/ir_get_data.md)
   : Get data frame from aggregated data
 
 ## Metadata operations
