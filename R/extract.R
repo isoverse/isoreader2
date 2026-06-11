@@ -13,6 +13,9 @@
 #'   a successful check (default: `TRUE`)
 #' @param source the URL (or local path) where to find isoextract, by default this is the latests release of the executables on github
 #' @param ... passed on to `download.file` if (re-) installing isoextract
+#' @return called for its side effect of ensuring a working isoextract
+#'   executable (at least `min_version`) is installed; returns `NULL` invisibly
+#'   and aborts if a suitable isoextract cannot be made available
 #' @export
 ir_check_isoextract <- function(
   install_if_missing = !on_cran(),
@@ -219,6 +222,8 @@ check_file_paths_parameter <- function(file_paths) {
 #'   pretty-printed format (default: `FALSE`). Useful for debugging; has no
 #'   effect on the data read back by [ir_read_isofiles()]. Note that
 #'   pretty-printed files are larger than compact ones.
+#' @return called for its side effect of running isoextract to write a `.json`
+#'   sidecar file next to each input file; returns `NULL` invisibly
 #' @export
 ir_extract_isofiles <- function(
   file_paths,

@@ -24,6 +24,10 @@ pretty-printed files are larger than compact ones.}
 
 \item{show_problems}{whether to show problems encountered along the way (rather than just keeping track of them with \code{\link[=ir_get_problems]{ir_get_problems()}}). Set to \code{show_problems = FALSE} to turn off the live printout. Either way, all encountered problems can be retrieved with running \code{\link[=ir_get_problems]{ir_get_problems()}} for the returned list}
 }
+\value{
+called for its side effect of running isoextract to write a \code{.json}
+sidecar file next to each input file; returns \code{NULL} invisibly
+}
 \description{
 run the isoextract executable on a vector of file paths
 this is usually not called directly

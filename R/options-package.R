@@ -12,6 +12,8 @@
 #' ir_get_options()
 #'
 #' @param ... set package options, syntax identical to [options()]
+#' @return `ir_options()` and `ir_get_options()` return a named list of option
+#'   values; `ir_get_option()` returns the value of the single requested option.
 #' @describeIn ir_options set/get option values
 #' @export
 ir_options <- function(...) {

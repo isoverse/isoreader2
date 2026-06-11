@@ -32,6 +32,11 @@ a successful check (default: \code{TRUE})}
 
 \item{...}{passed on to \code{download.file} if (re-) installing isoextract}
 }
+\value{
+called for its side effect of ensuring a working isoextract
+executable (at least \code{min_version}) is installed; returns \code{NULL} invisibly
+and aborts if a suitable isoextract cannot be made available
+}
 \description{
 By default, this will install isoextract if it is missing or outdated.
 This function runs automatically when needed and does not usually need to be called directly by the user.

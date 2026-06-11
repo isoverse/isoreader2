@@ -42,6 +42,8 @@ intensity_unit_info <- function(unit) {
 #'   `dataset` and `resistors` it is included in the join key.
 #' @param units target unit, one of `"mV"`, `"V"`, `"fA"`, `"pA"`, `"nA"`,
 #'   `"\u00b5A"`, `"mA"`, `"A"`, `"cps"`.
+#' @return the `dataset` with its `intensity.*` column converted to the target
+#'   `units` and renamed accordingly (e.g. `intensity.mV`)
 #' @export
 ir_convert_intensity <- function(
   dataset,

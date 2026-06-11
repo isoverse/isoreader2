@@ -22,6 +22,10 @@ current/CPS; ignored otherwise. If a \code{config} column is present in both
 \item{units}{target unit, one of \code{"mV"}, \code{"V"}, \code{"fA"}, \code{"pA"}, \code{"nA"},
 \code{"\\u00b5A"}, \code{"mA"}, \code{"A"}, \code{"cps"}.}
 }
+\value{
+the \code{dataset} with its \verb{intensity.*} column converted to the target
+\code{units} and renamed accordingly (e.g. \code{intensity.mV})
+}
 \description{
 Note: this function is rarely called directly, it's run as part of ir_aggregate_isofiles to standardize the trace/cycle/scan datasets before aggregation.
 }

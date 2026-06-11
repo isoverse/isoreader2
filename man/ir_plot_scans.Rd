@@ -45,8 +45,9 @@ to suppress faceting.}
 \item{nrow, ncol}{number of rows and columns of facet panels (\code{nrow} default
 \code{NULL} lets ggplot2 choose; \code{ncol} default \code{1} stacks the panels in a
 single column). Only applies when \code{facet} is a single variable or
-expression (faceted with \code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}); ignored with a warning
-when \code{facet} is a formula (faceted with \code{\link[ggplot2:facet_grid]{ggplot2::facet_grid()}}).}
+expression (faceted with \code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}); ignored when \code{facet} is a
+formula (faceted with \code{\link[ggplot2:facet_grid]{ggplot2::facet_grid()}}), with a warning if you set
+them explicitly.}
 
 \item{color}{column or expression for the colour aesthetic (default:
 \code{trace}, the per-species/mass trace identifier, e.g. \code{"CO2: 44"})}

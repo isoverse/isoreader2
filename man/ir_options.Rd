@@ -20,6 +20,10 @@ ir_get_option(x)
 
 \item{x}{name of the specific option to retrieve}
 }
+\value{
+\code{ir_options()} and \code{ir_get_options()} return a named list of option
+values; \code{ir_get_option()} returns the value of the single requested option.
+}
 \description{
 These options are best set via \code{\link[=ir_options]{ir_options()}} and queried via \code{\link[=ir_get_option]{ir_get_option()}}.
 However, the base functions \code{\link[=options]{options()}} and \code{\link[=getOption]{getOption()}} work as well but require

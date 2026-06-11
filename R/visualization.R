@@ -59,6 +59,7 @@ add_facets <- function(
   nrow = NULL,
   ncol = NULL,
   ...,
+  geometry_set = FALSE,
   .env = caller_env()
 ) {
   if (rlang::quo_is_null(facet_quo)) {
@@ -78,7 +79,8 @@ add_facets <- function(
         call = .env
       )
     }
-    if (!is.null(nrow) || !is.null(ncol)) {
+    # only warn if the user explicitly set nrow/ncol (not the defaults)
+    if (geometry_set && (!is.null(nrow) || !is.null(ncol))) {
       cli_warn(
         c(
           "!" = "{.arg nrow}/{.arg ncol} only apply when faceting a single variable or expression ({.fn facet_wrap}) and are ignored for the formula facet {.emph {rlang::as_label(facet_quo)}} ({.fn facet_grid})"
@@ -158,8 +160,9 @@ sort_trace_factor <- function(plot_data) {
 #' @param nrow,ncol number of rows and columns of facet panels (`nrow` default
 #'   `NULL` lets ggplot2 choose; `ncol` default `1` stacks the panels in a
 #'   single column). Only applies when `facet` is a single variable or
-#'   expression (faceted with [ggplot2::facet_wrap()]); ignored with a warning
-#'   when `facet` is a formula (faceted with [ggplot2::facet_grid()]).
+#'   expression (faceted with [ggplot2::facet_wrap()]); ignored when `facet` is a
+#'   formula (faceted with [ggplot2::facet_grid()]), with a warning if you set
+#'   them explicitly.
 #' @param color column or expression for the colour aesthetic (default:
 #'   `trace`, the per-species/mass trace identifier, e.g. `"CO2: 44"`)
 #' @param linetype column or expression for the linetype aesthetic (default:
@@ -428,7 +431,16 @@ ir_plot_scans <- function(
   }
 
   # facets
-  p <- add_facets(p, facet_quo, plot_data, scales, nrow, ncol, ...)
+  p <- add_facets(
+    p,
+    facet_quo,
+    plot_data,
+    scales,
+    nrow,
+    ncol,
+    ...,
+    geometry_set = !missing(nrow) || !missing(ncol)
+  )
 
   # x window: clip display to the requested range
   if (!is.null(x_window)) {
@@ -464,8 +476,9 @@ ir_plot_scans <- function(
 #' @param nrow,ncol number of rows and columns of facet panels (`nrow` default
 #'   `NULL` lets ggplot2 choose; `ncol` default `1` stacks the panels in a
 #'   single column). Only applies when `facet` is a single variable or
-#'   expression (faceted with [ggplot2::facet_wrap()]); ignored with a warning
-#'   when `facet` is a formula (faceted with [ggplot2::facet_grid()]).
+#'   expression (faceted with [ggplot2::facet_wrap()]); ignored when `facet` is a
+#'   formula (faceted with [ggplot2::facet_grid()]), with a warning if you set
+#'   them explicitly.
 #' @param color column or expression for the colour aesthetic (default:
 #'   `trace`, the per-species/mass trace identifier, e.g. `"CO2: 44"`)
 #' @param linetype column or expression for the linetype aesthetic (default:
@@ -715,7 +728,16 @@ ir_plot_continuous_flow <- function(
   }
 
   # facets
-  p <- add_facets(p, facet_quo, plot_data, scales, nrow, ncol, ...)
+  p <- add_facets(
+    p,
+    facet_quo,
+    plot_data,
+    scales,
+    nrow,
+    ncol,
+    ...,
+    geometry_set = !missing(nrow) || !missing(ncol)
+  )
 
   # time window: clip display to the requested range
   if (!is.null(time_window)) {
@@ -752,8 +774,9 @@ ir_plot_continuous_flow <- function(
 #' @param nrow,ncol number of rows and columns of facet panels (`nrow` default
 #'   `NULL` lets ggplot2 choose; `ncol` default `1` stacks the panels in a
 #'   single column). Only applies when `facet` is a single variable or
-#'   expression (faceted with [ggplot2::facet_wrap()]); ignored with a warning
-#'   when `facet` is a formula (faceted with [ggplot2::facet_grid()]).
+#'   expression (faceted with [ggplot2::facet_wrap()]); ignored when `facet` is a
+#'   formula (faceted with [ggplot2::facet_grid()]), with a warning if you set
+#'   them explicitly.
 #' @param color column or expression for the colour aesthetic (default: `mass`)
 #' @param shape column or expression for the point shape aesthetic (default:
 #'   `type`, distinguishing `"standard"` from `"sample"` cycles)
@@ -943,7 +966,16 @@ ir_plot_dual_inlet <- function(
   }
 
   # facets
-  p <- add_facets(p, facet_quo, plot_data, scales, nrow, ncol, ...)
+  p <- add_facets(
+    p,
+    facet_quo,
+    plot_data,
+    scales,
+    nrow,
+    ncol,
+    ...,
+    geometry_set = !missing(nrow) || !missing(ncol)
+  )
 
   p <- p + theme
 
