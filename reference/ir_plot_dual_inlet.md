@@ -64,8 +64,9 @@ ir_plot_dual_inlet(
   column). Only applies when `facet` is a single variable or expression
   (faceted with
   [`ggplot2::facet_wrap()`](https://ggplot2.tidyverse.org/reference/facet_wrap.html));
-  ignored with a warning when `facet` is a formula (faceted with
-  [`ggplot2::facet_grid()`](https://ggplot2.tidyverse.org/reference/facet_grid.html)).
+  ignored when `facet` is a formula (faceted with
+  [`ggplot2::facet_grid()`](https://ggplot2.tidyverse.org/reference/facet_grid.html)),
+  with a warning if you set them explicitly.
 
 - color:
 

@@ -45,3 +45,8 @@ ir_extract_isofiles(
   way, all encountered problems can be retrieved with running
   [`ir_get_problems()`](https://isoreader2.isoverse.org/reference/problems.md)
   for the returned list
+
+## Value
+
+called for its side effect of running isoextract to write a `.json`
+sidecar file next to each input file; returns `NULL` invisibly

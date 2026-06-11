@@ -51,3 +51,9 @@ ir_check_isoextract(
 - ...:
 
   passed on to `download.file` if (re-) installing isoextract
+
+## Value
+
+called for its side effect of ensuring a working isoextract executable
+(at least `min_version`) is installed; returns `NULL` invisibly and
+aborts if a suitable isoextract cannot be made available

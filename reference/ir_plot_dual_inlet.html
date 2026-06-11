@@ -103,8 +103,9 @@ to suppress faceting.</p></dd>
 <dd><p>number of rows and columns of facet panels (<code>nrow</code> default
 <code>NULL</code> lets ggplot2 choose; <code>ncol</code> default <code>1</code> stacks the panels in a
 single column). Only applies when <code>facet</code> is a single variable or
-expression (faceted with <code><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">ggplot2::facet_wrap()</a></code>); ignored with a warning
-when <code>facet</code> is a formula (faceted with <code><a href="https://ggplot2.tidyverse.org/reference/facet_grid.html" class="external-link">ggplot2::facet_grid()</a></code>).</p></dd>
+expression (faceted with <code><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">ggplot2::facet_wrap()</a></code>); ignored when <code>facet</code> is a
+formula (faceted with <code><a href="https://ggplot2.tidyverse.org/reference/facet_grid.html" class="external-link">ggplot2::facet_grid()</a></code>), with a warning if you set
+them explicitly.</p></dd>
 
 
 <dt id="arg-color">color<a class="anchor" aria-label="anchor" href="#arg-color"></a></dt>

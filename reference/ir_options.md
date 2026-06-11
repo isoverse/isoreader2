@@ -35,6 +35,12 @@ ir_get_option(x)
 
   name of the specific option to retrieve
 
+## Value
+
+`ir_options()` and `ir_get_options()` return a named list of option
+values; `ir_get_option()` returns the value of the single requested
+option.
+
 ## Functions
 
 - `ir_options()`: set/get option values

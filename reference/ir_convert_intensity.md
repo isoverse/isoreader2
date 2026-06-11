@@ -33,6 +33,11 @@ ir_convert_intensity(
   target unit, one of `"mV"`, `"V"`, `"fA"`, `"pA"`, `"nA"`,
   `"\u00b5A"`, `"mA"`, `"A"`, `"cps"`.
 
+## Value
+
+the `dataset` with its `intensity.*` column converted to the target
+`units` and renamed accordingly (e.g. `intensity.mV`)
+
 ## Details
 
 Converts the intensity column of a dataset between voltage, current, and
