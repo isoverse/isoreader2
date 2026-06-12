@@ -101,6 +101,14 @@ values; <code>ir_get_option()</code> returns the value of the single requested o
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># All default options</span></span></span>
 <span class="r-in"><span><span class="fu">ir_get_options</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aggregators</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $aggregators$metadata</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> ────────────────────────────── <span style="font-weight: bold;">Aggregator </span><span style="font-weight: bold; font-style: italic;">metadata</span> ─────────────────────────────</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Dataset</span> <span style="color: #0000BB;">metadata</span>:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">file_name</span> = <span style="font-style: italic;">as.character(sub(file_name, pattern = "\\.[^.]+$", replacement =</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-style: italic;">""))</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">analysis</span> = <span style="font-style: italic;">as.integer(analysis)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">timestamp</span> = <span style="font-style: italic;">as.POSIXct(timestamp)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $aggregators$minimal</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ────────────────────────────── <span style="font-weight: bold;">Aggregator </span><span style="font-weight: bold; font-style: italic;">minimal</span> ──────────────────────────────</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Dataset</span> <span style="color: #0000BB;">metadata</span>:</span>

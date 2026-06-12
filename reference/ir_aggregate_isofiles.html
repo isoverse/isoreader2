@@ -63,7 +63,9 @@ Only applied when the aggregator includes any of those datasets. Default is <cod
 <dt id="arg-aggregator">aggregator<a class="anchor" aria-label="anchor" href="#arg-aggregator"></a></dt>
 <dd><p>typically the name of a registered aggregator (see all with <code>ir_get_option("aggregators")</code>),
 default is the "standard" aggregator included in the package (<code>ir_get_aggregator("standard")</code>).
-Other options are "minimal" (<code>ir_get_aggregator("minimal")</code>) and "extended" (<code>ir_get_aggregator("extended")</code>).
+The other built-in options, from smallest to largest, are "metadata" (<code>ir_get_aggregator("metadata")</code>, metadata only),
+"minimal" (<code>ir_get_aggregator("minimal")</code>, metadata plus the core data series), and
+"extended" (<code>ir_get_aggregator("extended")</code>, also resistors and the vendor data table).
 The <code>aggregator</code> parameter can can also directly be an aggregator tibble (created/modified with <code><a href="ir_aggregator.html">ir_start_aggregator()</a></code>
 and/or <code><a href="ir_aggregator.html">ir_add_to_aggregator()</a></code>) that defines which data should be aggregated and how.</p></dd>
 

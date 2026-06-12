@@ -40,10 +40,13 @@ ir_aggregate_isofiles(
 
   typically the name of a registered aggregator (see all with
   `ir_get_option("aggregators")`), default is the "standard" aggregator
-  included in the package (`ir_get_aggregator("standard")`). Other
-  options are "minimal" (`ir_get_aggregator("minimal")`) and "extended"
-  (`ir_get_aggregator("extended")`). The `aggregator` parameter can can
-  also directly be an aggregator tibble (created/modified with
+  included in the package (`ir_get_aggregator("standard")`). The other
+  built-in options, from smallest to largest, are "metadata"
+  (`ir_get_aggregator("metadata")`, metadata only), "minimal"
+  (`ir_get_aggregator("minimal")`, metadata plus the core data series),
+  and "extended" (`ir_get_aggregator("extended")`, also resistors and
+  the vendor data table). The `aggregator` parameter can can also
+  directly be an aggregator tibble (created/modified with
   [`ir_start_aggregator()`](https://isoreader2.isoverse.org/reference/ir_aggregator.md)
   and/or
   [`ir_add_to_aggregator()`](https://isoreader2.isoverse.org/reference/ir_aggregator.md))

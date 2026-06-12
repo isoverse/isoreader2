@@ -73,6 +73,14 @@ option.
 # All default options
 ir_get_options()
 #> $aggregators
+#> $aggregators$metadata
+#> ────────────────────────────── Aggregator metadata ─────────────────────────────
+#> Dataset metadata:
+#>  → file_name = as.character(sub(file_name, pattern = "\\.[^.]+$", replacement =
+#> ""))
+#>  → analysis = as.integer(analysis)
+#>  → timestamp = as.POSIXct(timestamp)
+#> 
 #> $aggregators$minimal
 #> ────────────────────────────── Aggregator minimal ──────────────────────────────
 #> Dataset metadata:

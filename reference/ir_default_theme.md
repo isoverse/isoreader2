@@ -5,7 +5,7 @@ Default isoreader2 plotting theme
 ## Usage
 
 ``` r
-ir_default_theme(text_size = 16, facet_text_size = 20)
+ir_default_theme(text_size = 16, facet_text_size = NULL)
 ```
 
 ## Arguments
@@ -16,7 +16,8 @@ ir_default_theme(text_size = 16, facet_text_size = 20)
 
 - facet_text_size:
 
-  font size for facet strip labels in points (default: `20`)
+  font size for facet strip labels in points. Default `NULL` leaves the
+  strip labels at the inherited base size; set a number to override it.
 
 ## Value
 

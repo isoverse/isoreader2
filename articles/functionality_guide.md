@@ -86,12 +86,12 @@ isofiles <- file_paths |> ir_read_isofiles()
 ``` fansi
 → Trying to install isoextract for your operating system isoextract-linux-x64
   (this requires an internet connection and may take a moment)...
-✔ [873ms] ir_check_isoextract() successfully installed isoextract version
+✔ [1.1s] ir_check_isoextract() successfully installed isoextract version
 0.2.1.0
 
-✔ [190ms] ir_extract_isofiles() finished extracting 2 files/archives
+✔ [189ms] ir_extract_isofiles() finished extracting 2 files/archives
 
-✔ [484ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+✔ [497ms] ir_read_isofiles() finished reading 2 isotope data files/archives
 ```
 
 ``` r
@@ -148,7 +148,7 @@ isofiles |> ir_save_isofiles(file.path("tmp", "my_isofiles"))
 ```
 
 ``` fansi
-✔ [47ms] ir_save_isofiles() saved 2 isofiles to tmp/my_isofiles.rds
+✔ [46ms] ir_save_isofiles() saved 2 isofiles to tmp/my_isofiles.rds
 ```
 
 ``` r
@@ -176,7 +176,7 @@ dataset <- isofiles |> ir_aggregate_isofiles()
 ```
 
 ``` fansi
-✔ [238ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+✔ [241ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 intensity in mV) from 2 files using the standard aggregator
 ```
 
@@ -211,10 +211,13 @@ NA), Pre Script (all NA), Post Script (all NA)
 
 #### bonus `ir_get_aggregator()`
 
-You can optionally use a different aggregator. The `minimal` aggregator
-keeps a smaller set of columns, while the `extended` aggregator is more
-elaborate and provides access to additional columns (such as the
-resistor/cup configuration) from the data files.
+You can optionally use a different aggregator. Besides the default
+`standard` aggregator, the package ships (from smallest to largest) the
+`metadata` aggregator (metadata only), the `minimal` aggregator
+(metadata plus the core data series), and the `extended` aggregator,
+which is more elaborate and provides access to additional columns (such
+as the resistor/cup configuration and the vendor data table) from the
+data files.
 
 ``` r
 
@@ -317,7 +320,7 @@ isofiles |> ir_aggregate_isofiles(aggregator = "extended")
 ```
 
 ``` fansi
-✔ [551ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
+✔ [557ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
 intensity in mV), resistors (8), and vendor_data_table (25) from 2 files using
 the extended aggregator
 ```
@@ -441,7 +444,7 @@ isofiles |> ir_aggregate_isofiles(aggregator = "my_aggregator")
 ```
 
 ``` fansi
-✔ [155ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+✔ [152ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 intensity in mV) from 2 files using the my_aggregator aggregator
 ```
 
@@ -572,7 +575,7 @@ dataset |>
 ```
 
 ``` fansi
-✔ [10ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [11ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
@@ -611,7 +614,7 @@ dataset |> ir_get_metadata()
 ```
 
 ``` fansi
-✔ [4ms] ir_get_data() retrieved 2 records from metadata
+✔ [5ms] ir_get_data() retrieved 2 records from metadata
 ```
 
 ``` fansi
@@ -664,10 +667,10 @@ intensities, retention times, ratios, deltas, etc.). This
 `vendor_data_table` is **only available from a few formats** — the
 isodat `.dxf`, `.cf`, `.did`, and `.caf` files — and it is **only
 aggregated by the `"extended"` aggregator** (it is dropped by the
-default `"standard"` and `"minimal"` aggregators). Its columns are kept
-under their original names (with units, e.g. `"Rt [s]"`), numeric by
-default with the rare string/integer columns (e.g. `"Ref. Name"`,
-`"Nr."`) kept as-is.
+default `"standard"` aggregator as well as the `"minimal"` and
+`"metadata"` aggregators). Its columns are kept under their original
+names (with units, e.g. `"Rt [s]"`), numeric by default with the rare
+string/integer columns (e.g. `"Ref. Name"`, `"Nr."`) kept as-is.
 
 ``` r
 
@@ -676,7 +679,7 @@ dataset_ext <- isofiles |> ir_aggregate_isofiles(aggregator = "extended")
 ```
 
 ``` fansi
-✔ [558ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
+✔ [561ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
 intensity in mV), resistors (8), and vendor_data_table (25) from 2 files using
 the extended aggregator
 ```
@@ -789,15 +792,15 @@ data_folder |>
 ```
 
 ``` fansi
-✔ [154ms] ir_extract_isofiles() finished extracting 2 files/archives
+✔ [140ms] ir_extract_isofiles() finished extracting 2 files/archives
 ```
 
 ``` fansi
-✔ [495ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+✔ [466ms] ir_read_isofiles() finished reading 2 isotope data files/archives
 ```
 
 ``` fansi
-✔ [257ms] ir_aggregate_isofiles() aggregated metadata (2) and cycles (192,
+✔ [252ms] ir_aggregate_isofiles() aggregated metadata (2) and cycles (192,
 intensity in V) from 2 files using the standard aggregator
 ```
 
@@ -817,15 +820,15 @@ data_folder |>
 ```
 
 ``` fansi
-✔ [309ms] ir_extract_isofiles() finished extracting 4 files/archives
+✔ [122ms] ir_extract_isofiles() finished extracting 4 files/archives
 ```
 
 ``` fansi
-✔ [180ms] ir_read_isofiles() finished reading 4 isotope data files/archives
+✔ [176ms] ir_read_isofiles() finished reading 4 isotope data files/archives
 ```
 
 ``` fansi
-✔ [332ms] ir_aggregate_isofiles() aggregated metadata (4) and scans (17.8k,
+✔ [334ms] ir_aggregate_isofiles() aggregated metadata (4) and scans (17.8k,
 intensity in V) from 4 files using the standard aggregator
 ```
 
@@ -859,6 +862,6 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [957ms] ir_export_to_excel() exported 2 rows of metadata and 24.5k rows of
+✔ [1.1s] ir_export_to_excel() exported 2 rows of metadata and 24.5k rows of
 traces to tmp/my_dataset.xlsx
 ```
