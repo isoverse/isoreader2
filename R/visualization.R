@@ -18,10 +18,12 @@ label_scientific <- function() {
 #' Default isoreader2 plotting theme
 #'
 #' @param text_size base font size in points (default: `16`)
-#' @param facet_text_size font size for facet strip labels in points (default: `20`)
+#' @param facet_text_size font size for facet strip labels in points. Default
+#'   `NULL` leaves the strip labels at the inherited base size; set a number to
+#'   override it.
 #' @return a `ggplot2` theme object
 #' @export
-ir_default_theme <- function(text_size = 16, facet_text_size = 20) {
+ir_default_theme <- function(text_size = 16, facet_text_size = NULL) {
   check_arg(
     text_size,
     is.numeric(text_size) && length(text_size) == 1L,
@@ -29,19 +31,26 @@ ir_default_theme <- function(text_size = 16, facet_text_size = 20) {
   )
   check_arg(
     facet_text_size,
-    is.numeric(facet_text_size) && length(facet_text_size) == 1L,
-    "must be a single number"
+    is.null(facet_text_size) ||
+      (is.numeric(facet_text_size) && length(facet_text_size) == 1L),
+    "must be NULL or a single number"
   )
-  ggplot2::theme_bw() +
+  theme <- ggplot2::theme_bw() +
     ggplot2::theme(
       text = ggplot2::element_text(size = text_size),
-      strip.text = ggplot2::element_text(size = facet_text_size),
       panel.grid = ggplot2::element_blank(),
       panel.background = ggplot2::element_blank(),
       plot.background = ggplot2::element_blank(),
       strip.background = ggplot2::element_blank(),
       legend.background = ggplot2::element_blank()
     )
+  if (!is.null(facet_text_size)) {
+    theme <- theme +
+      ggplot2::theme(
+        strip.text = ggplot2::element_text(size = facet_text_size)
+      )
+  }
+  theme
 }
 
 # internal: add faceting to a plot based on the captured `facet` expression.

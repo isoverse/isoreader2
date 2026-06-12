@@ -4,12 +4,14 @@
 \alias{ir_default_theme}
 \title{Default isoreader2 plotting theme}
 \usage{
-ir_default_theme(text_size = 16, facet_text_size = 20)
+ir_default_theme(text_size = 16, facet_text_size = NULL)
 }
 \arguments{
 \item{text_size}{base font size in points (default: \code{16})}
 
-\item{facet_text_size}{font size for facet strip labels in points (default: \code{20})}
+\item{facet_text_size}{font size for facet strip labels in points. Default
+\code{NULL} leaves the strip labels at the inherited base size; set a number to
+override it.}
 }
 \value{
 a \code{ggplot2} theme object

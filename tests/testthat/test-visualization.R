@@ -36,9 +36,13 @@ scn_data <- function() {
 test_that("ir_default_theme()", {
   expect_s3_class(ir_default_theme(), "theme")
   expect_error(ir_default_theme(text_size = "big"), "must be a single number")
+  # facet_text_size is NULL by default: strip text keeps its inherited
+  # (relative) size; supplying a number sets an absolute override
+  expect_s3_class(ir_default_theme()$strip.text$size, "rel")
+  expect_equal(ir_default_theme(facet_text_size = 20)$strip.text$size, 20)
   expect_error(
     ir_default_theme(facet_text_size = c(1, 2)),
-    "must be a single number"
+    "must be NULL or a single number"
   )
 })
 
