@@ -13,6 +13,7 @@ ir_check_isoextract(
   source =
     paste0("https://github.com/isoverse/IsofileExtractor/releases/download/isoextract-v",
     min_version),
+  check_isosolfs = FALSE,
   ...
 )
 }
@@ -30,12 +31,21 @@ a successful check (default: \code{TRUE})}
 
 \item{source}{the URL (or local path) where to find isoextract, by default this is the latests release of the executables on github}
 
-\item{...}{passed on to \code{download.file} if (re-) installing isoextract}
+\item{check_isosolfs}{whether to also ensure the \code{isosolfs} helper executable
+is installed. \code{isosolfs} is required to read Qtegra notebooks (\code{.imexp}
+files) and is released alongside isoextract; the same \code{install_if_missing} /
+\code{reinstall_if_outdated} / \code{reinstall_always} / \code{show_version} settings are
+applied to it. Default is currently \code{FALSE} because isosolfs has not been
+released yet (enabling it would abort all reads); set to \code{TRUE} (or this
+will become the default) once isosolfs is available.}
+
+\item{...}{passed on to \code{download.file} if (re-) installing isoextract (and isosolfs)}
 }
 \value{
 called for its side effect of ensuring a working isoextract
-executable (at least \code{min_version}) is installed; returns \code{NULL} invisibly
-and aborts if a suitable isoextract cannot be made available
+executable (at least \code{min_version}) is installed — and, when
+\code{check_isosolfs = TRUE}, isosolfs as well; returns \code{NULL} invisibly and
+aborts if a required executable cannot be made available
 }
 \description{
 By default, this will install isoextract if it is missing or outdated.

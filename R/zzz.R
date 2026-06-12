@@ -1,8 +1,8 @@
 # on package load
 .onAttach <- function(libname, pkgname) {
   # register aggregators
-  agg_minimal <-
-    ir_start_aggregator("minimal") |>
+  agg_metadata <-
+    ir_start_aggregator("metadata") |>
     # METADATA section ==================
     ir_add_to_aggregator(
       column = "file_name",
@@ -11,6 +11,11 @@
     ) |>
     ir_add_to_aggregator(column = "analysis", cast = "as.integer") |>
     ir_add_to_aggregator(column = "timestamp", cast = "as.POSIXct") |>
+    ir_register_aggregator("metadata")
+
+  # standard aggregator
+  agg_minimal <-
+    agg_metadata |>
     # TRACES section ====================
     ir_add_to_aggregator("traces", "analysis", cast = "as.integer") |>
     ir_add_to_aggregator("traces", "species") |>

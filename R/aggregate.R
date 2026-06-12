@@ -7,7 +7,9 @@
 #' @param isofiles the isotope data files/archives read in by [ir_read_isofiles()]
 #' @param aggregator typically the name of a registered aggregator (see all with `ir_get_option("aggregators")`),
 #' default is the "standard" aggregator included in the package (`ir_get_aggregator("standard")`).
-#' Other options are "minimal" (`ir_get_aggregator("minimal")`) and "extended" (`ir_get_aggregator("extended")`).
+#' The other built-in options, from smallest to largest, are "metadata" (`ir_get_aggregator("metadata")`, metadata only),
+#' "minimal" (`ir_get_aggregator("minimal")`, metadata plus the core data series), and
+#' "extended" (`ir_get_aggregator("extended")`, also resistors and the vendor data table).
 #' The `aggregator` parameter can can also directly be an aggregator tibble (created/modified with [ir_start_aggregator()]
 #' and/or [ir_add_to_aggregator()]) that defines which data should be aggregated and how.
 #' @param intensity_units target intensity unit to convert traces/cycles/scans to before aggregation,

@@ -21,7 +21,9 @@ Only applied when the aggregator includes any of those datasets. Default is \cod
 
 \item{aggregator}{typically the name of a registered aggregator (see all with \code{ir_get_option("aggregators")}),
 default is the "standard" aggregator included in the package (\code{ir_get_aggregator("standard")}).
-Other options are "minimal" (\code{ir_get_aggregator("minimal")}) and "extended" (\code{ir_get_aggregator("extended")}).
+The other built-in options, from smallest to largest, are "metadata" (\code{ir_get_aggregator("metadata")}, metadata only),
+"minimal" (\code{ir_get_aggregator("minimal")}, metadata plus the core data series), and
+"extended" (\code{ir_get_aggregator("extended")}, also resistors and the vendor data table).
 The \code{aggregator} parameter can can also directly be an aggregator tibble (created/modified with \code{\link[=ir_start_aggregator]{ir_start_aggregator()}}
 and/or \code{\link[=ir_add_to_aggregator]{ir_add_to_aggregator()}}) that defines which data should be aggregated and how.}
 

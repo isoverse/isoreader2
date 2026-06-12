@@ -107,7 +107,7 @@ dataset
 
 ### bonus `ir_get_aggregator()`
 
-You can optionally use a different aggregator. The `minimal` aggregator keeps a smaller set of columns, while the `extended` aggregator is more elaborate and provides access to additional columns (such as the resistor/cup configuration) from the data files.
+You can optionally use a different aggregator. Besides the default `standard` aggregator, the package ships (from smallest to largest) the `metadata` aggregator (metadata only), the `minimal` aggregator (metadata plus the core data series), and the `extended` aggregator, which is more elaborate and provides access to additional columns (such as the resistor/cup configuration and the vendor data table) from the data files.
 
 ```{r}
 # minimal vs. extended aggregator
@@ -187,7 +187,7 @@ dataset |> ir_get_traces()
 
 ### bonus `ir_get_vendor_data_table()`
 
-Some file formats also store the vendor's own computed results table (the table Isodat shows in its results view: per-peak or per-cycle intensities, retention times, ratios, deltas, etc.). This `vendor_data_table` is **only available from a few formats** — the isodat `.dxf`, `.cf`, `.did`, and `.caf` files — and it is **only aggregated by the `"extended"` aggregator** (it is dropped by the default `"standard"` and `"minimal"` aggregators). Its columns are kept under their original names (with units, e.g. `"Rt [s]"`), numeric by default with the rare string/integer columns (e.g. `"Ref. Name"`, `"Nr."`) kept as-is.
+Some file formats also store the vendor's own computed results table (the table Isodat shows in its results view: per-peak or per-cycle intensities, retention times, ratios, deltas, etc.). This `vendor_data_table` is **only available from a few formats** — the isodat `.dxf`, `.cf`, `.did`, and `.caf` files — and it is **only aggregated by the `"extended"` aggregator** (it is dropped by the default `"standard"` aggregator as well as the `"minimal"` and `"metadata"` aggregators). Its columns are kept under their original names (with units, e.g. `"Rt [s]"`), numeric by default with the rare string/integer columns (e.g. `"Ref. Name"`, `"Nr."`) kept as-is.
 
 ```{r}
 # aggregate with the extended aggregator so the vendor data table is included

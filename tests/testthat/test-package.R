@@ -11,6 +11,21 @@ test_that("ir_examples_folder() points at the bundled examples", {
   expect_true(length(ir_find_scans(folder)) > 0)
 })
 
+test_that("get_assembly_runtime() / get_assembly_path() resolve the platform", {
+  rid <- get_assembly_runtime()
+  # os-arch identifier matching the released executable names
+  expect_match(rid, "^(osx|linux|win)-(x64|arm64)$")
+  # executable paths are named "<tool>-<runtime>" (with .exe on Windows)
+  for (tool in c("isoextract", "isosolfs")) {
+    exe <- basename(get_assembly_path(tool))
+    expect_true(startsWith(exe, paste0(tool, "-", rid)))
+    expect_equal(grepl("\\.exe$", exe), startsWith(rid, "win"))
+  }
+  # the dedicated wrappers agree with the generic helper
+  expect_identical(get_isoextract_path(), get_assembly_path("isoextract"))
+  expect_identical(get_isosolfs_path(), get_assembly_path("isosolfs"))
+})
+
 test_that("ir_get_supported_file_types() returns the supported types", {
   types <- ir_get_supported_file_types()
   expect_s3_class(types, "tbl_df")
