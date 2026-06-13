@@ -15,6 +15,7 @@ ir_plot_dual_inlet(
   linetype = NULL,
   color_values = palette.colors(),
   scientific = FALSE,
+  cycle_window = NULL,
   n_y_breaks = 5,
   theme = ir_default_theme(),
   ...
@@ -56,6 +57,11 @@ colour palette (default: \code{\link[=palette.colors]{palette.colors()}})}
 
 \item{scientific}{whether to format y axis labels in scientific notation
 (default: \code{FALSE})}
+
+\item{cycle_window}{optional numeric vector of length 2 giving the cycle axis
+display window \code{c(min, max)}. Data just outside the window is retained for
+correct y autoscaling at the edges; \code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} clips the
+display. Default \code{NULL} shows all cycles.}
 
 \item{n_y_breaks}{desired number of y axis tick marks (default: \code{5})}
 

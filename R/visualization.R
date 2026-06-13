@@ -419,8 +419,12 @@ ir_plot_scans <- function(
     ggplot2::scale_y_continuous(
       breaks = scales::pretty_breaks(n_y_breaks),
       labels = if (scientific) label_scientific() else ggplot2::waiver()
-    ) +
-    ggplot2::expand_limits(y = 0)
+    )
+
+  # include 0 in the y range, unless an x window is set (then autoscale to it)
+  if (is.null(x_window)) {
+    p <- p + ggplot2::expand_limits(y = 0)
+  }
 
   # additional aesthetics
   if (!rlang::quo_is_null(color_quo)) {
@@ -456,7 +460,7 @@ ir_plot_scans <- function(
     p <- p + ggplot2::coord_cartesian(xlim = x_window)
   }
 
-  p <- p + theme + labs(x = "time")
+  p <- p + theme
 
   return(p)
 }
@@ -716,8 +720,12 @@ ir_plot_continuous_flow <- function(
       breaks = scales::pretty_breaks(n_y_breaks),
       labels = if (scientific) label_scientific() else ggplot2::waiver(),
       expand = ggplot2::expansion(mult = c(0, 0.05))
-    ) +
-    ggplot2::expand_limits(y = 0)
+    )
+
+  # include 0 in the y range, unless a time window is set (then autoscale to it)
+  if (is.null(time_window)) {
+    p <- p + ggplot2::expand_limits(y = 0)
+  }
 
   # additional aesthetics
   if (!rlang::quo_is_null(color_quo)) {
@@ -796,6 +804,10 @@ ir_plot_continuous_flow <- function(
 #'   colour palette (default: [palette.colors()])
 #' @param scientific whether to format y axis labels in scientific notation
 #'   (default: `FALSE`)
+#' @param cycle_window optional numeric vector of length 2 giving the cycle axis
+#'   display window `c(min, max)`. Data just outside the window is retained for
+#'   correct y autoscaling at the edges; [ggplot2::coord_cartesian()] clips the
+#'   display. Default `NULL` shows all cycles.
 #' @param n_y_breaks desired number of y axis tick marks (default: `5`)
 #' @param theme ggplot2 theme to apply (default: [ir_default_theme()])
 #' @param ... additional arguments passed on to [ggplot2::facet_wrap()] or
@@ -815,6 +827,7 @@ ir_plot_dual_inlet <- function(
   linetype = NULL,
   color_values = palette.colors(),
   scientific = FALSE,
+  cycle_window = NULL,
   n_y_breaks = 5,
   theme = ir_default_theme(),
   ...
@@ -846,6 +859,12 @@ ir_plot_dual_inlet <- function(
     "must be a positive whole number"
   )
   check_arg(scales, rlang::is_scalar_character(scales), "must be a string")
+  check_arg(
+    cycle_window,
+    is.null(cycle_window) ||
+      (is.numeric(cycle_window) && length(cycle_window) == 2),
+    "must be NULL or a numeric vector of length 2 (min, max)"
+  )
 
   # capture aesthetics before any data manipulation
   facet_quo <- rlang::enquo(facet)
@@ -910,6 +929,38 @@ ir_plot_dual_inlet <- function(
 
   y_lab <- paste0("intensity [", intensity_units, "]")
 
+  # cycle window: keep data just outside the limits for correct y autoscaling at edges
+  if (!is.null(cycle_window)) {
+    cycle_range <- range(plot_data$cycle, na.rm = TRUE)
+    line_groups <- intersect(
+      c("uidx", "analysis", "species", "channel", "mass", "type"),
+      names(plot_data)
+    )
+    plot_data <- plot_data |>
+      dplyr::arrange(!!!rlang::syms(c(line_groups, "cycle"))) |>
+      dplyr::mutate(
+        in_range = .data$cycle >= cycle_window[1] &
+          .data$cycle <= cycle_window[2]
+      ) |>
+      dplyr::mutate(
+        .by = line_groups,
+        just_before = !.data$in_range &
+          dplyr::lag(.data$in_range, default = FALSE),
+        just_after = !.data$in_range &
+          dplyr::lead(.data$in_range, default = FALSE)
+      ) |>
+      dplyr::filter(.data$in_range | .data$just_before | .data$just_after) |>
+      dplyr::select(-"in_range", -"just_before", -"just_after")
+    if (nrow(plot_data) == 0) {
+      cli_abort(
+        c(
+          "{.arg cycle_window} [{cycle_window[1]}, {cycle_window[2]}] contains no data",
+          "i" = "the cycle range in the data is [{cycle_range[1]}, {cycle_range[2]}]"
+        )
+      )
+    }
+  }
+
   # sort mass as a factor in numerical order
   if (!is.factor(plot_data$mass)) {
     mass_levels <- as.character(sort(
@@ -946,13 +997,20 @@ ir_plot_dual_inlet <- function(
     ggplot2::geom_line() +
     ggplot2::geom_point() +
     ggplot2::labs(y = y_lab) +
-    ggplot2::scale_x_continuous(breaks = scales::breaks_width(1)) +
+    ggplot2::scale_x_continuous(
+      breaks = scales::breaks_width(1),
+      expand = if (!is.null(cycle_window)) FALSE else ggplot2::waiver()
+    ) +
     ggplot2::scale_y_continuous(
       breaks = scales::pretty_breaks(n_y_breaks),
       labels = if (scientific) label_scientific() else ggplot2::waiver(),
       expand = ggplot2::expansion(mult = c(0, 0.05))
-    ) +
-    ggplot2::expand_limits(y = 0)
+    )
+
+  # include 0 in the y range, unless a cycle window is set (then autoscale to it)
+  if (is.null(cycle_window)) {
+    p <- p + ggplot2::expand_limits(y = 0)
+  }
 
   # additional aesthetics
   if (!rlang::quo_is_null(color_quo)) {
@@ -985,6 +1043,11 @@ ir_plot_dual_inlet <- function(
     ...,
     geometry_set = !missing(nrow) || !missing(ncol)
   )
+
+  # cycle window: clip display to the requested range
+  if (!is.null(cycle_window)) {
+    p <- p + ggplot2::coord_cartesian(xlim = cycle_window)
+  }
 
   p <- p + theme
 

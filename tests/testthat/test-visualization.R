@@ -94,6 +94,31 @@ test_that("ir_plot_dual_inlet() builds a ggplot", {
   expect_no_error(ggplot2::ggplot_build(p))
 })
 
+test_that("ir_plot_dual_inlet() respects cycle_window", {
+  d <- tibble(
+    file_name = "a",
+    species = "CO2",
+    mass = 44,
+    trace = "CO2: 44",
+    type = "sample",
+    cycle = 1:6,
+    intensity.mV = c(1, 2, 3, 4, 5, 6)
+  )
+
+  p <- ir_plot_dual_inlet(d, cycle_window = c(2, 4))
+  expect_no_error(ggplot2::ggplot_build(p))
+  # display is clipped to the window
+  expect_equal(p$coordinates$limits$x, c(2, 4))
+  # data just outside the window is retained for edge autoscaling (cycles 1-5)
+  expect_equal(sort(unique(p$data$cycle)), 1:5)
+
+  # an empty window errors; the value is validated as length-2 numeric
+  ir_plot_dual_inlet(d, cycle_window = c(100, 200)) |>
+    expect_error("contains no data")
+  ir_plot_dual_inlet(d, cycle_window = 5) |>
+    expect_error("numeric vector of length 2")
+})
+
 test_that("ir_plot_scans() builds a ggplot and handles scan_type", {
   p <- ir_plot_scans(scn_data())
   expect_s3_class(p, "ggplot")
