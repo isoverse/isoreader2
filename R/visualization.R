@@ -330,7 +330,7 @@ ir_plot_scans <- function(
   if (!is.null(x_window)) {
     x_range <- range(plot_data$x, na.rm = TRUE)
     line_groups <- intersect(
-      c("uidx", "analysis", "species", "channel"),
+      c("uidx", "analysis", "species", "channel", "mass"),
       names(plot_data)
     )
     plot_data <- plot_data |>
@@ -641,7 +641,7 @@ ir_plot_continuous_flow <- function(
   if (!is.null(time_window)) {
     time_range <- range(plot_data[[time_col]], na.rm = TRUE)
     line_groups <- intersect(
-      c("uidx", "analysis", "species", "channel"),
+      c("uidx", "analysis", "species", "channel", "mass"),
       names(plot_data)
     )
     plot_data <- plot_data |>
