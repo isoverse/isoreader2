@@ -80,6 +80,7 @@ ir_get_options()
 #> ""))
 #>  → analysis = as.integer(analysis)
 #>  → timestamp = as.POSIXct(timestamp)
+#>  → (.*) = as.character(all_matches("(.*)"))
 #> 
 #> $aggregators$minimal
 #> ────────────────────────────── Aggregator minimal ──────────────────────────────

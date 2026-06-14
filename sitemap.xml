@@ -6,6 +6,7 @@
 <url><loc>https://isoreader2.isoverse.org/articles/index.html</loc></url>
 <url><loc>https://isoreader2.isoverse.org/authors.html</loc></url>
 <url><loc>https://isoreader2.isoverse.org/index.html</loc></url>
+<url><loc>https://isoreader2.isoverse.org/reference/c.ir_aggregated_data.html</loc></url>
 <url><loc>https://isoreader2.isoverse.org/reference/c.ir_isofiles.html</loc></url>
 <url><loc>https://isoreader2.isoverse.org/reference/index.html</loc></url>
 <url><loc>https://isoreader2.isoverse.org/reference/ir_aggregate_isofiles.html</loc></url>
@@ -16,6 +17,7 @@
 <url><loc>https://isoreader2.isoverse.org/reference/ir_examples_folder.html</loc></url>
 <url><loc>https://isoreader2.isoverse.org/reference/ir_export_to_excel.html</loc></url>
 <url><loc>https://isoreader2.isoverse.org/reference/ir_extract_isofiles.html</loc></url>
+<url><loc>https://isoreader2.isoverse.org/reference/ir_filter_for.html</loc></url>
 <url><loc>https://isoreader2.isoverse.org/reference/ir_find_isofiles.html</loc></url>
 <url><loc>https://isoreader2.isoverse.org/reference/ir_get_data.html</loc></url>
 <url><loc>https://isoreader2.isoverse.org/reference/ir_get_supported_file_types.html</loc></url>

@@ -64,6 +64,8 @@ numerical order.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ir_plot_scans</span><span class="op">(</span></span>
 <span>  <span class="va">dataset</span>,</span>
 <span>  scan_type <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  species <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  mass <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  facet <span class="op">=</span> <span class="va">file_name</span>,</span>
 <span>  scales <span class="op">=</span> <span class="st">"free"</span>,</span>
 <span>  nrow <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -95,6 +97,16 @@ or a plain data frame with <code>x</code>, <code>scan_type</code>, <code>x_units
 when the data contains more than one scan type; an error lists the
 available types. If the data contains only one scan type, the parameter
 must either be <code>NULL</code> or match that type exactly.</p></dd>
+
+
+<dt id="arg-species">species<a class="anchor" aria-label="anchor" href="#arg-species"></a></dt>
+<dd><p>optional vector to filter the displayed data to specific
+species (e.g. <code>"CO2"</code> or <code>c("N2", "CO2")</code>); default <code>NULL</code> shows all species.</p></dd>
+
+
+<dt id="arg-mass">mass<a class="anchor" aria-label="anchor" href="#arg-mass"></a></dt>
+<dd><p>optional vector to filter the displayed data to specific masses
+(e.g. <code>44</code> or <code>c(44, 45)</code>); default <code>NULL</code> shows all masses.</p></dd>
 
 
 <dt id="arg-facet">facet<a class="anchor" aria-label="anchor" href="#arg-facet"></a></dt>

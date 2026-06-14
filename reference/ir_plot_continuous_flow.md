@@ -15,6 +15,8 @@ a factor it is converted to one with levels sorted in numerical order.
 ``` r
 ir_plot_continuous_flow(
   dataset,
+  species = NULL,
+  mass = NULL,
   facet = file_name,
   scales = "free",
   nrow = NULL,
@@ -40,6 +42,16 @@ ir_plot_continuous_flow(
   [`ir_aggregate_isofiles()`](https://isoreader2.isoverse.org/reference/ir_aggregate_isofiles.md)
   or a plain data frame with `time.s`, `mass`, and an `intensity.*`
   column
+
+- species:
+
+  optional vector to filter the displayed data to specific species (e.g.
+  `"CO2"` or `c("N2", "CO2")`); default `NULL` shows all species.
+
+- mass:
+
+  optional vector to filter the displayed data to specific masses (e.g.
+  `44` or `c(44, 45)`); default `NULL` shows all masses.
 
 - facet:
 

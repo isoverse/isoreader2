@@ -18,6 +18,8 @@ order.
 ir_plot_scans(
   dataset,
   scan_type = NULL,
+  species = NULL,
+  mass = NULL,
   facet = file_name,
   scales = "free",
   nrow = NULL,
@@ -49,6 +51,16 @@ ir_plot_scans(
   data contains more than one scan type; an error lists the available
   types. If the data contains only one scan type, the parameter must
   either be `NULL` or match that type exactly.
+
+- species:
+
+  optional vector to filter the displayed data to specific species (e.g.
+  `"CO2"` or `c("N2", "CO2")`); default `NULL` shows all species.
+
+- mass:
+
+  optional vector to filter the displayed data to specific masses (e.g.
+  `44` or `c(44, 45)`); default `NULL` shows all masses.
 
 - facet:
 

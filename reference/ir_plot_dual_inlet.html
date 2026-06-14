@@ -60,6 +60,8 @@ numerical order.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ir_plot_dual_inlet</span><span class="op">(</span></span>
 <span>  <span class="va">dataset</span>,</span>
+<span>  species <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  mass <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  facet <span class="op">=</span> <span class="va">file_name</span>,</span>
 <span>  scales <span class="op">=</span> <span class="st">"free"</span>,</span>
 <span>  nrow <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -69,6 +71,7 @@ numerical order.</p>
 <span>  linetype <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  color_values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/palette.html" class="external-link">palette.colors</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  scientific <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  cycle_window <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  n_y_breaks <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  theme <span class="op">=</span> <span class="fu"><a href="ir_default_theme.html">ir_default_theme</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -83,6 +86,16 @@ numerical order.</p>
 <dd><p>an <code>ir_aggregated_data</code> object from <code><a href="ir_aggregate_isofiles.html">ir_aggregate_isofiles()</a></code>
 or a plain data frame with <code>cycle</code>, <code>type</code>, <code>mass</code>, and an
 <code>intensity.*</code> column</p></dd>
+
+
+<dt id="arg-species">species<a class="anchor" aria-label="anchor" href="#arg-species"></a></dt>
+<dd><p>optional vector to filter the displayed data to specific
+species (e.g. <code>"CO2"</code> or <code>c("N2", "CO2")</code>); default <code>NULL</code> shows all species.</p></dd>
+
+
+<dt id="arg-mass">mass<a class="anchor" aria-label="anchor" href="#arg-mass"></a></dt>
+<dd><p>optional vector to filter the displayed data to specific masses
+(e.g. <code>44</code> or <code>c(44, 45)</code>); default <code>NULL</code> shows all masses.</p></dd>
 
 
 <dt id="arg-facet">facet<a class="anchor" aria-label="anchor" href="#arg-facet"></a></dt>
@@ -131,6 +144,13 @@ colour palette (default: <code><a href="https://rdrr.io/r/grDevices/palette.html
 <dt id="arg-scientific">scientific<a class="anchor" aria-label="anchor" href="#arg-scientific"></a></dt>
 <dd><p>whether to format y axis labels in scientific notation
 (default: <code>FALSE</code>)</p></dd>
+
+
+<dt id="arg-cycle-window">cycle_window<a class="anchor" aria-label="anchor" href="#arg-cycle-window"></a></dt>
+<dd><p>optional numeric vector of length 2 giving the cycle axis
+display window <code>c(min, max)</code>. Data just outside the window is retained for
+correct y autoscaling at the edges; <code><a href="https://ggplot2.tidyverse.org/reference/coord_cartesian.html" class="external-link">ggplot2::coord_cartesian()</a></code> clips the
+display. Default <code>NULL</code> shows all cycles.</p></dd>
 
 
 <dt id="arg-n-y-breaks">n_y_breaks<a class="anchor" aria-label="anchor" href="#arg-n-y-breaks"></a></dt>

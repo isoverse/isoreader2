@@ -15,6 +15,8 @@ a factor it is converted to one with levels sorted in numerical order.
 ``` r
 ir_plot_dual_inlet(
   dataset,
+  species = NULL,
+  mass = NULL,
   facet = file_name,
   scales = "free",
   nrow = NULL,
@@ -24,6 +26,7 @@ ir_plot_dual_inlet(
   linetype = NULL,
   color_values = palette.colors(),
   scientific = FALSE,
+  cycle_window = NULL,
   n_y_breaks = 5,
   theme = ir_default_theme(),
   ...
@@ -38,6 +41,16 @@ ir_plot_dual_inlet(
   [`ir_aggregate_isofiles()`](https://isoreader2.isoverse.org/reference/ir_aggregate_isofiles.md)
   or a plain data frame with `cycle`, `type`, `mass`, and an
   `intensity.*` column
+
+- species:
+
+  optional vector to filter the displayed data to specific species (e.g.
+  `"CO2"` or `c("N2", "CO2")`); default `NULL` shows all species.
+
+- mass:
+
+  optional vector to filter the displayed data to specific masses (e.g.
+  `44` or `c(44, 45)`); default `NULL` shows all masses.
 
 - facet:
 
@@ -92,6 +105,14 @@ ir_plot_dual_inlet(
 
   whether to format y axis labels in scientific notation (default:
   `FALSE`)
+
+- cycle_window:
+
+  optional numeric vector of length 2 giving the cycle axis display
+  window `c(min, max)`. Data just outside the window is retained for
+  correct y autoscaling at the edges;
+  [`ggplot2::coord_cartesian()`](https://ggplot2.tidyverse.org/reference/coord_cartesian.html)
+  clips the display. Default `NULL` shows all cycles.
 
 - n_y_breaks:
 
