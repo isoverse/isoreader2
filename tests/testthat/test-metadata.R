@@ -133,3 +133,50 @@ test_that("ir_join_metadata() on ir_isofiles applies per row", {
     ir_join_metadata(ydup, by = "file_name") |>
     expect_error("duplicated rows")
 })
+
+test_that("ir_filter_for_*() keep only the requested measurement type", {
+  iso <- structure(
+    tibble(
+      file_path = c("a.dxf", "b.did", "c.scn"),
+      metadata = list(
+        tibble(file_name = "a", analysis = 1L, type = "cf"),
+        tibble(file_name = "b", analysis = 1L, type = "di"),
+        tibble(file_name = "c", analysis = 1L, type = "scan")
+      ),
+      problems = list(tibble(), tibble(), tibble())
+    ),
+    class = c("ir_isofiles", "tbl_df", "tbl", "data.frame")
+  )
+
+  cf <- iso |> ir_filter_for_continuous_flow() |> suppressMessages()
+  di <- iso |> ir_filter_for_dual_inlet() |> suppressMessages()
+  sc <- iso |> ir_filter_for_scans() |> suppressMessages()
+
+  expect_s3_class(cf, "ir_isofiles")
+  expect_equal(nrow(cf), 1L)
+  expect_equal(cf$metadata[[1]]$type, "cf")
+  expect_equal(di$metadata[[1]]$type, "di")
+  expect_equal(sc$metadata[[1]]$type, "scan")
+
+  # also work on ir_aggregated_data and cascade to the other datasets
+  agg <- structure(
+    list(
+      metadata = tibble(
+        uidx = 1:2,
+        analysis = c(1L, 1L),
+        file_name = c("a", "b"),
+        type = c("cf", "di")
+      ),
+      traces = tibble(uidx = 1L, analysis = 1L, v = 1)
+    ),
+    class = "ir_aggregated_data"
+  )
+  agg_cf <- agg |> ir_filter_for_continuous_flow() |> suppressMessages()
+  expect_s3_class(agg_cf, "ir_aggregated_data")
+  expect_equal(nrow(agg_cf$metadata), 1L)
+  expect_equal(agg_cf$metadata$type, "cf")
+  # the dual inlet file's metadata is gone, and the cascade keeps the cf trace
+  expect_equal(nrow(agg_cf$traces), 1L)
+  agg_di <- agg |> ir_filter_for_dual_inlet() |> suppressMessages()
+  expect_equal(nrow(agg_di$traces), 0L)
+})

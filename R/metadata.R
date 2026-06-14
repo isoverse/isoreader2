@@ -214,3 +214,37 @@ ir_join_metadata <- function(isofiles, y, by) {
     \(datasets) join_metadata_datasets(datasets, y, by, .env = env)
   )
 }
+
+#' Filter isofiles by measurement type
+#'
+#' Convenience wrappers around [ir_filter_metadata()] that keep only the files of
+#' a single measurement type (using the metadata `type` column): continuous flow
+#' (`"cf"`), dual inlet (`"di"`), or scan (`"scan"`). Like [ir_filter_metadata()]
+#' they work on both `ir_isofiles` (from [ir_read_isofiles()]) and
+#' `ir_aggregated_data` (from [ir_aggregate_isofiles()]) objects, cascade to the
+#' other datasets, and drop any file whose metadata ends up empty.
+#'
+#' @param isofiles a collection of isofiles from [ir_read_isofiles()]
+#'   (`ir_isofiles`) or datasets aggregated from [ir_aggregate_isofiles()]
+#'   (`ir_aggregated_data`)
+#' @return the `isofiles` object filtered to the requested measurement type
+#' @name ir_filter_for
+NULL
+
+#' @describeIn ir_filter_for keep only continuous flow files (`type == "cf"`)
+#' @export
+ir_filter_for_continuous_flow <- function(isofiles) {
+  ir_filter_metadata(isofiles, .data$type == "cf")
+}
+
+#' @describeIn ir_filter_for keep only dual inlet files (`type == "di"`)
+#' @export
+ir_filter_for_dual_inlet <- function(isofiles) {
+  ir_filter_metadata(isofiles, .data$type == "di")
+}
+
+#' @describeIn ir_filter_for keep only scan files (`type == "scan"`)
+#' @export
+ir_filter_for_scans <- function(isofiles) {
+  ir_filter_metadata(isofiles, .data$type == "scan")
+}

@@ -61,6 +61,7 @@ reference:
     These functions filter, modify, or extend the metadata of aggregated isofiles.
   contents:
   - ir_metadata
+  - ir_filter_for
 
 - title: Visualize isofiles data
   desc: >
