@@ -207,3 +207,51 @@ test_that("read_did_data_table() pivots evaluated columns to cycle x column", {
   expect_equal(did[["d 45CO2/44CO2"]], c(3.3, 3.2, 3.3))
   expect_equal(did[["AT% 13C/12C"]], c(1.1, 1.1, 1.1))
 })
+
+test_that("ir_read_isofiles() reads every isodat example type", {
+  skip_on_cran()
+  skip_if(
+    !file.exists(get_isoextract_path()),
+    "isoextract binary is not installed"
+  )
+
+  # copy all bundled examples to a temp folder (so .json sidecars are not
+  # written into the installed package) and read them
+  data_dir <- withr::local_tempdir()
+  file.copy(
+    list.files(ir_examples_folder(), full.names = TRUE),
+    data_dir
+  )
+
+  read_one <- function(pattern) {
+    data_dir |>
+      ir_find_isofiles(pattern = pattern) |>
+      ir_read_isofiles(show_progress = FALSE, show_problems = FALSE) |>
+      suppressMessages()
+  }
+
+  # continuous flow: .dxf (CResultArray) and .cf (CBlockDataContext)
+  cf <- read_one("continuous_flow")
+  expect_equal(nrow(cf), 2L)
+  for (i in seq_len(nrow(cf))) {
+    expect_true(all(c("metadata", "traces") %in% names(cf)))
+    expect_gt(nrow(cf$traces[[i]]), 0L)
+    expect_equal(cf$metadata[[i]]$type, "cf")
+  }
+
+  # dual inlet: .did (CDualInletBlockData) and .caf (CBlockDataContext)
+  di <- read_one("dual_inlet")
+  expect_equal(nrow(di), 2L)
+  for (i in seq_len(nrow(di))) {
+    expect_gt(nrow(di$cycles[[i]]), 0L)
+    expect_equal(di$metadata[[i]]$type, "di")
+  }
+
+  # scans: .scn (CScanStorage) — several scan types among the examples
+  sc <- read_one("scan")
+  expect_gt(nrow(sc), 0L)
+  for (i in seq_len(nrow(sc))) {
+    expect_gt(nrow(sc$scans[[i]]), 0L)
+    expect_equal(sc$metadata[[i]]$type, "scan")
+  }
+})
