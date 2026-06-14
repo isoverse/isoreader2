@@ -10,10 +10,14 @@
       args = list(pattern = "\\.[^.]+$", replacement = "")
     ) |>
     ir_add_to_aggregator(column = "analysis", cast = "as.integer") |>
-    ir_add_to_aggregator(column = "timestamp", cast = "as.POSIXct") |>
+    ir_add_to_aggregator(column = "timestamp", cast = "as.POSIXct")
+
+  # add all the other metadata columns (but leave the minimal with just the first columns)
+  agg_metadata |>
+    ir_add_to_aggregator(column = "\\1", source = "(.*)", regexp = TRUE) |>
     ir_register_aggregator("metadata")
 
-  # standard aggregator
+  # minimal aggregator
   agg_minimal <-
     agg_metadata |>
     # TRACES section ====================
