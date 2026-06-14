@@ -48,6 +48,7 @@ reference:
     These functions combine the data from multiple isofiles for combined use
   contents:
   - ir_aggregate_isofiles
+  - c.ir_aggregated_data
   - ir_convert_intensity
   - ir_start_aggregator
   - ir_add_to_aggregator

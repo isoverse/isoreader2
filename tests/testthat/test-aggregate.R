@@ -129,3 +129,48 @@ test_that("ir_register_aggregator() and ir_get_aggregator()", {
   expect_equal(ir_get_option("aggregators")$test, agg)
   expect_equal(ir_get_aggregator("test"), agg)
 })
+
+test_that("c.ir_aggregated_data() row-binds datasets and re-indexes uidx", {
+  mk <- function(uidx, fn) {
+    structure(
+      list(
+        metadata = tibble(uidx = uidx, file_name = fn, x = uidx * 1.0),
+        traces = tibble(uidx = uidx, v = uidx * 10L),
+        problems = tibble(uidx = integer(0), message = character(0))
+      ),
+      class = "ir_aggregated_data"
+    )
+  }
+  a <- mk(1:2, c("a", "b"))
+  b <- mk(1:2, c("c", "d"))
+
+  comb <- c(a, b)
+  expect_s3_class(comb, "ir_aggregated_data")
+  expect_equal(names(comb), c("metadata", "traces", "problems"))
+  # files row-bound and uidx renumbered so they stay unique
+  expect_equal(comb$metadata$file_name, c("a", "b", "c", "d"))
+  expect_equal(comb$metadata$uidx, 1:4)
+  # the linkage is preserved (traces uidx tracks the same re-indexing)
+  expect_equal(comb$traces$uidx, 1:4)
+  expect_equal(comb$traces$v, c(10L, 20L, 10L, 20L))
+
+  # datasets present in only one object are kept; columns are unioned with NA
+  d <- structure(
+    list(
+      metadata = tibble(uidx = 1L, file_name = "e", y = 9),
+      cycles = tibble(uidx = 1L, d13C = -5)
+    ),
+    class = "ir_aggregated_data"
+  )
+  comb2 <- c(a, d)
+  expect_equal(names(comb2), c("metadata", "traces", "problems", "cycles"))
+  expect_equal(comb2$metadata$uidx, 1:3)
+  expect_setequal(names(comb2$metadata), c("uidx", "file_name", "x", "y"))
+  expect_equal(comb2$cycles$uidx, 3L) # d's single file re-indexed to 3
+
+  # a single object round-trips unchanged
+  expect_equal(c(a), a)
+
+  # only aggregated data can be combined
+  c(a, 42) |> expect_error("must be.*ir_aggregated_data")
+})

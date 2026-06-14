@@ -75,6 +75,57 @@ drop_empty_datasets <- function(agg_data) {
   ]
 }
 
+#' Combine aggregated isofile data
+#'
+#' Combine multiple [ir_aggregate_isofiles()] results into a single
+#' `ir_aggregated_data` object by row-binding each of the contained datasets
+#' (`metadata`, `traces`, `cycles`, `scans`, `resistors`, `vendor_data_table`,
+#' `problems`, ...) with [dplyr::bind_rows()]. Datasets present in only some of
+#' the objects are combined as well (missing columns are filled with `NA`). The
+#' file index `uidx` is re-numbered across the inputs so each file stays uniquely
+#' identified (and its datasets stay correctly linked) in the combined object.
+#' @param ... `ir_aggregated_data` objects to combine
+#' @return a single combined `ir_aggregated_data` object
+#' @export
+c.ir_aggregated_data <- function(...) {
+  objs <- list(...)
+  # all inputs must be aggregated data
+  if (!all(purrr::map_lgl(objs, ~ is(.x, "ir_aggregated_data")))) {
+    cli_abort(
+      "all objects to combine must be {.cls ir_aggregated_data} (from ir_aggregate_isofiles())"
+    )
+  }
+
+  # offset each object's uidx so files stay uniquely identified after binding
+  uidx_offset <- 0L
+  objs <- purrr::map(objs, function(obj) {
+    uidx_vals <- purrr::map(obj, function(ds) {
+      if (is.data.frame(ds) && "uidx" %in% names(ds)) ds$uidx
+    }) |>
+      unlist(use.names = FALSE)
+    max_uidx <- if (length(uidx_vals) > 0) max(uidx_vals, na.rm = TRUE) else 0L
+    obj <- purrr::map(obj, function(ds) {
+      if (is.data.frame(ds) && "uidx" %in% names(ds)) {
+        ds$uidx <- ds$uidx + uidx_offset
+      }
+      ds
+    })
+    uidx_offset <<- uidx_offset + max_uidx
+    obj
+  })
+
+  # row-bind each dataset across all objects (union of dataset names)
+  dataset_names <- objs |> purrr::map(names) |> unlist() |> unique()
+  combined <- dataset_names |>
+    purrr::map(function(nm) {
+      dplyr::bind_rows(purrr::map(objs, ~ .x[[nm]]))
+    }) |>
+    setNames(dataset_names)
+
+  class(combined) <- "ir_aggregated_data"
+  return(combined)
+}
+
 # aggregator `cast` that keeps already-typed values as-is: character and integer
 # columns are returned unchanged, everything else is coerced to numeric. Useful
 # for aggregating datasets whose columns are already correctly typed by the
