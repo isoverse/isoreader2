@@ -69,6 +69,51 @@ test_that("plotting functions error on missing required columns", {
     expect_error("missing required")
 })
 
+test_that("plotting functions filter by species and mass", {
+  d <- tibble(
+    file_name = "a",
+    species = c("N2", "N2", "CO2", "CO2"),
+    mass = c(28, 29, 44, 45),
+    trace = paste0(species, ": ", mass),
+    time.s = 0,
+    intensity.mV = 1:4
+  )
+
+  species_in <- function(p) {
+    sort(unique(as.character(ggplot2::ggplot_build(p)$plot$data$species)))
+  }
+  mass_in <- function(p) {
+    sort(unique(as.character(ggplot2::ggplot_build(p)$plot$data$mass)))
+  }
+
+  # species filter
+  expect_equal(species_in(ir_plot_continuous_flow(d)), c("CO2", "N2"))
+  expect_equal(species_in(ir_plot_continuous_flow(d, species = "CO2")), "CO2")
+  # mass filter (numeric value matches the character mass column)
+  expect_equal(mass_in(ir_plot_continuous_flow(d, mass = 44)), "44")
+  # combined
+  p <- ir_plot_continuous_flow(d, species = "N2", mass = c(28, 29))
+  expect_equal(species_in(p), "N2")
+  expect_equal(mass_in(p), c("28", "29"))
+
+  # informative errors when a selection leaves no data
+  ir_plot_continuous_flow(d, species = "Ar") |>
+    expect_error("no data left.*species")
+  ir_plot_continuous_flow(d, mass = 99) |>
+    expect_error("no data left.*mass")
+
+  # the same parameters work for scans and dual inlet
+  sc <- dplyr::mutate(
+    d,
+    scan_type = "high voltage",
+    x_units = "kV",
+    x = 0
+  )
+  expect_equal(species_in(ir_plot_scans(sc, species = "CO2")), "CO2")
+  di <- dplyr::mutate(d, type = "sample", cycle = 1L)
+  expect_equal(mass_in(ir_plot_dual_inlet(di, mass = 28)), "28")
+})
+
 test_that("ir_plot_continuous_flow() builds a ggplot", {
   p <- ir_plot_continuous_flow(cf_data())
   expect_s3_class(p, "ggplot")

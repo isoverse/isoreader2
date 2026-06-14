@@ -139,6 +139,37 @@ sort_trace_factor <- function(plot_data) {
   return(plot_data)
 }
 
+# internal: filter plot data to the requested `species` and/or `mass` values
+# (compared as character, so numeric/character work interchangeably). Errors
+# informatively (listing what is available) if a selection leaves no data.
+filter_plot_data <- function(plot_data, species, mass, .env = caller_env()) {
+  filter_by <- function(plot_data, col, values) {
+    if (is.null(values)) {
+      return(plot_data)
+    }
+    if (!col %in% names(plot_data)) {
+      cli_abort(
+        "cannot filter by {.field {col}}: there is no {.field {col}} column in the data",
+        call = .env
+      )
+    }
+    keep <- as.character(plot_data[[col]]) %in% as.character(values)
+    if (!any(keep)) {
+      cli_abort(
+        c(
+          "no data left after filtering {.field {col}} to {.val {values}}",
+          "i" = "available {col}: {.val {unique(as.character(plot_data[[col]]))}}"
+        ),
+        call = .env
+      )
+    }
+    plot_data[keep, ]
+  }
+  plot_data <- filter_by(plot_data, "species", species)
+  plot_data <- filter_by(plot_data, "mass", mass)
+  plot_data
+}
+
 #' Plot scan data
 #'
 #' Plots scan data from an [ir_aggregate_isofiles()] result or a plain data
@@ -158,6 +189,10 @@ sort_trace_factor <- function(plot_data) {
 #'   when the data contains more than one scan type; an error lists the
 #'   available types. If the data contains only one scan type, the parameter
 #'   must either be `NULL` or match that type exactly.
+#' @param species optional vector to filter the displayed data to specific
+#'   species (e.g. `"CO2"` or `c("N2", "CO2")`); default `NULL` shows all species.
+#' @param mass optional vector to filter the displayed data to specific masses
+#'   (e.g. `44` or `c(44, 45)`); default `NULL` shows all masses.
 #' @param facet column or expression to facet by (default: `file_name`). A
 #'   plain column or expression (e.g. `file_name` or `paste(species, mass)`) is
 #'   faceted with [ggplot2::facet_wrap()]; a two-sided formula (e.g.
@@ -197,6 +232,8 @@ sort_trace_factor <- function(plot_data) {
 ir_plot_scans <- function(
   dataset,
   scan_type = NULL,
+  species = NULL,
+  mass = NULL,
   facet = file_name,
   scales = "free",
   nrow = NULL,
@@ -230,6 +267,16 @@ ir_plot_scans <- function(
     scan_type,
     is.null(scan_type) || rlang::is_scalar_character(scan_type),
     "must be NULL or a single string"
+  )
+  check_arg(
+    species,
+    is.null(species) || is.character(species) || is.numeric(species),
+    "must be NULL or a character/numeric vector"
+  )
+  check_arg(
+    mass,
+    is.null(mass) || is.character(mass) || is.numeric(mass),
+    "must be NULL or a character/numeric vector"
   )
   check_arg(
     color_values,
@@ -302,6 +349,9 @@ ir_plot_scans <- function(
       )
     )
   }
+
+  # filter to the requested species / mass
+  plot_data <- filter_plot_data(plot_data, species, mass)
 
   # enforce a single scan type
   available_scan_types <- unique(plot_data$scan_type)
@@ -478,6 +528,10 @@ ir_plot_scans <- function(
 #'
 #' @param dataset an `ir_aggregated_data` object from [ir_aggregate_isofiles()]
 #'   or a plain data frame with `time.s`, `mass`, and an `intensity.*` column
+#' @param species optional vector to filter the displayed data to specific
+#'   species (e.g. `"CO2"` or `c("N2", "CO2")`); default `NULL` shows all species.
+#' @param mass optional vector to filter the displayed data to specific masses
+#'   (e.g. `44` or `c(44, 45)`); default `NULL` shows all masses.
 #' @param facet column or expression to facet by (default: `file_name`). A
 #'   plain column or expression (e.g. `file_name` or `paste(species, mass)`) is
 #'   faceted with [ggplot2::facet_wrap()]; a two-sided formula (e.g.
@@ -520,6 +574,8 @@ ir_plot_scans <- function(
 #' @export
 ir_plot_continuous_flow <- function(
   dataset,
+  species = NULL,
+  mass = NULL,
   facet = file_name,
   scales = "free",
   nrow = NULL,
@@ -549,6 +605,16 @@ ir_plot_continuous_flow <- function(
     !missing(dataset) &&
       (is.data.frame(dataset) || is(dataset, "ir_aggregated_data")),
     "must be a data frame or a set of aggregated isofiles"
+  )
+  check_arg(
+    species,
+    is.null(species) || is.character(species) || is.numeric(species),
+    "must be NULL or a character/numeric vector"
+  )
+  check_arg(
+    mass,
+    is.null(mass) || is.character(mass) || is.numeric(mass),
+    "must be NULL or a character/numeric vector"
   )
   check_arg(
     color_values,
@@ -627,6 +693,9 @@ ir_plot_continuous_flow <- function(
   }
   time_col <- "time.s"
   time_units <- "s"
+
+  # filter to the requested species / mass
+  plot_data <- filter_plot_data(plot_data, species, mass)
 
   # detect intensity column
   intensity_cols <- grep("^intensity\\.", names(plot_data), value = TRUE)
@@ -780,6 +849,10 @@ ir_plot_continuous_flow <- function(
 #' @param dataset an `ir_aggregated_data` object from [ir_aggregate_isofiles()]
 #'   or a plain data frame with `cycle`, `type`, `mass`, and an
 #'   `intensity.*` column
+#' @param species optional vector to filter the displayed data to specific
+#'   species (e.g. `"CO2"` or `c("N2", "CO2")`); default `NULL` shows all species.
+#' @param mass optional vector to filter the displayed data to specific masses
+#'   (e.g. `44` or `c(44, 45)`); default `NULL` shows all masses.
 #' @param facet column or expression to facet by (default: `file_name`). A
 #'   plain column or expression (e.g. `file_name` or `paste(species, mass)`) is
 #'   faceted with [ggplot2::facet_wrap()]; a two-sided formula (e.g.
@@ -818,6 +891,8 @@ ir_plot_continuous_flow <- function(
 #' @export
 ir_plot_dual_inlet <- function(
   dataset,
+  species = NULL,
+  mass = NULL,
   facet = file_name,
   scales = "free",
   nrow = NULL,
@@ -846,6 +921,16 @@ ir_plot_dual_inlet <- function(
     !missing(dataset) &&
       (is.data.frame(dataset) || is(dataset, "ir_aggregated_data")),
     "must be a data frame or a set of aggregated isofiles"
+  )
+  check_arg(
+    species,
+    is.null(species) || is.character(species) || is.numeric(species),
+    "must be NULL or a character/numeric vector"
+  )
+  check_arg(
+    mass,
+    is.null(mass) || is.character(mass) || is.numeric(mass),
+    "must be NULL or a character/numeric vector"
   )
   check_arg(
     color_values,
@@ -913,6 +998,9 @@ ir_plot_dual_inlet <- function(
       )
     )
   }
+
+  # filter to the requested species / mass
+  plot_data <- filter_plot_data(plot_data, species, mass)
 
   # require an intensity.UNITS column
   intensity_cols <- grep("^intensity\\.", names(plot_data), value = TRUE)

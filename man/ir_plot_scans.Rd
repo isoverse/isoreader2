@@ -7,6 +7,8 @@
 ir_plot_scans(
   dataset,
   scan_type = NULL,
+  species = NULL,
+  mass = NULL,
   facet = file_name,
   scales = "free",
   nrow = NULL,
@@ -31,6 +33,12 @@ or a plain data frame with \code{x}, \code{scan_type}, \code{x_units}, \code{mas
 when the data contains more than one scan type; an error lists the
 available types. If the data contains only one scan type, the parameter
 must either be \code{NULL} or match that type exactly.}
+
+\item{species}{optional vector to filter the displayed data to specific
+species (e.g. \code{"CO2"} or \code{c("N2", "CO2")}); default \code{NULL} shows all species.}
+
+\item{mass}{optional vector to filter the displayed data to specific masses
+(e.g. \code{44} or \code{c(44, 45)}); default \code{NULL} shows all masses.}
 
 \item{facet}{column or expression to facet by (default: \code{file_name}). A
 plain column or expression (e.g. \code{file_name} or \code{paste(species, mass)}) is

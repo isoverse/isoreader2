@@ -6,6 +6,8 @@
 \usage{
 ir_plot_dual_inlet(
   dataset,
+  species = NULL,
+  mass = NULL,
   facet = file_name,
   scales = "free",
   nrow = NULL,
@@ -25,6 +27,12 @@ ir_plot_dual_inlet(
 \item{dataset}{an \code{ir_aggregated_data} object from \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}}
 or a plain data frame with \code{cycle}, \code{type}, \code{mass}, and an
 \verb{intensity.*} column}
+
+\item{species}{optional vector to filter the displayed data to specific
+species (e.g. \code{"CO2"} or \code{c("N2", "CO2")}); default \code{NULL} shows all species.}
+
+\item{mass}{optional vector to filter the displayed data to specific masses
+(e.g. \code{44} or \code{c(44, 45)}); default \code{NULL} shows all masses.}
 
 \item{facet}{column or expression to facet by (default: \code{file_name}). A
 plain column or expression (e.g. \code{file_name} or \code{paste(species, mass)}) is
