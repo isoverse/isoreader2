@@ -19,8 +19,8 @@ the path to the example files folder as a single string
 
 ``` r
 ir_examples_folder() |> ir_find_scans()
-#> [1] "/home/runner/work/_temp/Library/isoreader2/extdata/background_scan_example.scn"
-#> [2] "/home/runner/work/_temp/Library/isoreader2/extdata/full_scan_example.scn"      
-#> [3] "/home/runner/work/_temp/Library/isoreader2/extdata/peak_shape_scan_example.scn"
-#> [4] "/home/runner/work/_temp/Library/isoreader2/extdata/time_scan_example.scn"      
+#> [1] "/home/runner/work/_temp/Library/isoreader2/extdata/full_scan_example.scn"       
+#> [2] "/home/runner/work/_temp/Library/isoreader2/extdata/peak_shape_scan_example.scn" 
+#> [3] "/home/runner/work/_temp/Library/isoreader2/extdata/peak_shape_scan_example2.scn"
+#> [4] "/home/runner/work/_temp/Library/isoreader2/extdata/time_scan_example.scn"       
 ```

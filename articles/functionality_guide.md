@@ -86,11 +86,11 @@ isofiles <- file_paths |> ir_read_isofiles()
 ``` fansi
 → Trying to install isoextract for your operating system isoextract-linux-x64
   (this requires an internet connection and may take a moment)...
-✔ [1s] check_assembly() successfully installed isoextract version 0.2.1.0
+✔ [1.2s] check_assembly() successfully installed isoextract version 0.2.1.0
 
-✔ [187ms] ir_extract_isofiles() finished extracting 2 files/archives
+✔ [191ms] ir_extract_isofiles() finished extracting 2 files/archives
 
-✔ [488ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+✔ [492ms] ir_read_isofiles() finished reading 2 isotope data files/archives
 ```
 
 ``` r
@@ -147,7 +147,7 @@ isofiles |> ir_save_isofiles(file.path("tmp", "my_isofiles"))
 ```
 
 ``` fansi
-✔ [46ms] ir_save_isofiles() saved 2 isofiles to tmp/my_isofiles.rds
+✔ [47ms] ir_save_isofiles() saved 2 isofiles to tmp/my_isofiles.rds
 ```
 
 ``` r
@@ -175,7 +175,7 @@ dataset <- isofiles |> ir_aggregate_isofiles()
 ```
 
 ``` fansi
-✔ [242ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+✔ [249ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 intensity in mV) from 2 files using the standard aggregator
 ```
 
@@ -319,7 +319,7 @@ isofiles |> ir_aggregate_isofiles(aggregator = "extended")
 ```
 
 ``` fansi
-✔ [556ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
+✔ [577ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
 intensity in mV), resistors (8), and vendor_data_table (25) from 2 files using
 the extended aggregator
 ```
@@ -443,7 +443,7 @@ isofiles |> ir_aggregate_isofiles(aggregator = "my_aggregator")
 ```
 
 ``` fansi
-✔ [151ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+✔ [156ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 intensity in mV) from 2 files using the my_aggregator aggregator
 ```
 
@@ -637,7 +637,7 @@ dataset |> ir_get_traces()
 ```
 
 ``` fansi
-✔ [9ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [10ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
@@ -678,7 +678,7 @@ dataset_ext <- isofiles |> ir_aggregate_isofiles(aggregator = "extended")
 ```
 
 ``` fansi
-✔ [556ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
+✔ [572ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
 intensity in mV), resistors (8), and vendor_data_table (25) from 2 files using
 the extended aggregator
 ```
@@ -690,7 +690,7 @@ dataset_ext |> ir_get_vendor_data_table()
 ```
 
 ``` fansi
-✔ [8ms] ir_get_data() retrieved 25 records from the combination of metadata (2)
+✔ [9ms] ir_get_data() retrieved 25 records from the combination of metadata (2)
 and vendor_data_table (25) via uidx and analysis
 ```
 
@@ -791,16 +791,16 @@ data_folder |>
 ```
 
 ``` fansi
-✔ [143ms] ir_extract_isofiles() finished extracting 2 files/archives
+✔ [140ms] ir_extract_isofiles() finished extracting 1 file/archive
 ```
 
 ``` fansi
-✔ [496ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+✔ [412ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 ```
 
 ``` fansi
-✔ [251ms] ir_aggregate_isofiles() aggregated metadata (2) and cycles (192,
-intensity in V) from 2 files using the standard aggregator
+✔ [145ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+intensity in V) from 1 file using the standard aggregator
 ```
 
 ![](functionality_guide_files/figure-html/unnamed-chunk-20-1.png)
@@ -819,7 +819,7 @@ data_folder |>
 ```
 
 ``` fansi
-✔ [304ms] ir_extract_isofiles() finished extracting 4 files/archives
+✔ [126ms] ir_extract_isofiles() finished extracting 4 files/archives
 ```
 
 ``` fansi
@@ -827,7 +827,7 @@ data_folder |>
 ```
 
 ``` fansi
-✔ [337ms] ir_aggregate_isofiles() aggregated metadata (4) and scans (17.8k,
+✔ [535ms] ir_aggregate_isofiles() aggregated metadata (4) and scans (17.8k,
 intensity in V) from 4 files using the standard aggregator
 ```
 
@@ -856,11 +856,11 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [8ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [9ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
 ``` fansi
-✔ [952ms] ir_export_to_excel() exported 2 rows of metadata and 24.5k rows of
+✔ [1.1s] ir_export_to_excel() exported 2 rows of metadata and 24.5k rows of
 traces to tmp/my_dataset.xlsx
 ```
