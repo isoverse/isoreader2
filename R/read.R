@@ -208,7 +208,9 @@ ir_read_isofiles <- function(
       dplyr::mutate(file_path = .env$file_path, .before = 1L)
 
     # add file_path and file_name as first columns of each inner metadata tibble
-    if ("metadata" %in% names(out$result)) {
+    if (
+      "metadata" %in% names(out$result) && !is.null(out$result$metadata[[1]])
+    ) {
       out$result$metadata[[1]] <- out$result$metadata[[1]] |>
         dplyr::mutate(
           file_path = .env$file_path,
