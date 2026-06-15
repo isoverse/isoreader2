@@ -37,6 +37,11 @@ ir_filter_for_scans(isofiles)
 
 the `isofiles` object filtered to the requested measurement type
 
+## Details
+
+Files whose metadata has no `type` column (e.g. a file that errored
+during reading) never match and are dropped.
+
 ## Functions
 
 - `ir_filter_for_continuous_flow()`: keep only continuous flow files

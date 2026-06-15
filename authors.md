@@ -11,12 +11,12 @@ Source:
 [`DESCRIPTION`](https://github.com/isoverse/isoreader2/blob/main/DESCRIPTION)
 
 Kopf S (2026). *isoreader2: Read Stable Isotope Data Files*. R package
-version 0.1.5, <https://isoreader2.isoverse.org/>.
+version 0.1.7, <https://isoreader2.isoverse.org/>.
 
     @Manual{,
       title = {isoreader2: Read Stable Isotope Data Files},
       author = {Sebastian Kopf},
       year = {2026},
-      note = {R package version 0.1.5},
+      note = {R package version 0.1.7},
       url = {https://isoreader2.isoverse.org/},
     }
