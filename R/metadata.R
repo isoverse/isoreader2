@@ -224,6 +224,9 @@ ir_join_metadata <- function(isofiles, y, by) {
 #' `ir_aggregated_data` (from [ir_aggregate_isofiles()]) objects, cascade to the
 #' other datasets, and drop any file whose metadata ends up empty.
 #'
+#' Files whose metadata has no `type` column (e.g. a file that errored during
+#' reading) never match and are dropped.
+#'
 #' @param isofiles a collection of isofiles from [ir_read_isofiles()]
 #'   (`ir_isofiles`) or datasets aggregated from [ir_aggregate_isofiles()]
 #'   (`ir_aggregated_data`)
@@ -231,20 +234,40 @@ ir_join_metadata <- function(isofiles, y, by) {
 #' @name ir_filter_for
 NULL
 
+# safe row predicate for filtering metadata by `type`: returns TRUE for rows
+# whose `type` equals `value`, and all FALSE (dropping the file) when there is no
+# `type` column at all (e.g. a file that errored on read so it never got a type)
+metadata_type_is <- function(metadata, value) {
+  if ("type" %in% names(metadata)) {
+    !is.na(metadata$type) & metadata$type == value
+  } else {
+    rep(FALSE, nrow(metadata))
+  }
+}
+
 #' @describeIn ir_filter_for keep only continuous flow files (`type == "cf"`)
 #' @export
 ir_filter_for_continuous_flow <- function(isofiles) {
-  ir_filter_metadata(isofiles, .data$type == "cf")
+  ir_filter_metadata(
+    isofiles,
+    metadata_type_is(dplyr::pick(dplyr::everything()), "cf")
+  )
 }
 
 #' @describeIn ir_filter_for keep only dual inlet files (`type == "di"`)
 #' @export
 ir_filter_for_dual_inlet <- function(isofiles) {
-  ir_filter_metadata(isofiles, .data$type == "di")
+  ir_filter_metadata(
+    isofiles,
+    metadata_type_is(dplyr::pick(dplyr::everything()), "di")
+  )
 }
 
 #' @describeIn ir_filter_for keep only scan files (`type == "scan"`)
 #' @export
 ir_filter_for_scans <- function(isofiles) {
-  ir_filter_metadata(isofiles, .data$type == "scan")
+  ir_filter_metadata(
+    isofiles,
+    metadata_type_is(dplyr::pick(dplyr::everything()), "scan")
+  )
 }

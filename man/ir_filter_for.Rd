@@ -29,6 +29,10 @@ they work on both \code{ir_isofiles} (from \code{\link[=ir_read_isofiles]{ir_rea
 \code{ir_aggregated_data} (from \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}}) objects, cascade to the
 other datasets, and drop any file whose metadata ends up empty.
 }
+\details{
+Files whose metadata has no \code{type} column (e.g. a file that errored during
+reading) never match and are dropped.
+}
 \section{Functions}{
 \itemize{
 \item \code{ir_filter_for_continuous_flow()}: keep only continuous flow files (\code{type == "cf"})

@@ -180,3 +180,50 @@ test_that("ir_filter_for_*() keep only the requested measurement type", {
   agg_di <- agg |> ir_filter_for_dual_inlet() |> suppressMessages()
   expect_equal(nrow(agg_di$traces), 0L)
 })
+
+test_that("ir_filter_for_*() tolerate a missing/NA type column", {
+  # an ir_isofiles where one file errored on read so its metadata has no `type`
+  iso <- structure(
+    tibble(
+      file_path = c("a.dxf", "b.dxf", "c.scn"),
+      metadata = list(
+        tibble(file_name = "a", analysis = 1L, type = "cf"),
+        tibble(file_name = "b"), # errored -> no type column
+        tibble(file_name = "c", analysis = 1L, type = "scan")
+      ),
+      problems = list(tibble(), tibble(), tibble())
+    ),
+    class = c("ir_isofiles", "tbl_df", "tbl", "data.frame")
+  )
+  # the type-less file never matches and is dropped (no error)
+  cf <- iso |> ir_filter_for_continuous_flow() |> suppressMessages()
+  expect_equal(nrow(cf), 1L)
+  expect_equal(cf$metadata[[1]]$file_name, "a")
+  expect_equal(nrow(ir_filter_for_dual_inlet(iso) |> suppressMessages()), 0L)
+
+  # aggregated metadata with an NA type (errored file) -> dropped, no error
+  agg <- structure(
+    list(
+      metadata = tibble(
+        uidx = 1:3,
+        analysis = 1L,
+        file_name = c("a", "b", "c"),
+        type = c("cf", NA, "scan")
+      )
+    ),
+    class = "ir_aggregated_data"
+  )
+  acf <- agg |> ir_filter_for_continuous_flow() |> suppressMessages()
+  expect_equal(acf$metadata$type, "cf")
+
+  # no type column at all -> everything dropped, still no error
+  no_type <- structure(
+    list(metadata = tibble(uidx = 1L, file_name = "x")),
+    class = "ir_aggregated_data"
+  )
+  expect_no_error(suppressMessages(ir_filter_for_scans(no_type)))
+  expect_equal(
+    nrow((ir_filter_for_scans(no_type) |> suppressMessages())$metadata),
+    0L
+  )
+})
