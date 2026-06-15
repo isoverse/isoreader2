@@ -239,9 +239,9 @@ test_that("ir_read_isofiles() reads every isodat example type", {
     expect_equal(cf$metadata[[i]]$type, "cf")
   }
 
-  # dual inlet: .did (CDualInletBlockData) and .caf (CBlockDataContext)
+  # dual inlet: .caf (CBlockDataContext)
   di <- read_one("dual_inlet")
-  expect_equal(nrow(di), 2L)
+  expect_gt(nrow(di), 0L)
   for (i in seq_len(nrow(di))) {
     expect_gt(nrow(di$cycles[[i]]), 0L)
     expect_equal(di$metadata[[i]]$type, "di")

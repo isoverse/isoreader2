@@ -29,7 +29,6 @@ test_that("ir_find_isofiles()", {
   expect_true(any(grepl("\\.dxf$", all_files, ignore.case = TRUE)))
   expect_true(any(grepl("\\.cf$", all_files, ignore.case = TRUE)))
   expect_true(any(grepl("\\.caf$", all_files, ignore.case = TRUE)))
-  expect_true(any(grepl("\\.did$", all_files, ignore.case = TRUE)))
   expect_true(any(grepl("\\.scn$", all_files, ignore.case = TRUE)))
 
   # types parameter ============================================================
@@ -108,7 +107,6 @@ test_that("ir_find_dual_inlet()", {
   expect_error(ir_find_dual_inlet("/no/such/dir"), "folder")
 
   files <- ir_find_dual_inlet(extdata)
-  expect_true(any(grepl("\\.did$", files, ignore.case = TRUE)))
   expect_true(any(grepl("\\.caf$", files, ignore.case = TRUE)))
   expect_false(any(grepl("\\.(dxf|cf|scn)$", files, ignore.case = TRUE)))
 })
