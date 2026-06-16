@@ -225,6 +225,67 @@ test_that("windows without data points of their own are allowed", {
   expect_equal(sort(p_di$data$cycle), c(2, 3))
 })
 
+test_that("y axis gets headroom on both ends inside a window", {
+  y_range <- function(p) {
+    ggplot2::ggplot_build(p)$layout$panel_params[[1]]$y.range
+  }
+
+  # continuous flow: data well above 0 so we can see whether 0 is forced in
+  cf <- tibble(
+    file_name = "a",
+    species = "CO2",
+    mass = 44,
+    trace = "CO2: 44",
+    time.s = 0:10,
+    intensity.mV = 5:15
+  )
+  # no window: 0 is included and pinned to the bottom of the panel
+  expect_equal(y_range(ir_plot_continuous_flow(cf) |> suppressMessages())[1], 0)
+  # window: data is bracketed to [7, 13]; both ends gain headroom (no touching)
+  yw <- y_range(
+    ir_plot_continuous_flow(cf, time_window = c(3, 7)) |> suppressMessages()
+  )
+  expect_gt(yw[1], 0)
+  expect_lt(yw[1], 7)
+  expect_gt(yw[2], 13)
+
+  # dual inlet behaves the same
+  di <- tibble(
+    file_name = "a",
+    species = "CO2",
+    mass = 44,
+    trace = "CO2: 44",
+    type = "sample",
+    cycle = 1:6,
+    intensity.mV = 10:15
+  )
+  expect_equal(y_range(ir_plot_dual_inlet(di) |> suppressMessages())[1], 0)
+  ydw <- y_range(
+    ir_plot_dual_inlet(di, cycle_window = c(2, 4)) |> suppressMessages()
+  )
+  expect_gt(ydw[1], 0)
+  expect_lt(ydw[1], 11)
+  expect_gt(ydw[2], 13)
+
+  # scans: window gets headroom below the lowest displayed value too
+  sc <- tibble(
+    file_name = "a",
+    species = "CO2",
+    mass = 44,
+    trace = "CO2: 44",
+    scan_type = "high voltage",
+    x_units = "kV",
+    x = 0:10,
+    intensity.mV = 5:15
+  )
+  ysw <- y_range(
+    ir_plot_scans(sc, x_window = c(3, 7)) |> suppressMessages()
+  )
+  expect_gt(ysw[1], 0)
+  expect_lt(ysw[1], 7)
+  expect_gt(ysw[2], 13)
+})
+
 test_that("zooming preserves trace/mass factor levels and colours", {
   # two traces, the second only has data outside the zoom window
   d <- tibble(

@@ -521,7 +521,13 @@ ir_plot_scans <- function(
     ) +
     ggplot2::scale_y_continuous(
       breaks = scales::pretty_breaks(n_y_breaks),
-      labels = if (scientific) label_scientific() else ggplot2::waiver()
+      labels = if (scientific) label_scientific() else ggplot2::waiver(),
+      # autoscaled to a window: headroom on both ends; otherwise the default
+      expand = if (!is.null(x_window)) {
+        ggplot2::expansion(mult = c(0.05, 0.05))
+      } else {
+        ggplot2::waiver()
+      }
     )
 
   # include 0 in the y range, unless an x window is set (then autoscale to it)
@@ -815,7 +821,12 @@ ir_plot_continuous_flow <- function(
     ggplot2::scale_y_continuous(
       breaks = scales::pretty_breaks(n_y_breaks),
       labels = if (scientific) label_scientific() else ggplot2::waiver(),
-      expand = ggplot2::expansion(mult = c(0, 0.05))
+      # 0 pinned to the bottom when included; both-ends headroom when zoomed in
+      expand = if (!is.null(time_window)) {
+        ggplot2::expansion(mult = c(0.05, 0.05))
+      } else {
+        ggplot2::expansion(mult = c(0, 0.05))
+      }
     )
 
   # include 0 in the y range, unless a time window is set (then autoscale to it)
@@ -1094,7 +1105,12 @@ ir_plot_dual_inlet <- function(
     ggplot2::scale_y_continuous(
       breaks = scales::pretty_breaks(n_y_breaks),
       labels = if (scientific) label_scientific() else ggplot2::waiver(),
-      expand = ggplot2::expansion(mult = c(0, 0.05))
+      # 0 pinned to the bottom when included; both-ends headroom when zoomed in
+      expand = if (!is.null(cycle_window)) {
+        ggplot2::expansion(mult = c(0.05, 0.05))
+      } else {
+        ggplot2::expansion(mult = c(0, 0.05))
+      }
     )
 
   # include 0 in the y range, unless a cycle window is set (then autoscale to it)
