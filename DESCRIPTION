@@ -22,6 +22,7 @@ Imports:
     tools,
     utils,
     methods,
+    stats,
     rlang (>= 1.1.0),
     cli (>= 3.6.0),
     processx,

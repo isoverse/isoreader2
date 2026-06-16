@@ -171,12 +171,12 @@ add_color_aes <- function(p, color_quo, color_values, plot_data) {
 # internal: subset `plot_data` to a display `window` (length-2 c(min, max)) along
 # column `col`, additionally keeping, per line (grouped by `group_cols`), the
 # single data point just below and just above the window. Those bracketing points
-# let the clipped lines interpolate correctly across the window edges and give
-# correct y autoscaling there. Because the bracketing points are found relative to
-# the window bounds (not to the in-window points), a window that contains no data
-# points of its own is fully supported - the line is simply drawn between the
-# bracketing points on either side. Assumes `window` is already validated as
-# min < max.
+# let the clipped lines interpolate correctly across the window edges. Because
+# they are found relative to the window bounds (not to the in-window points), a
+# window that contains no data points of its own is fully supported - the line is
+# simply drawn between the bracketing points on either side. The bracketing
+# points are excluded from y autoscaling via visible_y_range(). Assumes `window`
+# is already validated as min < max.
 apply_plot_window <- function(plot_data, col, window, group_cols) {
   group_cols <- intersect(group_cols, names(plot_data))
   plot_data |>
@@ -202,6 +202,51 @@ apply_plot_window <- function(plot_data, col, window, group_cols) {
     ) |>
     dplyr::filter(.data[[".window_keep"]]) |>
     dplyr::select(-".window_keep")
+}
+
+# internal: the y (`y_col`) range actually visible inside a display `window`
+# along `x_col`. This is the range of `y_col` over the data points within the
+# window plus the values linearly interpolated at the two window edges (so a line
+# entering/leaving the window is accounted for), computed per line
+# (`group_cols`). It deliberately ignores the bracketing points that
+# apply_plot_window() keeps just outside the window so the y axis autoscales to
+# the zoomed-in data rather than to a far-off baseline. Returns NULL when nothing
+# finite is visible (e.g. an empty window between two points on every line), in
+# which case the caller falls back to the default autoscaling.
+visible_y_range <- function(plot_data, x_col, y_col, window, group_cols) {
+  group_cols <- intersect(group_cols, names(plot_data))
+  visible_vals <- function(g) {
+    x <- g[[x_col]]
+    y <- g[[y_col]]
+    ok <- is.finite(x) & is.finite(y)
+    x <- x[ok]
+    y <- y[ok]
+    if (length(x) == 0) {
+      return(numeric(0))
+    }
+    inside <- y[x >= window[1] & x <= window[2]]
+    edges <- numeric(0)
+    if (length(x) >= 2) {
+      # interpolate at the window edges; rule = 1 yields NA outside the line's
+      # own x range (e.g. a line that does not span the edge), which we drop
+      edges <- stats::approx(x, y, xout = window, rule = 1, ties = "ordered")$y
+      edges <- edges[is.finite(edges)]
+    }
+    c(inside, edges)
+  }
+  vals <- if (length(group_cols) > 0) {
+    plot_data |>
+      dplyr::group_by(dplyr::across(dplyr::all_of(group_cols))) |>
+      dplyr::group_split() |>
+      lapply(visible_vals) |>
+      unlist()
+  } else {
+    visible_vals(plot_data)
+  }
+  if (length(vals) == 0 || all(is.na(vals))) {
+    return(NULL)
+  }
+  range(vals, na.rm = TRUE)
 }
 
 # internal: filter plot data to the requested `species` and/or `mass` values
@@ -553,9 +598,17 @@ ir_plot_scans <- function(
     geometry_set = !missing(nrow) || !missing(ncol)
   )
 
-  # x window: clip display to the requested range
+  # x window: clip display to the requested range and autoscale y to the data
+  # visible inside the window (ignoring the bracketing points kept just outside)
   if (!is.null(x_window)) {
-    p <- p + ggplot2::coord_cartesian(xlim = x_window)
+    y_window <- visible_y_range(
+      plot_data,
+      "x",
+      intensity_col,
+      x_window,
+      c("uidx", "analysis", "species", "channel", "mass")
+    )
+    p <- p + ggplot2::coord_cartesian(xlim = x_window, ylim = y_window)
   }
 
   p <- p + theme
@@ -852,9 +905,17 @@ ir_plot_continuous_flow <- function(
     geometry_set = !missing(nrow) || !missing(ncol)
   )
 
-  # time window: clip display to the requested range
+  # time window: clip display to the requested range and autoscale y to the data
+  # visible inside the window (ignoring the bracketing points kept just outside)
   if (!is.null(time_window)) {
-    p <- p + ggplot2::coord_cartesian(xlim = time_window)
+    y_window <- visible_y_range(
+      plot_data,
+      time_col,
+      intensity_col,
+      time_window,
+      c("uidx", "analysis", "species", "channel", "mass")
+    )
+    p <- p + ggplot2::coord_cartesian(xlim = time_window, ylim = y_window)
   }
 
   p <- p + theme
@@ -1150,9 +1211,17 @@ ir_plot_dual_inlet <- function(
     geometry_set = !missing(nrow) || !missing(ncol)
   )
 
-  # cycle window: clip display to the requested range
+  # cycle window: clip display to the requested range and autoscale y to the data
+  # visible inside the window (ignoring the bracketing points kept just outside)
   if (!is.null(cycle_window)) {
-    p <- p + ggplot2::coord_cartesian(xlim = cycle_window)
+    y_window <- visible_y_range(
+      plot_data,
+      "cycle",
+      intensity_col,
+      cycle_window,
+      c("uidx", "analysis", "species", "channel", "mass", "type")
+    )
+    p <- p + ggplot2::coord_cartesian(xlim = cycle_window, ylim = y_window)
   }
 
   p <- p + theme
