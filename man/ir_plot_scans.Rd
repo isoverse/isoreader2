@@ -71,9 +71,12 @@ colour palette (default: \code{\link[=palette.colors]{palette.colors()}})}
 (default: \code{FALSE})}
 
 \item{x_window}{optional numeric vector of length 2 giving the x axis
-display window \code{c(min, max)}. Data just outside the window is retained for
-correct y autoscaling at the edges; \code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} clips the
-display. Default \code{NULL} shows the full x range.}
+display window \code{c(min, max)} (must have \code{min < max}). The data point just
+outside each edge of the window is retained so the clipped lines interpolate
+correctly across the window boundaries and y autoscales correctly at the
+edges; \code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} clips the display. A window that contains
+no data points of its own is allowed (the line is drawn between the
+bracketing points). Default \code{NULL} shows the full x range.}
 
 \item{n_x_breaks}{desired number of x axis tick marks (default: \code{5})}
 

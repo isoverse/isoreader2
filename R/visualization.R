@@ -168,6 +168,42 @@ add_color_aes <- function(p, color_quo, color_values, plot_data) {
   return(p)
 }
 
+# internal: subset `plot_data` to a display `window` (length-2 c(min, max)) along
+# column `col`, additionally keeping, per line (grouped by `group_cols`), the
+# single data point just below and just above the window. Those bracketing points
+# let the clipped lines interpolate correctly across the window edges and give
+# correct y autoscaling there. Because the bracketing points are found relative to
+# the window bounds (not to the in-window points), a window that contains no data
+# points of its own is fully supported - the line is simply drawn between the
+# bracketing points on either side. Assumes `window` is already validated as
+# min < max.
+apply_plot_window <- function(plot_data, col, window, group_cols) {
+  group_cols <- intersect(group_cols, names(plot_data))
+  plot_data |>
+    dplyr::arrange(!!!rlang::syms(c(group_cols, col))) |>
+    dplyr::mutate(
+      .by = dplyr::all_of(group_cols),
+      # inside the window
+      .window_keep = (.data[[col]] >= window[1] & .data[[col]] <= window[2]) |
+        # nearest point just below the window (left edge interpolation)
+        (.data[[col]] < window[1] &
+          .data[[col]] ==
+            suppressWarnings(max(
+              .data[[col]][.data[[col]] < window[1]],
+              na.rm = TRUE
+            ))) |
+        # nearest point just above the window (right edge interpolation)
+        (.data[[col]] > window[2] &
+          .data[[col]] ==
+            suppressWarnings(min(
+              .data[[col]][.data[[col]] > window[2]],
+              na.rm = TRUE
+            )))
+    ) |>
+    dplyr::filter(.data[[".window_keep"]]) |>
+    dplyr::select(-".window_keep")
+}
+
 # internal: filter plot data to the requested `species` and/or `mass` values
 # (compared as character, so numeric/character work interchangeably). Errors
 # informatively (listing what is available) if a selection leaves no data.
@@ -248,9 +284,12 @@ filter_plot_data <- function(plot_data, species, mass, .env = caller_env()) {
 #' @param ... additional arguments passed on to [ggplot2::facet_wrap()] or
 #'   [ggplot2::facet_grid()] (e.g. `labeller`)
 #' @param x_window optional numeric vector of length 2 giving the x axis
-#'   display window `c(min, max)`. Data just outside the window is retained for
-#'   correct y autoscaling at the edges; [ggplot2::coord_cartesian()] clips the
-#'   display. Default `NULL` shows the full x range.
+#'   display window `c(min, max)` (must have `min < max`). The data point just
+#'   outside each edge of the window is retained so the clipped lines interpolate
+#'   correctly across the window boundaries and y autoscales correctly at the
+#'   edges; [ggplot2::coord_cartesian()] clips the display. A window that contains
+#'   no data points of its own is allowed (the line is drawn between the
+#'   bracketing points). Default `NULL` shows the full x range.
 #' @param n_x_breaks desired number of x axis tick marks (default: `5`)
 #' @param n_y_breaks desired number of y axis tick marks (default: `5`)
 #' @param theme ggplot2 theme to apply (default: [ir_default_theme()])
@@ -315,8 +354,11 @@ ir_plot_scans <- function(
   check_arg(scientific, rlang::is_bool(scientific), "must be TRUE or FALSE")
   check_arg(
     x_window,
-    is.null(x_window) || (is.numeric(x_window) && length(x_window) == 2),
-    "must be NULL or a numeric vector of length 2 (min, max)"
+    is.null(x_window) ||
+      (is.numeric(x_window) &&
+        length(x_window) == 2 &&
+        x_window[1] < x_window[2]),
+    "must be NULL or a numeric vector of length 2 with min < max"
   )
   check_arg(
     n_x_breaks,
@@ -441,37 +483,17 @@ ir_plot_scans <- function(
   # sort trace as a factor in numerical order of the trailing mass number
   plot_data <- sort_trace_factor(plot_data)
 
-  # x window: applied after the mass/trace factors are built (above) so they
-  # keep their full levels and the colour mapping stays stable when zoomed; keep
-  # data just outside the limits for correct y autoscaling at the edges
+  # x window: applied after the mass/trace factors are built (above) so they keep
+  # their full levels and the colour mapping stays stable when zoomed. An empty
+  # window (no data points inside it) is fine - the line still interpolates from
+  # the bracketing points just outside the window (see apply_plot_window()).
   if (!is.null(x_window)) {
-    x_range <- range(plot_data$x, na.rm = TRUE)
-    line_groups <- intersect(
-      c("uidx", "analysis", "species", "channel", "mass"),
-      names(plot_data)
+    plot_data <- apply_plot_window(
+      plot_data,
+      "x",
+      x_window,
+      c("uidx", "analysis", "species", "channel", "mass")
     )
-    plot_data <- plot_data |>
-      dplyr::arrange(!!!rlang::syms(c(line_groups, "x"))) |>
-      dplyr::mutate(
-        in_range = .data$x >= x_window[1] & .data$x <= x_window[2]
-      ) |>
-      dplyr::mutate(
-        .by = line_groups,
-        just_before = !.data$in_range &
-          dplyr::lag(.data$in_range, default = FALSE),
-        just_after = !.data$in_range &
-          dplyr::lead(.data$in_range, default = FALSE)
-      ) |>
-      dplyr::filter(.data$in_range | .data$just_before | .data$just_after) |>
-      dplyr::select(-"in_range", -"just_before", -"just_after")
-    if (nrow(plot_data) == 0) {
-      cli_abort(
-        c(
-          "{.arg x_window} [{x_window[1]}, {x_window[2]}] contains no data",
-          "i" = "the x range in the data is [{x_range[1]}, {x_range[2]}]"
-        )
-      )
-    }
   }
 
   # validate aesthetic expressions against the actual plot data
@@ -578,10 +600,12 @@ ir_plot_scans <- function(
 #' @param ... additional arguments passed on to [ggplot2::facet_wrap()] or
 #'   [ggplot2::facet_grid()] (e.g. `labeller`)
 #' @param time_window optional numeric vector of length 2 giving the time axis
-#'   display window `c(min, max)` in seconds. Data just outside the window is
-#'   retained for correct y autoscaling at the edges;
-#'   [ggplot2::coord_cartesian()] clips the display. Default `NULL` shows the
-#'   full time range.
+#'   display window `c(min, max)` in seconds (must have `min < max`). The data
+#'   point just outside each edge of the window is retained so the clipped lines
+#'   interpolate correctly across the window boundaries and y autoscales correctly
+#'   at the edges; [ggplot2::coord_cartesian()] clips the display. A window that
+#'   contains no data points of its own is allowed (the line is drawn between the
+#'   bracketing points). Default `NULL` shows the full time range.
 #' @param short_time_labels whether to use compact time axis labels with no
 #'   space between value and unit and abbreviated units (`hr`, `m`, `s`)
 #'   (default: `FALSE`)
@@ -650,8 +674,10 @@ ir_plot_continuous_flow <- function(
   check_arg(
     time_window,
     is.null(time_window) ||
-      (is.numeric(time_window) && length(time_window) == 2),
-    "must be NULL or a numeric vector of length 2 (min, max)"
+      (is.numeric(time_window) &&
+        length(time_window) == 2 &&
+        time_window[1] < time_window[2]),
+    "must be NULL or a numeric vector of length 2 with min < max"
   )
   check_arg(
     n_time_breaks,
@@ -746,37 +772,16 @@ ir_plot_continuous_flow <- function(
   plot_data <- sort_trace_factor(plot_data)
 
   # time window: applied after the mass/trace factors are built (above) so they
-  # keep their full levels and the colour mapping stays stable when zoomed; keep
-  # data just outside the limits for correct y autoscaling at the edges
+  # keep their full levels and the colour mapping stays stable when zoomed. An
+  # empty window (no data points inside it) is fine - the line still interpolates
+  # from the bracketing points just outside the window (see apply_plot_window()).
   if (!is.null(time_window)) {
-    time_range <- range(plot_data[[time_col]], na.rm = TRUE)
-    line_groups <- intersect(
-      c("uidx", "analysis", "species", "channel", "mass"),
-      names(plot_data)
+    plot_data <- apply_plot_window(
+      plot_data,
+      time_col,
+      time_window,
+      c("uidx", "analysis", "species", "channel", "mass")
     )
-    plot_data <- plot_data |>
-      dplyr::arrange(!!!rlang::syms(c(line_groups, time_col))) |>
-      dplyr::mutate(
-        in_range = .data[[time_col]] >= time_window[1] &
-          .data[[time_col]] <= time_window[2]
-      ) |>
-      dplyr::mutate(
-        .by = line_groups,
-        just_before = !.data$in_range &
-          dplyr::lag(.data$in_range, default = FALSE),
-        just_after = !.data$in_range &
-          dplyr::lead(.data$in_range, default = FALSE)
-      ) |>
-      dplyr::filter(.data$in_range | .data$just_before | .data$just_after) |>
-      dplyr::select(-"in_range", -"just_before", -"just_after")
-    if (nrow(plot_data) == 0) {
-      cli_abort(
-        c(
-          "{.arg time_window} [{time_window[1]}, {time_window[2]}] contains no data",
-          "i" = "the time range in the data is [{time_range[1]}, {time_range[2]}]"
-        )
-      )
-    }
   }
 
   # validate aesthetic expressions against the actual plot data
@@ -889,9 +894,12 @@ ir_plot_continuous_flow <- function(
 #' @param scientific whether to format y axis labels in scientific notation
 #'   (default: `FALSE`)
 #' @param cycle_window optional numeric vector of length 2 giving the cycle axis
-#'   display window `c(min, max)`. Data just outside the window is retained for
-#'   correct y autoscaling at the edges; [ggplot2::coord_cartesian()] clips the
-#'   display. Default `NULL` shows all cycles.
+#'   display window `c(min, max)` (must have `min < max`). The data point just
+#'   outside each edge of the window is retained so the clipped lines interpolate
+#'   correctly across the window boundaries and y autoscales correctly at the
+#'   edges; [ggplot2::coord_cartesian()] clips the display. A window that contains
+#'   no data points of its own is allowed (the line is drawn between the
+#'   bracketing points). Default `NULL` shows all cycles.
 #' @param n_y_breaks desired number of y axis tick marks (default: `5`)
 #' @param theme ggplot2 theme to apply (default: [ir_default_theme()])
 #' @param ... additional arguments passed on to [ggplot2::facet_wrap()] or
@@ -958,8 +966,10 @@ ir_plot_dual_inlet <- function(
   check_arg(
     cycle_window,
     is.null(cycle_window) ||
-      (is.numeric(cycle_window) && length(cycle_window) == 2),
-    "must be NULL or a numeric vector of length 2 (min, max)"
+      (is.numeric(cycle_window) &&
+        length(cycle_window) == 2 &&
+        cycle_window[1] < cycle_window[2]),
+    "must be NULL or a numeric vector of length 2 with min < max"
   )
 
   # capture aesthetics before any data manipulation
@@ -1044,37 +1054,16 @@ ir_plot_dual_inlet <- function(
   plot_data <- sort_trace_factor(plot_data)
 
   # cycle window: applied after the mass/trace factors are built (above) so they
-  # keep their full levels and the colour mapping stays stable when zoomed; keep
-  # data just outside the limits for correct y autoscaling at the edges
+  # keep their full levels and the colour mapping stays stable when zoomed. An
+  # empty window (no data points inside it) is fine - the line still interpolates
+  # from the bracketing points just outside the window (see apply_plot_window()).
   if (!is.null(cycle_window)) {
-    cycle_range <- range(plot_data$cycle, na.rm = TRUE)
-    line_groups <- intersect(
-      c("uidx", "analysis", "species", "channel", "mass", "type"),
-      names(plot_data)
+    plot_data <- apply_plot_window(
+      plot_data,
+      "cycle",
+      cycle_window,
+      c("uidx", "analysis", "species", "channel", "mass", "type")
     )
-    plot_data <- plot_data |>
-      dplyr::arrange(!!!rlang::syms(c(line_groups, "cycle"))) |>
-      dplyr::mutate(
-        in_range = .data$cycle >= cycle_window[1] &
-          .data$cycle <= cycle_window[2]
-      ) |>
-      dplyr::mutate(
-        .by = line_groups,
-        just_before = !.data$in_range &
-          dplyr::lag(.data$in_range, default = FALSE),
-        just_after = !.data$in_range &
-          dplyr::lead(.data$in_range, default = FALSE)
-      ) |>
-      dplyr::filter(.data$in_range | .data$just_before | .data$just_after) |>
-      dplyr::select(-"in_range", -"just_before", -"just_after")
-    if (nrow(plot_data) == 0) {
-      cli_abort(
-        c(
-          "{.arg cycle_window} [{cycle_window[1]}, {cycle_window[2]}] contains no data",
-          "i" = "the cycle range in the data is [{cycle_range[1]}, {cycle_range[2]}]"
-        )
-      )
-    }
   }
 
   # validate aesthetic expressions against the actual plot data

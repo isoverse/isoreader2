@@ -157,11 +157,72 @@ test_that("ir_plot_dual_inlet() respects cycle_window", {
   # data just outside the window is retained for edge autoscaling (cycles 1-5)
   expect_equal(sort(unique(p$data$cycle)), 1:5)
 
-  # an empty window errors; the value is validated as length-2 numeric
-  ir_plot_dual_inlet(d, cycle_window = c(100, 200)) |>
-    expect_error("contains no data")
+  # the value is validated as a length-2 numeric with min < max
   ir_plot_dual_inlet(d, cycle_window = 5) |>
     expect_error("numeric vector of length 2")
+  ir_plot_dual_inlet(d, cycle_window = c(4, 2)) |>
+    expect_error("min < max")
+})
+
+test_that("windows without data points of their own are allowed", {
+  # a continuous flow trace with gaps between the data points
+  cf <- tibble(
+    file_name = "a",
+    species = "CO2",
+    mass = 44,
+    trace = "CO2: 44",
+    time.s = c(0, 10, 20, 30, 40),
+    intensity.mV = c(1, 2, 3, 4, 5)
+  )
+
+  # a window that falls *between* two data points still plots: the bracketing
+  # points on either side are kept so the line interpolates across the window
+  p <- ir_plot_continuous_flow(cf, time_window = c(12, 18)) |>
+    suppressMessages()
+  expect_no_error(ggplot2::ggplot_build(p))
+  expect_equal(sort(p$data$time.s), c(10, 20))
+  expect_equal(p$coordinates$limits$x, c(12, 18))
+
+  # a window beyond the data range keeps the nearest bracketing point, no error
+  p_past <- ir_plot_continuous_flow(cf, time_window = c(100, 200)) |>
+    suppressMessages()
+  expect_no_error(ggplot2::ggplot_build(p_past))
+  expect_equal(p_past$data$time.s, 40)
+
+  # an impossible window (min >= max) is the only window error
+  ir_plot_continuous_flow(cf, time_window = c(20, 10)) |>
+    expect_error("min < max")
+  ir_plot_continuous_flow(cf, time_window = c(20, 20)) |>
+    expect_error("min < max")
+
+  # same empty-window tolerance for scans and dual inlet
+  sc <- tibble(
+    file_name = "a",
+    species = "CO2",
+    mass = 44,
+    trace = "CO2: 44",
+    scan_type = "high voltage",
+    x_units = "kV",
+    x = c(0, 1, 2, 3),
+    intensity.mV = c(1, 2, 3, 4)
+  )
+  p_sc <- ir_plot_scans(sc, x_window = c(1.2, 1.8)) |> suppressMessages()
+  expect_no_error(ggplot2::ggplot_build(p_sc))
+  expect_equal(sort(p_sc$data$x), c(1, 2))
+
+  di <- tibble(
+    file_name = "a",
+    species = "CO2",
+    mass = 44,
+    trace = "CO2: 44",
+    type = "sample",
+    cycle = 1:6,
+    intensity.mV = 1:6
+  )
+  p_di <- ir_plot_dual_inlet(di, cycle_window = c(2.4, 2.6)) |>
+    suppressMessages()
+  expect_no_error(ggplot2::ggplot_build(p_di))
+  expect_equal(sort(p_di$data$cycle), c(2, 3))
 })
 
 test_that("zooming preserves trace/mass factor levels and colours", {
