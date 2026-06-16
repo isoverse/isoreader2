@@ -148,9 +148,12 @@ colour palette (default: <code><a href="https://rdrr.io/r/grDevices/palette.html
 
 <dt id="arg-cycle-window">cycle_window<a class="anchor" aria-label="anchor" href="#arg-cycle-window"></a></dt>
 <dd><p>optional numeric vector of length 2 giving the cycle axis
-display window <code>c(min, max)</code>. Data just outside the window is retained for
-correct y autoscaling at the edges; <code><a href="https://ggplot2.tidyverse.org/reference/coord_cartesian.html" class="external-link">ggplot2::coord_cartesian()</a></code> clips the
-display. Default <code>NULL</code> shows all cycles.</p></dd>
+display window <code>c(min, max)</code> (must have <code>min &lt; max</code>). The data point just
+outside each edge of the window is retained so the clipped lines interpolate
+correctly across the window boundaries and y autoscales correctly at the
+edges; <code><a href="https://ggplot2.tidyverse.org/reference/coord_cartesian.html" class="external-link">ggplot2::coord_cartesian()</a></code> clips the display. A window that contains
+no data points of its own is allowed (the line is drawn between the
+bracketing points). Default <code>NULL</code> shows all cycles.</p></dd>
 
 
 <dt id="arg-n-y-breaks">n_y_breaks<a class="anchor" aria-label="anchor" href="#arg-n-y-breaks"></a></dt>

@@ -107,10 +107,14 @@ ir_plot_continuous_flow(
 - time_window:
 
   optional numeric vector of length 2 giving the time axis display
-  window `c(min, max)` in seconds. Data just outside the window is
-  retained for correct y autoscaling at the edges;
+  window `c(min, max)` in seconds (must have `min < max`). The data
+  point just outside each edge of the window is retained so the clipped
+  lines interpolate correctly across the window boundaries and y
+  autoscales correctly at the edges;
   [`ggplot2::coord_cartesian()`](https://ggplot2.tidyverse.org/reference/coord_cartesian.html)
-  clips the display. Default `NULL` shows the full time range.
+  clips the display. A window that contains no data points of its own is
+  allowed (the line is drawn between the bracketing points). Default
+  `NULL` shows the full time range.
 
 - short_time_labels:
 
