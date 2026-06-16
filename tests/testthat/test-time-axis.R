@@ -26,8 +26,41 @@ test_that("labels_duration() formats durations", {
     labels_duration(short_format = TRUE)(c(0, 3600)),
     c("0hr", "1hr")
   )
-  # sub-second units
+  # sub-second units (all values below a second use bare ms/µs/... labels)
   expect_equal(labels_duration()(c(0, 0.001, 0.002)), c("0 ms", "1 ms", "2 ms"))
   # NA passes through
   expect_true(is.na(labels_duration()(c(0, 60, NA))[3]))
+})
+
+test_that("labels_duration() keeps m:s/h:m:s format for sub-second spacing", {
+  # large times with sub-second break spacing must keep their m:s / h:m:s format
+  # and gain fractional seconds, not collapse to a single rounded ms/µs number
+  expect_equal(
+    labels_duration()(c(180, 180.001, 180.002)),
+    c("3:00.000 min", "3:00.001 min", "3:00.002 min")
+  )
+  # microsecond spacing -> 6 fractional-second digits
+  expect_equal(
+    labels_duration()(c(180, 180.000001, 180.000002)),
+    c("3:00.000000 min", "3:00.000001 min", "3:00.000002 min")
+  )
+  # the number of fractional digits matches the break spacing
+  expect_equal(
+    labels_duration()(c(180, 180.0005, 180.001)),
+    c("3:00.0000 min", "3:00.0005 min", "3:00.0010 min")
+  )
+  # hours are kept too (h:m:s.sss), including short format
+  expect_equal(
+    labels_duration()(c(3600, 3600.001, 3600.002)),
+    c("1:00:00.000 hours", "1:00:00.001 hours", "1:00:00.002 hours")
+  )
+  expect_equal(
+    labels_duration(short_format = TRUE)(c(180, 180.001)),
+    c("3:00.000m", "3:00.001m")
+  )
+  # whole-second values with sub-second spacing show fractional seconds
+  expect_equal(
+    labels_duration()(c(5, 5.001, 5.002)),
+    c("5.000 secs", "5.001 secs", "5.002 secs")
+  )
 })
