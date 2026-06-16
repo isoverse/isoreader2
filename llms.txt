@@ -82,10 +82,10 @@ dataset |>
   ir_plot_continuous_flow()
 ```
 
-![plot of chunk
-continuous_flow_example](reference/figures/README-continuous_flow_example-1.png)
+![Plot of continuous flow
+examples](reference/figures/README-continuous_flow_example-1.png)
 
-plot of chunk continuous_flow_example
+Plot of continuous flow examples
 
 ## Show me more details
 
@@ -112,11 +112,11 @@ isofiles <- file_paths |> ir_read_isofiles()
 ```
 
 ``` fansi
-✔ [315ms] ir_extract_isofiles() finished extracting 2 files/archives
+✔ [307ms] ir_extract_isofiles() finished extracting 1 file/archive
 ```
 
 ``` fansi
-✔ [202ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+✔ [260ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 ```
 
 ``` r
@@ -126,16 +126,13 @@ isofiles
 ```
 
 ``` fansi
-─────── 2 isofiles with 2 analyses - combine with ir_aggregate_isofiles() ──────
+─────── 1 isofile with 1 analysis - process with ir_aggregate_isofiles() ───────
 ```
 
 ``` fansi
 1. caf_dual_inlet_example.caf: with 8 sample/standard cycles for CO2clump
 (masses 44, 45, 46, 47, 48, 49, 44, 45, 46, 47, 48, 49, 44, 45, 46, 47, 48, 49,
 …, 48, and 49); 21 metadata columns
-2. did_dual_inlet_example.did: with 7 sample/standard cycles for CO2+ (masses
-44, 45, 46, 47, 48, 49, 44, 45, 46, 47, 48, 49, 44, 45, 46, 47, 48, 49, …, 48,
-and 49); 17 metadata columns
 ```
 
 ### Aggregate the data
@@ -148,8 +145,8 @@ dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
 ``` fansi
-✔ [87ms] ir_aggregate_isofiles() aggregated metadata (2) and cycles (192,
-intensity in V) from 2 files using the standard aggregator
+✔ [45ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+intensity in V) from 1 file using the standard aggregator
 ```
 
 ``` r
@@ -160,18 +157,18 @@ dataset
 ```
 
 ``` fansi
-─ aggregated data from 2 isofiles with 2 analyses - retrieve with ir_get_data( ─
+─ aggregated data from 1 isofiles with 1 analysis - retrieve with ir_get_data( ─
 ```
 
 ``` fansi
-→ metadata (2): uidx, file_path, file_name, analysis, timestamp, type,
+→ metadata (1): uidx, file_path, file_name, analysis, timestamp, type,
 h3_factor (all NA), Line, Peak Center, Pressadjust, Background, Reference
-Refill (1 NA), Weight [mg] (1 NA), Sample (1 NA), Identifier 1, Identifier 2,
-Analysis, Comment, Preparation, Pre Script (1 NA), Post Script, Method
+Refill, Weight [mg], Sample, Identifier 1, Identifier 2, Analysis, Comment,
+Preparation, Pre Script, Post Script, Method
 ```
 
 ``` fansi
-→ cycles (192): uidx, analysis, species, cycle, type, mass, trace, intensity.V;
+→ cycles (102): uidx, analysis, species, cycle, type, mass, trace, intensity.V;
 (not aggregated: channel)
 ```
 
@@ -183,17 +180,20 @@ Analysis, Comment, Preparation, Pre Script (1 NA), Post Script, Method
 
 ``` r
 
-# filter the data for by a metadata field and plot it
-# use ir_plot_continuous_flow() and ir_plot_scans(), respectively
+# filter the data by a metadata field and mass range and plot it
+# (use ir_plot_continuous_flow() and ir_plot_scans(), respectively)
+library(ggplot2)
 dataset |>
   ir_filter_metadata(file_name == "caf_dual_inlet_example") |>
-  ir_plot_dual_inlet()
+  ir_plot_dual_inlet(mass = c(44:48)) +
+  # use ggplot2 to modify the plot with custom theming (or any other ggplot elements)
+  theme(strip.text = element_text(size = 30))
 ```
 
-![plot of chunk
-dual_inlet_example](reference/figures/README-dual_inlet_example-1.png)
+![Plot of dual inlet
+examples](reference/figures/README-dual_inlet_example-1.png)
 
-plot of chunk dual_inlet_example
+Plot of dual inlet examples
 
 ### Export the data
 
@@ -209,16 +209,16 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [2ms] ir_get_data() retrieved 2 records from metadata
+✔ [2ms] ir_get_data() retrieved 1 records from metadata
 ```
 
 ``` fansi
-✔ [4ms] ir_get_data() retrieved 192 records from the combination of metadata
-(2) and cycles (192) via uidx and analysis
+✔ [3ms] ir_get_data() retrieved 102 records from the combination of metadata
+(1) and cycles (102) via uidx and analysis
 ```
 
 ``` fansi
-✔ [223ms] ir_export_to_excel() exported 2 rows of metadata and 192 rows of
+✔ [191ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
 cycles to my_export.xlsx
 ```
 
