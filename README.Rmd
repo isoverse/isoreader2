@@ -100,7 +100,7 @@ isoreader2::ir_examples_folder() |>
   unlink()
 ```
 
-```{r "continuous_flow_example", message=FALSE, fig.width = 8, fig.height = 6}
+```{r "continuous_flow_example", message=FALSE, fig.width = 8, fig.height = 6, fig.cap = "Plot of continuous flow examples"}
 # load library
 library(isoreader2)
 
@@ -161,12 +161,15 @@ dataset
 
 ### Visualize the data
 
-```{r "dual_inlet_example", fig.width = 8, fig.height = 5}
-# filter the data for by a metadata field and plot it
-# use ir_plot_continuous_flow() and ir_plot_scans(), respectively
+```{r "dual_inlet_example", fig.width = 8, fig.height = 5, fig.cap="Plot of dual inlet examples"}
+# filter the data by a metadata field and mass range and plot it
+# (use ir_plot_continuous_flow() and ir_plot_scans(), respectively)
+library(ggplot2)
 dataset |>
   ir_filter_metadata(file_name == "caf_dual_inlet_example") |>
-  ir_plot_dual_inlet()
+  ir_plot_dual_inlet(mass = c(44:48)) +
+  # use ggplot2 to modify the plot with custom theming (or any other ggplot elements)
+  theme(strip.text = element_text(size = 30))
 ```
 
 ### Export the data

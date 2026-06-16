@@ -81,8 +81,8 @@ dataset |>
 ```
 
 <div class="figure">
-<img src="man/figures/README-continuous_flow_example-1.png" alt="plot of chunk continuous_flow_example" width="100%" />
-<p class="caption">plot of chunk continuous_flow_example</p>
+<img src="man/figures/README-continuous_flow_example-1.png" alt="Plot of continuous flow examples" width="100%" />
+<p class="caption">Plot of continuous flow examples</p>
 </div>
 
 ## Show me more details
@@ -111,8 +111,8 @@ file_paths <- ir_examples_folder() |> ir_find_dual_inlet()
 isofiles <- file_paths |> ir_read_isofiles()
 ```
 
-<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[315ms]</span> <span style='font-weight: bold;'>ir_extract_isofiles()</span> finished extracting 2 files/archives
-</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[202ms]</span> <span style='font-weight: bold;'>ir_read_isofiles()</span> finished reading 2 isotope data files/archives
+<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[307ms]</span> <span style='font-weight: bold;'>ir_extract_isofiles()</span> finished extracting 1 file/archive
+</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[260ms]</span> <span style='font-weight: bold;'>ir_read_isofiles()</span> finished reading 1 isotope data file/archive
 </CODE></PRE>
 
 ``` r
@@ -120,13 +120,10 @@ isofiles <- file_paths |> ir_read_isofiles()
 isofiles
 ```
 
-<PRE class="fansi fansi-message"><CODE>─────── <span style='font-weight: bold;'>2 isofiles with 2 analyses - combine with ir_aggregate_isofiles()</span> ──────
+<PRE class="fansi fansi-message"><CODE>─────── <span style='font-weight: bold;'>1 isofile with 1 analysis - process with ir_aggregate_isofiles()</span> ───────
 </CODE></PRE><PRE class="fansi fansi-message"><CODE>1. <span style='color: #0000BB;'>caf_dual_inlet_example.caf</span>: with <span style='color: #00BBBB;'>8</span> sample/standard cycles for <span style='color: #BB00BB;'>CO2clump</span>
 (masses <span style='color: #00BB00;'>44</span>, <span style='color: #00BB00;'>45</span>, <span style='color: #00BB00;'>46</span>, <span style='color: #00BB00;'>47</span>, <span style='color: #00BB00;'>48</span>, <span style='color: #00BB00;'>49</span>, <span style='color: #00BB00;'>44</span>, <span style='color: #00BB00;'>45</span>, <span style='color: #00BB00;'>46</span>, <span style='color: #00BB00;'>47</span>, <span style='color: #00BB00;'>48</span>, <span style='color: #00BB00;'>49</span>, <span style='color: #00BB00;'>44</span>, <span style='color: #00BB00;'>45</span>, <span style='color: #00BB00;'>46</span>, <span style='color: #00BB00;'>47</span>, <span style='color: #00BB00;'>48</span>, <span style='color: #00BB00;'>49</span>,
 …, <span style='color: #00BB00;'>48</span>, and <span style='color: #00BB00;'>49</span>); <span style='color: #00BBBB;'>21</span> metadata columns
-2. <span style='color: #0000BB;'>did_dual_inlet_example.did</span>: with <span style='color: #00BBBB;'>7</span> sample/standard cycles for <span style='color: #BB00BB;'>CO2+</span> (masses
-<span style='color: #00BB00;'>44</span>, <span style='color: #00BB00;'>45</span>, <span style='color: #00BB00;'>46</span>, <span style='color: #00BB00;'>47</span>, <span style='color: #00BB00;'>48</span>, <span style='color: #00BB00;'>49</span>, <span style='color: #00BB00;'>44</span>, <span style='color: #00BB00;'>45</span>, <span style='color: #00BB00;'>46</span>, <span style='color: #00BB00;'>47</span>, <span style='color: #00BB00;'>48</span>, <span style='color: #00BB00;'>49</span>, <span style='color: #00BB00;'>44</span>, <span style='color: #00BB00;'>45</span>, <span style='color: #00BB00;'>46</span>, <span style='color: #00BB00;'>47</span>, <span style='color: #00BB00;'>48</span>, <span style='color: #00BB00;'>49</span>, …, <span style='color: #00BB00;'>48</span>,
-and <span style='color: #00BB00;'>49</span>); <span style='color: #00BBBB;'>17</span> metadata columns
 </CODE></PRE>
 
 ### Aggregate the data
@@ -138,8 +135,8 @@ and <span style='color: #00BB00;'>49</span>); <span style='color: #00BBBB;'>17</
 dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
-<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[87ms]</span> <span style='font-weight: bold;'>ir_aggregate_isofiles()</span> aggregated <span style='color: #0000BB;'>metadata</span> (2) and <span style='color: #0000BB;'>cycles</span> (192,
-<span style='color: #00BB00;'>intensity</span> in <span style='color: #BB00BB;'>V</span>) from 2 files using the <span style='font-weight: bold; font-style: italic;'>standard</span> aggregator
+<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[45ms]</span> <span style='font-weight: bold;'>ir_aggregate_isofiles()</span> aggregated <span style='color: #0000BB;'>metadata</span> (1) and <span style='color: #0000BB;'>cycles</span> (102,
+<span style='color: #00BB00;'>intensity</span> in <span style='color: #BB00BB;'>V</span>) from 1 file using the <span style='font-weight: bold; font-style: italic;'>standard</span> aggregator
 </CODE></PRE>
 
 ``` r
@@ -148,12 +145,12 @@ dataset <- isofiles |> ir_aggregate_isofiles("V")
 dataset
 ```
 
-<PRE class="fansi fansi-message"><CODE>─ <span style='font-weight: bold;'>aggregated data from 2 isofiles with 2 analyses - retrieve with ir_get_data(</span> ─
-</CODE></PRE><PRE class="fansi fansi-message"><CODE>→ <span style='color: #0000BB;'>metadata</span> (2): <span style='color: #00BB00;'>uidx</span>, <span style='color: #00BB00;'>file_path</span>, <span style='color: #00BB00;'>file_name</span>, <span style='color: #00BB00;'>analysis</span>, <span style='color: #00BB00;'>timestamp</span>, <span style='color: #00BB00;'>type</span>,
+<PRE class="fansi fansi-message"><CODE>─ <span style='font-weight: bold;'>aggregated data from 1 isofiles with 1 analysis - retrieve with ir_get_data(</span> ─
+</CODE></PRE><PRE class="fansi fansi-message"><CODE>→ <span style='color: #0000BB;'>metadata</span> (1): <span style='color: #00BB00;'>uidx</span>, <span style='color: #00BB00;'>file_path</span>, <span style='color: #00BB00;'>file_name</span>, <span style='color: #00BB00;'>analysis</span>, <span style='color: #00BB00;'>timestamp</span>, <span style='color: #00BB00;'>type</span>,
 <span style='color: #00BB00;'>h3_factor</span> (<span style='color: #BBBB00;'>all NA</span>), <span style='color: #00BB00;'>Line</span>, <span style='color: #00BB00;'>Peak Center</span>, <span style='color: #00BB00;'>Pressadjust</span>, <span style='color: #00BB00;'>Background</span>, <span style='color: #00BB00;'>Reference</span>
-<span style='color: #00BB00;'>Refill</span> (<span style='color: #BBBB00;'>1 NA</span>), <span style='color: #00BB00;'>Weight [mg]</span> (<span style='color: #BBBB00;'>1 NA</span>), <span style='color: #00BB00;'>Sample</span> (<span style='color: #BBBB00;'>1 NA</span>), <span style='color: #00BB00;'>Identifier 1</span>, <span style='color: #00BB00;'>Identifier 2</span>,
-<span style='color: #00BB00;'>Analysis</span>, <span style='color: #00BB00;'>Comment</span>, <span style='color: #00BB00;'>Preparation</span>, <span style='color: #00BB00;'>Pre Script</span> (<span style='color: #BBBB00;'>1 NA</span>), <span style='color: #00BB00;'>Post Script</span>, <span style='color: #00BB00;'>Method</span>
-</CODE></PRE><PRE class="fansi fansi-message"><CODE>→ <span style='color: #0000BB;'>cycles</span> (192): <span style='color: #00BB00;'>uidx</span>, <span style='color: #00BB00;'>analysis</span>, <span style='color: #00BB00;'>species</span>, <span style='color: #00BB00;'>cycle</span>, <span style='color: #00BB00;'>type</span>, <span style='color: #00BB00;'>mass</span>, <span style='color: #00BB00;'>trace</span>, <span style='color: #00BB00;'>intensity.V</span>;
+<span style='color: #00BB00;'>Refill</span>, <span style='color: #00BB00;'>Weight [mg]</span>, <span style='color: #00BB00;'>Sample</span>, <span style='color: #00BB00;'>Identifier 1</span>, <span style='color: #00BB00;'>Identifier 2</span>, <span style='color: #00BB00;'>Analysis</span>, <span style='color: #00BB00;'>Comment</span>,
+<span style='color: #00BB00;'>Preparation</span>, <span style='color: #00BB00;'>Pre Script</span>, <span style='color: #00BB00;'>Post Script</span>, <span style='color: #00BB00;'>Method</span>
+</CODE></PRE><PRE class="fansi fansi-message"><CODE>→ <span style='color: #0000BB;'>cycles</span> (102): <span style='color: #00BB00;'>uidx</span>, <span style='color: #00BB00;'>analysis</span>, <span style='color: #00BB00;'>species</span>, <span style='color: #00BB00;'>cycle</span>, <span style='color: #00BB00;'>type</span>, <span style='color: #00BB00;'>mass</span>, <span style='color: #00BB00;'>trace</span>, <span style='color: #00BB00;'>intensity.V</span>;
 (<span style='font-style: italic;'>not aggregated</span>: <span style='color: #BBBB00; font-style: italic;'>channel</span>)
 </CODE></PRE><PRE class="fansi fansi-message"><CODE>→ <span style='color: #0000BB;'>problems</span>: has <span style='color: #00BB00;'>no issues</span>
 </CODE></PRE>
@@ -162,16 +159,19 @@ dataset
 
 
 ``` r
-# filter the data for by a metadata field and plot it
-# use ir_plot_continuous_flow() and ir_plot_scans(), respectively
+# filter the data by a metadata field and mass range and plot it
+# (use ir_plot_continuous_flow() and ir_plot_scans(), respectively)
+library(ggplot2)
 dataset |>
   ir_filter_metadata(file_name == "caf_dual_inlet_example") |>
-  ir_plot_dual_inlet()
+  ir_plot_dual_inlet(mass = c(44:48)) +
+  # use ggplot2 to modify the plot with custom theming (or any other ggplot elements)
+  theme(strip.text = element_text(size = 30))
 ```
 
 <div class="figure">
-<img src="man/figures/README-dual_inlet_example-1.png" alt="plot of chunk dual_inlet_example" width="100%" />
-<p class="caption">plot of chunk dual_inlet_example</p>
+<img src="man/figures/README-dual_inlet_example-1.png" alt="Plot of dual inlet examples" width="100%" />
+<p class="caption">Plot of dual inlet examples</p>
 </div>
 
 ### Export the data
@@ -187,10 +187,10 @@ ir_export_to_excel(
 )
 ```
 
-<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[2ms]</span> <span style='font-weight: bold;'>ir_get_data()</span> retrieved 2 records from <span style='color: #0000BB;'>metadata</span>
-</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[4ms]</span> <span style='font-weight: bold;'>ir_get_data()</span> retrieved 192 records from the combination of <span style='color: #0000BB;'>metadata</span>
-(2) and <span style='color: #0000BB;'>cycles</span> (192) via <span style='color: #00BB00;'>uidx</span> and <span style='color: #00BB00;'>analysis</span>
-</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[223ms]</span> <span style='font-weight: bold;'>ir_export_to_excel()</span> exported 2 rows of <span style='color: #00BB00;'>metadata</span> and 192 rows of
+<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[2ms]</span> <span style='font-weight: bold;'>ir_get_data()</span> retrieved 1 records from <span style='color: #0000BB;'>metadata</span>
+</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[3ms]</span> <span style='font-weight: bold;'>ir_get_data()</span> retrieved 102 records from the combination of <span style='color: #0000BB;'>metadata</span>
+(1) and <span style='color: #0000BB;'>cycles</span> (102) via <span style='color: #00BB00;'>uidx</span> and <span style='color: #00BB00;'>analysis</span>
+</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[191ms]</span> <span style='font-weight: bold;'>ir_export_to_excel()</span> exported 1 row of <span style='color: #00BB00;'>metadata</span> and 102 rows of
 <span style='color: #00BB00;'>cycles</span> to <span style='color: #0000BB;'>my_export.xlsx</span>
 </CODE></PRE>
 
