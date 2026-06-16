@@ -139,6 +139,35 @@ sort_trace_factor <- function(plot_data) {
   return(plot_data)
 }
 
+# internal: add the colour aesthetic and a matching colour scale. When the
+# colour column is a factor (e.g. `mass` or `trace`), all of its levels are kept
+# (`drop = FALSE`) so that the colour mapping stays stable when the plotted data
+# is a subset of the full dataset (e.g. zoomed to a window) instead of
+# re-coloring the remaining groups. The manual palette is only used when it
+# supplies enough colours for *all* levels; otherwise the default discrete scale
+# (which generates as many hues as needed) is used, also keeping unused levels.
+add_color_aes <- function(p, color_quo, color_values, plot_data) {
+  if (rlang::quo_is_null(color_quo)) {
+    return(p)
+  }
+  p <- p + ggplot2::aes(color = !!color_quo)
+  color_vals <- rlang::eval_tidy(color_quo, plot_data)
+  is_factor <- is.factor(color_vals)
+  # for factors count *all* levels (not just those present) so the manual-vs-
+  # default decision and the palette size match the full dataset
+  n_colors <- if (is_factor) {
+    nlevels(color_vals)
+  } else {
+    dplyr::n_distinct(color_vals)
+  }
+  if (!is.null(color_values) && length(color_values) >= n_colors) {
+    p <- p + scale_color_manual(values = color_values, drop = !is_factor)
+  } else if (is_factor) {
+    p <- p + ggplot2::scale_color_discrete(drop = FALSE)
+  }
+  return(p)
+}
+
 # internal: filter plot data to the requested `species` and/or `mass` values
 # (compared as character, so numeric/character work interchangeably). Errors
 # informatively (listing what is available) if a selection leaves no data.
@@ -376,37 +405,6 @@ ir_plot_scans <- function(
     plot_data <- dplyr::filter(plot_data, .data$scan_type == !!scan_type)
   }
 
-  # x window: keep data just outside the limits for correct y autoscaling at edges
-  if (!is.null(x_window)) {
-    x_range <- range(plot_data$x, na.rm = TRUE)
-    line_groups <- intersect(
-      c("uidx", "analysis", "species", "channel", "mass"),
-      names(plot_data)
-    )
-    plot_data <- plot_data |>
-      dplyr::arrange(!!!rlang::syms(c(line_groups, "x"))) |>
-      dplyr::mutate(
-        in_range = .data$x >= x_window[1] & .data$x <= x_window[2]
-      ) |>
-      dplyr::mutate(
-        .by = line_groups,
-        just_before = !.data$in_range &
-          dplyr::lag(.data$in_range, default = FALSE),
-        just_after = !.data$in_range &
-          dplyr::lead(.data$in_range, default = FALSE)
-      ) |>
-      dplyr::filter(.data$in_range | .data$just_before | .data$just_after) |>
-      dplyr::select(-"in_range", -"just_before", -"just_after")
-    if (nrow(plot_data) == 0) {
-      cli_abort(
-        c(
-          "{.arg x_window} [{x_window[1]}, {x_window[2]}] contains no data",
-          "i" = "the x range in the data is [{x_range[1]}, {x_range[2]}]"
-        )
-      )
-    }
-  }
-
   # require an intensity.UNITS column
   intensity_cols <- grep("^intensity\\.", names(plot_data), value = TRUE)
   if (length(intensity_cols) == 0) {
@@ -443,6 +441,39 @@ ir_plot_scans <- function(
   # sort trace as a factor in numerical order of the trailing mass number
   plot_data <- sort_trace_factor(plot_data)
 
+  # x window: applied after the mass/trace factors are built (above) so they
+  # keep their full levels and the colour mapping stays stable when zoomed; keep
+  # data just outside the limits for correct y autoscaling at the edges
+  if (!is.null(x_window)) {
+    x_range <- range(plot_data$x, na.rm = TRUE)
+    line_groups <- intersect(
+      c("uidx", "analysis", "species", "channel", "mass"),
+      names(plot_data)
+    )
+    plot_data <- plot_data |>
+      dplyr::arrange(!!!rlang::syms(c(line_groups, "x"))) |>
+      dplyr::mutate(
+        in_range = .data$x >= x_window[1] & .data$x <= x_window[2]
+      ) |>
+      dplyr::mutate(
+        .by = line_groups,
+        just_before = !.data$in_range &
+          dplyr::lag(.data$in_range, default = FALSE),
+        just_after = !.data$in_range &
+          dplyr::lead(.data$in_range, default = FALSE)
+      ) |>
+      dplyr::filter(.data$in_range | .data$just_before | .data$just_after) |>
+      dplyr::select(-"in_range", -"just_before", -"just_after")
+    if (nrow(plot_data) == 0) {
+      cli_abort(
+        c(
+          "{.arg x_window} [{x_window[1]}, {x_window[2]}] contains no data",
+          "i" = "the x range in the data is [{x_range[1]}, {x_range[2]}]"
+        )
+      )
+    }
+  }
+
   # validate aesthetic expressions against the actual plot data
   check_aes_expr(color_quo, "color", plot_data)
   check_aes_expr(linetype_quo, "linetype", plot_data)
@@ -477,18 +508,7 @@ ir_plot_scans <- function(
   }
 
   # additional aesthetics
-  if (!rlang::quo_is_null(color_quo)) {
-    p <- p + ggplot2::aes(color = !!color_quo)
-    if (!is.null(color_values)) {
-      # only apply the manual palette if it provides enough colours for the
-      # number of distinct colour groups; otherwise fall back to the default
-      # ggplot2 colour scale (which generates as many distinct hues as needed)
-      n_colors <- dplyr::n_distinct(rlang::eval_tidy(color_quo, plot_data))
-      if (length(color_values) >= n_colors) {
-        p <- p + scale_color_manual(values = color_values)
-      }
-    }
-  }
+  p <- add_color_aes(p, color_quo, color_values, plot_data)
   if (!rlang::quo_is_null(linetype_quo)) {
     p <- p + ggplot2::aes(linetype = !!linetype_quo)
   }
@@ -710,7 +730,24 @@ ir_plot_continuous_flow <- function(
   intensity_col <- intensity_cols[1]
   intensity_units <- sub("^intensity\\.", "", intensity_col)
 
-  # time window: keep data just outside the limits for correct y autoscaling at edges
+  # sort mass as a factor in numerical order
+  if (!is.factor(plot_data$mass)) {
+    mass_levels <- as.character(sort(
+      unique(as.numeric(plot_data$mass)),
+      na.last = TRUE
+    ))
+    plot_data <- dplyr::mutate(
+      plot_data,
+      mass = factor(.data$mass, levels = mass_levels)
+    )
+  }
+
+  # sort trace as a factor in numerical order of the trailing mass number
+  plot_data <- sort_trace_factor(plot_data)
+
+  # time window: applied after the mass/trace factors are built (above) so they
+  # keep their full levels and the colour mapping stays stable when zoomed; keep
+  # data just outside the limits for correct y autoscaling at the edges
   if (!is.null(time_window)) {
     time_range <- range(plot_data[[time_col]], na.rm = TRUE)
     line_groups <- intersect(
@@ -741,21 +778,6 @@ ir_plot_continuous_flow <- function(
       )
     }
   }
-
-  # sort mass as a factor in numerical order
-  if (!is.factor(plot_data$mass)) {
-    mass_levels <- as.character(sort(
-      unique(as.numeric(plot_data$mass)),
-      na.last = TRUE
-    ))
-    plot_data <- dplyr::mutate(
-      plot_data,
-      mass = factor(.data$mass, levels = mass_levels)
-    )
-  }
-
-  # sort trace as a factor in numerical order of the trailing mass number
-  plot_data <- sort_trace_factor(plot_data)
 
   # validate aesthetic expressions against the actual plot data
   check_aes_expr(color_quo, "color", plot_data)
@@ -797,18 +819,7 @@ ir_plot_continuous_flow <- function(
   }
 
   # additional aesthetics
-  if (!rlang::quo_is_null(color_quo)) {
-    p <- p + ggplot2::aes(color = !!color_quo)
-    if (!is.null(color_values)) {
-      # only apply the manual palette if it provides enough colours for the
-      # number of distinct colour groups; otherwise fall back to the default
-      # ggplot2 colour scale (which generates as many distinct hues as needed)
-      n_colors <- dplyr::n_distinct(rlang::eval_tidy(color_quo, plot_data))
-      if (length(color_values) >= n_colors) {
-        p <- p + scale_color_manual(values = color_values)
-      }
-    }
-  }
+  p <- add_color_aes(p, color_quo, color_values, plot_data)
   if (!rlang::quo_is_null(linetype_quo)) {
     p <- p + ggplot2::aes(linetype = !!linetype_quo)
   }
@@ -1017,7 +1028,24 @@ ir_plot_dual_inlet <- function(
 
   y_lab <- paste0("intensity [", intensity_units, "]")
 
-  # cycle window: keep data just outside the limits for correct y autoscaling at edges
+  # sort mass as a factor in numerical order
+  if (!is.factor(plot_data$mass)) {
+    mass_levels <- as.character(sort(
+      unique(as.numeric(plot_data$mass)),
+      na.last = TRUE
+    ))
+    plot_data <- dplyr::mutate(
+      plot_data,
+      mass = factor(.data$mass, levels = mass_levels)
+    )
+  }
+
+  # sort trace as a factor in numerical order of the trailing mass number
+  plot_data <- sort_trace_factor(plot_data)
+
+  # cycle window: applied after the mass/trace factors are built (above) so they
+  # keep their full levels and the colour mapping stays stable when zoomed; keep
+  # data just outside the limits for correct y autoscaling at the edges
   if (!is.null(cycle_window)) {
     cycle_range <- range(plot_data$cycle, na.rm = TRUE)
     line_groups <- intersect(
@@ -1048,21 +1076,6 @@ ir_plot_dual_inlet <- function(
       )
     }
   }
-
-  # sort mass as a factor in numerical order
-  if (!is.factor(plot_data$mass)) {
-    mass_levels <- as.character(sort(
-      unique(as.numeric(plot_data$mass)),
-      na.last = TRUE
-    ))
-    plot_data <- dplyr::mutate(
-      plot_data,
-      mass = factor(.data$mass, levels = mass_levels)
-    )
-  }
-
-  # sort trace as a factor in numerical order of the trailing mass number
-  plot_data <- sort_trace_factor(plot_data)
 
   # validate aesthetic expressions against the actual plot data
   check_aes_expr(color_quo, "color", plot_data)

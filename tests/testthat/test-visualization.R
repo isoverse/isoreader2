@@ -164,6 +164,34 @@ test_that("ir_plot_dual_inlet() respects cycle_window", {
     expect_error("numeric vector of length 2")
 })
 
+test_that("zooming preserves trace/mass factor levels and colours", {
+  # two traces, the second only has data outside the zoom window
+  d <- tibble(
+    file_name = "a",
+    species = "CO2",
+    mass = rep(c(44, 45), each = 6),
+    trace = rep(c("CO2: 44", "CO2: 45"), each = 6),
+    time.s = rep(seq(0, 50, by = 10), 2),
+    intensity.mV = c(1:6, rep(0, 5), 9) # mass 45 only rises at the last point
+  )
+
+  full <- ir_plot_continuous_flow(d) |> suppressMessages()
+  zoom <- ir_plot_continuous_flow(d, time_window = c(0, 20)) |>
+    suppressMessages()
+  expect_no_error(ggplot2::ggplot_build(zoom))
+
+  # the full set of trace levels survives the zoom (no dropped levels)
+  expect_equal(levels(full$data$trace), c("CO2: 44", "CO2: 45"))
+  expect_equal(levels(zoom$data$trace), levels(full$data$trace))
+
+  # the colour scale keeps every level and maps them to identical colours, so the
+  # remaining traces are not re-coloured when zoomed
+  sf <- ggplot2::ggplot_build(full)$plot$scales$get_scales("colour")
+  sz <- ggplot2::ggplot_build(zoom)$plot$scales$get_scales("colour")
+  expect_equal(sz$get_breaks(), sf$get_breaks())
+  expect_equal(sz$map(sz$get_breaks()), sf$map(sf$get_breaks()))
+})
+
 test_that("ir_plot_scans() builds a ggplot and handles scan_type", {
   p <- ir_plot_scans(scn_data())
   expect_s3_class(p, "ggplot")
