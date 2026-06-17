@@ -40,6 +40,7 @@ reference:
   - c.ir_isofiles
   - ir_check_isoextract
   - ir_extract_isofiles
+  - ir_get_isoextract_version
   - ir_get_supported_file_types
   - ir_get_problems
   

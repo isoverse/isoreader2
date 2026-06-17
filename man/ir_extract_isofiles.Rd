@@ -2,6 +2,7 @@
 % Please edit documentation in R/extract.R
 \name{ir_extract_isofiles}
 \alias{ir_extract_isofiles}
+\alias{ir_get_isoextract_version}
 \title{run the isoextract executable on a vector of file paths
 this is usually not called directly}
 \usage{
@@ -11,6 +12,8 @@ ir_extract_isofiles(
   show_progress = is_interactive(),
   show_problems = TRUE
 )
+
+ir_get_isoextract_version()
 }
 \arguments{
 \item{file_paths}{paths to the isodat file(s), single value or vector of paths. Use \code{\link[=ir_find_isofiles]{ir_find_isofiles()}} to get files in a folder.}
@@ -32,3 +35,10 @@ sidecar file next to each input file; returns \code{NULL} invisibly
 run the isoextract executable on a vector of file paths
 this is usually not called directly
 }
+\section{Functions}{
+\itemize{
+\item \code{ir_get_isoextract_version()}: return the version of the installed
+\code{isoextract} executable as a \link[base:numeric_version]{numeric_version}, or
+\code{NULL} if it is not installed (or does not report a recognizable version)
+
+}}

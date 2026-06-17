@@ -41,7 +41,7 @@ ir_check_isoextract <- function(
   check_assembly(
     tool = "isoextract",
     exe_path = get_isoextract_path(),
-    get_version = get_isoextract_version,
+    get_version = ir_get_isoextract_version,
     min_version = min_version,
     source = source,
     install_if_missing = install_if_missing,
@@ -261,9 +261,6 @@ get_assembly_version <- function(exe_path, tool) {
 }
 
 get_isoextract_path <- function() get_assembly_path("isoextract")
-get_isoextract_version <- function() {
-  get_assembly_version(get_isoextract_path(), "isoextract")
-}
 get_isosolfs_path <- function() get_assembly_path("isosolfs")
 get_isosolfs_version <- function() {
   get_assembly_version(get_isosolfs_path(), "isosolfs")
@@ -418,4 +415,12 @@ ir_extract_isofiles <- function(
     summary_error_symbol = "!",
     start = start
   )
+}
+
+#' @describeIn ir_extract_isofiles return the version of the installed
+#'   `isoextract` executable as a [numeric_version][base::numeric_version], or
+#'   `NULL` if it is not installed (or does not report a recognizable version)
+#' @export
+ir_get_isoextract_version <- function() {
+  get_assembly_version(get_isoextract_path(), "isoextract")
 }
