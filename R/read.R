@@ -3,14 +3,11 @@
 #' @param file_paths paths to the isodat file(s), single value or vector of paths. Use [ir_find_isofiles()] to get files in a folder.
 #' @param show_progress whether to show a progress bar, by default always enabled when running interactively e.g. inside Positron or RStudio (and disabled in a notebook), turn off with `show_progress = FALSE`
 #' @param show_problems whether to show problems encountered along the way (rather than just keeping track of them with [ir_get_problems()]). Set to `show_problems = FALSE` to turn off the live printout. Either way, all encountered problems can be retrieved with running [ir_get_problems()] for the returned list
-#' @param pretty_json whether to write the JSON output in human-readable
-#'   pretty-printed format (default: `FALSE`). Useful for debugging; has no
-#'   effect on the data read back. Note that pretty-printed files are larger
-#'   than compact ones. Setting `pretty_json = TRUE` also sets
-#'   `reextract = TRUE` by default.
 #' @param reextract whether to re-extract files (uses isoextract to read files
-#'   from scratch), if `FALSE` (default when `pretty_json = FALSE`) only
-#'   extract files not previously extracted
+#'   from scratch); if `FALSE` (default) only files that have not been extracted
+#'   yet (or whose previous extraction is out of date) are extracted. Use
+#'   [ir_extract_isofiles()] directly for finer control over extraction (e.g.
+#'   `pretty_json` or `dry_run`).
 #' @return a tibble data frame (an `ir_isofiles` object) where each row holds the file path and nested tibbles of datasets extracted from the isodat files. Use [ir_aggregate_isofiles()] to aggregate data safely across files. Multiple such collections can be combined into one with a simple [c()] (see [c.ir_isofiles()]).
 #' @seealso [c.ir_isofiles()] to combine collections of isofiles
 #' @export
@@ -18,8 +15,7 @@ ir_read_isofiles <- function(
   file_paths,
   show_progress = is_interactive(),
   show_problems = TRUE,
-  pretty_json = FALSE,
-  reextract = pretty_json
+  reextract = FALSE
 ) {
   # keep track of current env to anchor progress bars
   root_env <- current_env()
@@ -30,8 +26,6 @@ ir_read_isofiles <- function(
     check_arg(is_scalar_logical(show_progress), "must be TRUE OR FALSE")
   show_problems |>
     check_arg(is_scalar_logical(show_problems), "must be TRUE OR FALSE")
-  pretty_json |>
-    check_arg(is_scalar_logical(pretty_json), "must be TRUE OR FALSE")
   reextract |> check_arg(is_scalar_logical(reextract), "must be TRUE OR FALSE")
 
   # any paths?
@@ -123,7 +117,6 @@ ir_read_isofiles <- function(
     dplyr::filter(.data$extract) |>
     dplyr::pull("file_path") |>
     ir_extract_isofiles(
-      pretty_json = pretty_json,
       show_progress = show_progress,
       show_problems = FALSE # show total errors later during file read
     )

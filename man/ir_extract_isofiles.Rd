@@ -9,6 +9,7 @@ this is usually not called directly}
 ir_extract_isofiles(
   file_paths,
   pretty_json = FALSE,
+  dry_run = FALSE,
   show_progress = is_interactive(),
   show_problems = TRUE
 )
@@ -23,13 +24,21 @@ pretty-printed format (default: \code{FALSE}). Useful for debugging; has no
 effect on the data read back by \code{\link[=ir_read_isofiles]{ir_read_isofiles()}}. Note that
 pretty-printed files are larger than compact ones.}
 
+\item{dry_run}{whether to run isoextract in "dry run" mode (default: \code{FALSE}).
+In dry run mode the files are parsed to test whether they can be read
+(a file-compatibility check) but no \code{.json} sidecar output is written.
+Combine with \code{show_problems = TRUE} to see which files (if any) cannot be
+extracted. Note that with \code{dry_run = TRUE}, the progress bar does not work
+as it depends on the JSON output files.}
+
 \item{show_progress}{whether to show a progress bar, by default always enabled when running interactively e.g. inside Positron or RStudio (and disabled in a notebook), turn off with \code{show_progress = FALSE}}
 
 \item{show_problems}{whether to show problems encountered along the way (rather than just keeping track of them with \code{\link[=ir_get_problems]{ir_get_problems()}}). Set to \code{show_problems = FALSE} to turn off the live printout. Either way, all encountered problems can be retrieved with running \code{\link[=ir_get_problems]{ir_get_problems()}} for the returned list}
 }
 \value{
 called for its side effect of running isoextract to write a \code{.json}
-sidecar file next to each input file; returns \code{NULL} invisibly
+sidecar file next to each input file (unless \code{dry_run = TRUE}); returns
+\code{NULL} invisibly
 }
 \description{
 run the isoextract executable on a vector of file paths

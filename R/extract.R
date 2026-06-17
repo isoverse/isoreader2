@@ -299,17 +299,29 @@ check_file_paths_parameter <- function(file_paths) {
 #'   pretty-printed format (default: `FALSE`). Useful for debugging; has no
 #'   effect on the data read back by [ir_read_isofiles()]. Note that
 #'   pretty-printed files are larger than compact ones.
+#' @param dry_run whether to run isoextract in "dry run" mode (default: `FALSE`).
+#'   In dry run mode the files are parsed to test whether they can be read
+#'   (a file-compatibility check) but no `.json` sidecar output is written.
+#'   Combine with `show_problems = TRUE` to see which files (if any) cannot be
+#'   extracted. Note that with `dry_run = TRUE`, the progress bar does not work
+#'   as it depends on the JSON output files.
 #' @return called for its side effect of running isoextract to write a `.json`
-#'   sidecar file next to each input file; returns `NULL` invisibly
+#'   sidecar file next to each input file (unless `dry_run = TRUE`); returns
+#'   `NULL` invisibly
 #' @export
 ir_extract_isofiles <- function(
   file_paths,
   pretty_json = FALSE,
+  dry_run = FALSE,
   show_progress = is_interactive(),
   show_problems = TRUE
 ) {
   # safety checks
   file_paths <- check_file_paths_parameter(file_paths)
+  pretty_json |>
+    check_arg(is_scalar_logical(pretty_json), "must be TRUE OR FALSE")
+  dry_run |>
+    check_arg(is_scalar_logical(dry_run), "must be TRUE OR FALSE")
   show_progress |>
     check_arg(is_scalar_logical(show_progress), "must be TRUE OR FALSE")
   show_problems |>
@@ -354,7 +366,12 @@ ir_extract_isofiles <- function(
   })
   p <- processx::process$new(
     get_isoextract_path(),
-    c("--file-list", file_list, if (pretty_json) "--prettyJSON"),
+    c(
+      "--file-list",
+      file_list,
+      if (pretty_json) "--prettyJSON",
+      if (dry_run) "--dry-run"
+    ),
     stdout = "|",
     stderr = "|"
   )
@@ -407,7 +424,7 @@ ir_extract_isofiles <- function(
 
   # finish
   finish_info(
-    "finished extracting {length(file_paths)} file{?s}/archive{?s} ",
+    "finished {if (dry_run) 'checking' else 'extracting'} {length(file_paths)} file{?s}/archive{?s} ",
     conditions = problems,
     show_conditions = show_problems,
     summary_error_symbol = "!",

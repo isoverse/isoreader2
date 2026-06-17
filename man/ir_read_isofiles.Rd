@@ -8,8 +8,7 @@ ir_read_isofiles(
   file_paths,
   show_progress = is_interactive(),
   show_problems = TRUE,
-  pretty_json = FALSE,
-  reextract = pretty_json
+  reextract = FALSE
 )
 }
 \arguments{
@@ -19,15 +18,11 @@ ir_read_isofiles(
 
 \item{show_problems}{whether to show problems encountered along the way (rather than just keeping track of them with \code{\link[=ir_get_problems]{ir_get_problems()}}). Set to \code{show_problems = FALSE} to turn off the live printout. Either way, all encountered problems can be retrieved with running \code{\link[=ir_get_problems]{ir_get_problems()}} for the returned list}
 
-\item{pretty_json}{whether to write the JSON output in human-readable
-pretty-printed format (default: \code{FALSE}). Useful for debugging; has no
-effect on the data read back. Note that pretty-printed files are larger
-than compact ones. Setting \code{pretty_json = TRUE} also sets
-\code{reextract = TRUE} by default.}
-
 \item{reextract}{whether to re-extract files (uses isoextract to read files
-from scratch), if \code{FALSE} (default when \code{pretty_json = FALSE}) only
-extract files not previously extracted}
+from scratch); if \code{FALSE} (default) only files that have not been extracted
+yet (or whose previous extraction is out of date) are extracted. Use
+\code{\link[=ir_extract_isofiles]{ir_extract_isofiles()}} directly for finer control over extraction (e.g.
+\code{pretty_json} or \code{dry_run}).}
 }
 \value{
 a tibble data frame (an \code{ir_isofiles} object) where each row holds the file path and nested tibbles of datasets extracted from the isodat files. Use \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}} to aggregate data safely across files. Multiple such collections can be combined into one with a simple \code{\link[=c]{c()}} (see \code{\link[=c.ir_isofiles]{c.ir_isofiles()}}).
