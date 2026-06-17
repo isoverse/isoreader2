@@ -2,16 +2,42 @@
 % Please edit documentation in R/find.R
 \name{ir_examples_folder}
 \alias{ir_examples_folder}
-\title{Path to the bundled example files}
+\alias{ir_copy_examples}
+\title{Bundled example files}
 \usage{
 ir_examples_folder()
+
+ir_copy_examples(folder = "examples")
+}
+\arguments{
+\item{folder}{target directory to copy the example files into (default
+\code{"examples"}); created if it does not exist}
 }
 \value{
-the path to the example files folder as a single string
+\code{ir_examples_folder()} returns the path to the example files folder as
+a single string.
+
+\code{ir_copy_examples()} invisibly returns the paths of the example files
+in \code{folder} (both newly copied and pre-existing).
 }
 \description{
-Returns the path to the folder with the example isodat files bundled with the package. This is a convenience wrapper around \code{system.file("extdata", package = "isoreader2")} for use in examples and for getting started.
+\code{ir_examples_folder()} returns the path to the folder with the
+example isodat files bundled with the package (a convenience wrapper around
+\code{system.file("extdata", package = "isoreader2")}). \code{ir_copy_examples()}
+copies those example files into a local \code{folder} so they can be read,
+re-extracted, or modified without touching the read-only package
+installation.
 }
+\section{Functions}{
+\itemize{
+\item \code{ir_copy_examples()}: copy the bundled example files into a local
+\code{folder}, creating it if necessary and only copying files that do not
+already exist there (existing files are left untouched).
+
+}}
 \examples{
 ir_examples_folder() |> ir_find_scans()
+\dontrun{
+ir_copy_examples() |> ir_find_continuous_flow()
+}
 }

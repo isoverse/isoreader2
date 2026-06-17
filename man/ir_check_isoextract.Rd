@@ -8,12 +8,12 @@ ir_check_isoextract(
   install_if_missing = !on_cran(),
   reinstall_if_outdated = !on_cran(),
   reinstall_always = FALSE,
-  min_version = "0.2.1",
+  min_version = "0.3.0",
   show_version = TRUE,
   source =
     paste0("https://github.com/isoverse/IsofileExtractor/releases/download/isoextract-v",
     min_version),
-  check_isosolfs = FALSE,
+  check_isosolfs = TRUE,
   ...
 )
 }
@@ -32,12 +32,10 @@ a successful check (default: \code{TRUE})}
 \item{source}{the URL (or local path) where to find isoextract, by default this is the latests release of the executables on github}
 
 \item{check_isosolfs}{whether to also ensure the \code{isosolfs} helper executable
-is installed. \code{isosolfs} is required to read Qtegra notebooks (\code{.imexp}
-files) and is released alongside isoextract; the same \code{install_if_missing} /
-\code{reinstall_if_outdated} / \code{reinstall_always} / \code{show_version} settings are
-applied to it. Default is currently \code{FALSE} because isosolfs has not been
-released yet (enabling it would abort all reads); set to \code{TRUE} (or this
-will become the default) once isosolfs is available.}
+is installed (default: \code{TRUE}). \code{isosolfs} is required to read Qtegra
+notebooks (\code{.imexp} files) and is released alongside isoextract; the same
+\code{install_if_missing} / \code{reinstall_if_outdated} / \code{reinstall_always} /
+\code{show_version} settings are applied to it.}
 
 \item{...}{passed on to \code{download.file} if (re-) installing isoextract (and isosolfs)}
 }

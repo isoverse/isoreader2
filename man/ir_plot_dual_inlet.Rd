@@ -16,6 +16,7 @@ ir_plot_dual_inlet(
   shape = type,
   linetype = NULL,
   color_values = palette.colors(),
+  drop_unused_levels = FALSE,
   scientific = FALSE,
   cycle_window = NULL,
   n_y_breaks = 5,
@@ -61,6 +62,12 @@ them explicitly.}
 \item{color_values}{named or unnamed character vector of colours passed to
 \code{\link[ggplot2:scale_color_manual]{ggplot2::scale_color_manual()}}, or \code{NULL} to use the ggplot2 default
 colour palette (default: \code{\link[=palette.colors]{palette.colors()}})}
+
+\item{drop_unused_levels}{whether to drop unused factor levels (e.g. masses or
+traces that are absent after filtering by \code{species}/\code{mass} or zooming to a
+window) from the colour scale and legend. Default \code{FALSE} keeps every level
+so the colour mapping stays stable across subsets of the same dataset; set
+to \code{TRUE} to show only the levels actually present in the plotted data.}
 
 \item{scientific}{whether to format y axis labels in scientific notation
 (default: \code{FALSE})}
