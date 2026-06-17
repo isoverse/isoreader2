@@ -310,6 +310,117 @@ test_that("zooming preserves trace/mass factor levels and colours", {
   expect_equal(sz$map(sz$get_breaks()), sf$map(sf$get_breaks()))
 })
 
+test_that("drop_unused_levels controls whether unused factor levels are shown", {
+  breaks <- function(p) {
+    as.character(
+      ggplot2::ggplot_build(p)$plot$scales$get_scales("colour")$get_breaks()
+    )
+  }
+
+  # trace is already a factor carrying a level ("CO2: 46") with no data
+  d <- tibble(
+    file_name = "a",
+    species = "CO2",
+    mass = c(44, 45),
+    trace = factor(
+      c("CO2: 44", "CO2: 45"),
+      levels = c("CO2: 44", "CO2: 45", "CO2: 46")
+    ),
+    time.s = 0,
+    intensity.mV = 1:2
+  )
+  expect_error(
+    ir_plot_continuous_flow(d, drop_unused_levels = "yes"),
+    "TRUE OR FALSE|TRUE or FALSE"
+  )
+
+  # default keeps the unused level in the legend; TRUE drops it
+  expect_equal(
+    breaks(ir_plot_continuous_flow(d) |> suppressMessages()),
+    c("CO2: 44", "CO2: 45", "CO2: 46")
+  )
+  expect_equal(
+    breaks(
+      ir_plot_continuous_flow(d, drop_unused_levels = TRUE) |>
+        suppressMessages()
+    ),
+    c("CO2: 44", "CO2: 45")
+  )
+
+  # also works on the discrete-fallback path (more levels than palette colours)
+  many <- tibble(
+    file_name = "a",
+    species = "CO2",
+    mass = 1:3,
+    trace = factor(paste0("m", 1:3), levels = paste0("m", 1:15)),
+    time.s = 0,
+    intensity.mV = 1:3
+  )
+  expect_length(breaks(ir_plot_continuous_flow(many) |> suppressMessages()), 15)
+  expect_length(
+    breaks(
+      ir_plot_continuous_flow(many, drop_unused_levels = TRUE) |>
+        suppressMessages()
+    ),
+    3
+  )
+})
+
+test_that("drop_unused_levels drops traces that are outside the zoom window", {
+  breaks <- function(p) {
+    as.character(
+      ggplot2::ggplot_build(p)$plot$scales$get_scales("colour")$get_breaks()
+    )
+  }
+
+  d <- dplyr::bind_rows(
+    # spans the window
+    tibble(
+      file_name = "a",
+      species = "CO2",
+      mass = "44",
+      trace = "CO2: 44",
+      time.s = 0:10,
+      intensity.mV = 5:15
+    ),
+    # only after the window (kept only as an off-window bracketing point)
+    tibble(
+      file_name = "a",
+      species = "CO2",
+      mass = "45",
+      trace = "CO2: 45",
+      time.s = c(8, 9, 10),
+      intensity.mV = 1:3
+    ),
+    # straddles the window: no in-window point but the line crosses it
+    tibble(
+      file_name = "a",
+      species = "CO2",
+      mass = "46",
+      trace = "CO2: 46",
+      time.s = c(0, 20),
+      intensity.mV = c(100, 200)
+    )
+  )
+  w <- c(3, 7)
+
+  # default keeps every trace even though only the bracketing points of some
+  # remain in the window (stable colour mapping)
+  expect_equal(
+    breaks(ir_plot_continuous_flow(d, time_window = w) |> suppressMessages()),
+    c("CO2: 44", "CO2: 45", "CO2: 46")
+  )
+  # drop_unused_levels = TRUE drops the trace that is entirely outside the window
+  # but keeps the one inside it and the one whose line crosses it
+  expect_equal(
+    breaks(
+      ir_plot_continuous_flow(d, time_window = w, drop_unused_levels = TRUE) |>
+        suppressMessages()
+    ),
+    c("CO2: 44", "CO2: 46")
+  )
+})
+
 test_that("ir_plot_scans() builds a ggplot and handles scan_type", {
   p <- ir_plot_scans(scn_data())
   expect_s3_class(p, "ggplot")

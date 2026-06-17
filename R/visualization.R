@@ -129,30 +129,42 @@ sort_trace_factor <- function(plot_data) {
 }
 
 # internal: add the colour aesthetic and a matching colour scale. When the
-# colour column is a factor (e.g. `mass` or `trace`), all of its levels are kept
-# (`drop = FALSE`) so that the colour mapping stays stable when the plotted data
-# is a subset of the full dataset (e.g. zoomed to a window) instead of
-# re-coloring the remaining groups. The manual palette is only used when it
-# supplies enough colours for *all* levels; otherwise the default discrete scale
-# (which generates as many hues as needed) is used, also keeping unused levels.
-add_color_aes <- function(p, color_quo, color_values, plot_data) {
+# colour column is a factor (e.g. `mass` or `trace`), unused levels are kept by
+# default (`drop_unused_levels = FALSE`) so that the colour mapping stays stable
+# when the plotted data is a subset of the full dataset (e.g. zoomed to a window)
+# instead of re-coloring the remaining groups; pass `drop_unused_levels = TRUE`
+# to show only the levels actually present. The manual palette is only used when
+# it supplies enough colours for the levels being shown; otherwise the default
+# discrete scale (which generates as many hues as needed) is used.
+add_color_aes <- function(
+  p,
+  color_quo,
+  color_values,
+  plot_data,
+  drop_unused_levels = FALSE
+) {
   if (rlang::quo_is_null(color_quo)) {
     return(p)
   }
   p <- p + ggplot2::aes(color = !!color_quo)
   color_vals <- rlang::eval_tidy(color_quo, plot_data)
   is_factor <- is.factor(color_vals)
-  # for factors count *all* levels (not just those present) so the manual-vs-
-  # default decision and the palette size match the full dataset
-  n_colors <- if (is_factor) {
+  # the palette must cover either every factor level (drop_unused_levels = FALSE,
+  # the default, which keeps the colour mapping stable across subsets of the same
+  # dataset) or only the levels actually present (drop_unused_levels = TRUE)
+  n_colors <- if (is_factor && !drop_unused_levels) {
     nlevels(color_vals)
   } else {
     dplyr::n_distinct(color_vals)
   }
   if (!is.null(color_values) && length(color_values) >= n_colors) {
-    p <- p + scale_color_manual(values = color_values, drop = !is_factor)
+    p <- p +
+      scale_color_manual(
+        values = color_values,
+        drop = if (is_factor) drop_unused_levels else TRUE
+      )
   } else if (is_factor) {
-    p <- p + ggplot2::scale_color_discrete(drop = FALSE)
+    p <- p + ggplot2::scale_color_discrete(drop = drop_unused_levels)
   }
   return(p)
 }
@@ -191,6 +203,42 @@ apply_plot_window <- function(plot_data, col, window, group_cols) {
     ) |>
     dplyr::filter(.data[[".window_keep"]]) |>
     dplyr::select(-".window_keep")
+}
+
+# internal: when `drop_unused_levels` is TRUE, restrict the data to the factor
+# levels that are actually visible so they disappear from scales/legends. With a
+# `window` set this also drops the line groups (`group_cols`, i.e. mass/trace
+# combinations) that fall entirely outside it: apply_plot_window() keeps a single
+# bracketing point just outside the window for line continuity, which otherwise
+# keeps an off-window trace "present" (one row) and thus in the legend. A group
+# counts as visible if it has a data point inside the window or points bracketing
+# it on both sides (a line that crosses the window). Then droplevels() removes the
+# now-unused mass/trace levels. With drop_unused_levels = FALSE the data is
+# returned unchanged (all levels kept for a stable colour mapping).
+apply_drop_unused_levels <- function(
+  plot_data,
+  drop_unused_levels,
+  x_col,
+  window,
+  group_cols
+) {
+  if (!drop_unused_levels) {
+    return(plot_data)
+  }
+  if (!is.null(window)) {
+    group_cols <- intersect(group_cols, names(plot_data))
+    plot_data <- dplyr::filter(
+      plot_data,
+      .by = dplyr::all_of(group_cols),
+      any(
+        .data[[x_col]] >= window[1] & .data[[x_col]] <= window[2],
+        na.rm = TRUE
+      ) |
+        (any(.data[[x_col]] < window[1], na.rm = TRUE) &
+          any(.data[[x_col]] > window[2], na.rm = TRUE))
+    )
+  }
+  droplevels(plot_data)
 }
 
 # internal: the y (`y_col`) range actually visible inside a display `window`
@@ -313,6 +361,11 @@ filter_plot_data <- function(plot_data, species, mass, .env = caller_env()) {
 #' @param color_values named or unnamed character vector of colours passed to
 #'   [ggplot2::scale_color_manual()], or `NULL` to use the ggplot2 default
 #'   colour palette (default: [palette.colors()])
+#' @param drop_unused_levels whether to drop unused factor levels (e.g. masses or
+#'   traces that are absent after filtering by `species`/`mass` or zooming to a
+#'   window) from the colour scale and legend. Default `FALSE` keeps every level
+#'   so the colour mapping stays stable across subsets of the same dataset; set
+#'   to `TRUE` to show only the levels actually present in the plotted data.
 #' @param scientific whether to format y axis labels in scientific notation
 #'   (default: `FALSE`)
 #' @param ... additional arguments passed on to [ggplot2::facet_wrap()] or
@@ -342,6 +395,7 @@ ir_plot_scans <- function(
   color = trace,
   linetype = NULL,
   color_values = palette.colors(),
+  drop_unused_levels = FALSE,
   scientific = FALSE,
   x_window = NULL,
   n_x_breaks = 5,
@@ -384,6 +438,11 @@ ir_plot_scans <- function(
     "must be NULL or a character vector of colours"
   )
   check_arg(scientific, rlang::is_bool(scientific), "must be TRUE or FALSE")
+  check_arg(
+    drop_unused_levels,
+    rlang::is_bool(drop_unused_levels),
+    "must be TRUE or FALSE"
+  )
   check_arg(
     x_window,
     is.null(x_window) ||
@@ -528,6 +587,16 @@ ir_plot_scans <- function(
     )
   }
 
+  # optionally drop factor levels (e.g. masses/traces outside the window) that
+  # are not visible in the plotted data
+  plot_data <- apply_drop_unused_levels(
+    plot_data,
+    drop_unused_levels,
+    "x",
+    x_window,
+    c("uidx", "analysis", "species", "channel", "mass")
+  )
+
   # validate aesthetic expressions against the actual plot data
   check_aes_expr(color_quo, "color", plot_data)
   check_aes_expr(linetype_quo, "linetype", plot_data)
@@ -568,7 +637,7 @@ ir_plot_scans <- function(
   }
 
   # additional aesthetics
-  p <- add_color_aes(p, color_quo, color_values, plot_data)
+  p <- add_color_aes(p, color_quo, color_values, plot_data, drop_unused_levels)
   if (!rlang::quo_is_null(linetype_quo)) {
     p <- p + ggplot2::aes(linetype = !!linetype_quo)
   }
@@ -641,6 +710,11 @@ ir_plot_scans <- function(
 #' @param color_values named or unnamed character vector of colours passed to
 #'   [ggplot2::scale_color_manual()], or `NULL` to use the ggplot2 default
 #'   colour palette (default: [palette.colors()])
+#' @param drop_unused_levels whether to drop unused factor levels (e.g. masses or
+#'   traces that are absent after filtering by `species`/`mass` or zooming to a
+#'   window) from the colour scale and legend. Default `FALSE` keeps every level
+#'   so the colour mapping stays stable across subsets of the same dataset; set
+#'   to `TRUE` to show only the levels actually present in the plotted data.
 #' @param scientific whether to format y axis labels in scientific notation
 #'   (default: `FALSE`)
 #' @param ... additional arguments passed on to [ggplot2::facet_wrap()] or
@@ -672,6 +746,7 @@ ir_plot_continuous_flow <- function(
   color = trace,
   linetype = NULL,
   color_values = palette.colors(),
+  drop_unused_levels = FALSE,
   scientific = FALSE,
   time_window = NULL,
   short_time_labels = FALSE,
@@ -710,6 +785,11 @@ ir_plot_continuous_flow <- function(
     "must be NULL or a character vector of colours"
   )
   check_arg(scientific, rlang::is_bool(scientific), "must be TRUE or FALSE")
+  check_arg(
+    drop_unused_levels,
+    rlang::is_bool(drop_unused_levels),
+    "must be TRUE or FALSE"
+  )
   check_arg(
     short_time_labels,
     rlang::is_bool(short_time_labels),
@@ -828,6 +908,16 @@ ir_plot_continuous_flow <- function(
     )
   }
 
+  # optionally drop factor levels (e.g. masses/traces outside the window) that
+  # are not visible in the plotted data
+  plot_data <- apply_drop_unused_levels(
+    plot_data,
+    drop_unused_levels,
+    time_col,
+    time_window,
+    c("uidx", "analysis", "species", "channel", "mass")
+  )
+
   # validate aesthetic expressions against the actual plot data
   check_aes_expr(color_quo, "color", plot_data)
   check_aes_expr(linetype_quo, "linetype", plot_data)
@@ -873,7 +963,7 @@ ir_plot_continuous_flow <- function(
   }
 
   # additional aesthetics
-  p <- add_color_aes(p, color_quo, color_values, plot_data)
+  p <- add_color_aes(p, color_quo, color_values, plot_data, drop_unused_levels)
   if (!rlang::quo_is_null(linetype_quo)) {
     p <- p + ggplot2::aes(linetype = !!linetype_quo)
   }
@@ -948,6 +1038,11 @@ ir_plot_continuous_flow <- function(
 #' @param color_values named or unnamed character vector of colours passed to
 #'   [ggplot2::scale_color_manual()], or `NULL` to use the ggplot2 default
 #'   colour palette (default: [palette.colors()])
+#' @param drop_unused_levels whether to drop unused factor levels (e.g. masses or
+#'   traces that are absent after filtering by `species`/`mass` or zooming to a
+#'   window) from the colour scale and legend. Default `FALSE` keeps every level
+#'   so the colour mapping stays stable across subsets of the same dataset; set
+#'   to `TRUE` to show only the levels actually present in the plotted data.
 #' @param scientific whether to format y axis labels in scientific notation
 #'   (default: `FALSE`)
 #' @param cycle_window optional numeric vector of length 2 giving the cycle axis
@@ -976,6 +1071,7 @@ ir_plot_dual_inlet <- function(
   shape = type,
   linetype = NULL,
   color_values = palette.colors(),
+  drop_unused_levels = FALSE,
   scientific = FALSE,
   cycle_window = NULL,
   n_y_breaks = 5,
@@ -1012,6 +1108,11 @@ ir_plot_dual_inlet <- function(
     "must be NULL or a character vector of colours"
   )
   check_arg(scientific, rlang::is_bool(scientific), "must be TRUE or FALSE")
+  check_arg(
+    drop_unused_levels,
+    rlang::is_bool(drop_unused_levels),
+    "must be TRUE or FALSE"
+  )
   check_arg(
     n_y_breaks,
     rlang::is_scalar_integerish(n_y_breaks) && n_y_breaks > 0,
@@ -1120,6 +1221,16 @@ ir_plot_dual_inlet <- function(
       c("uidx", "analysis", "species", "channel", "mass", "type")
     )
   }
+
+  # optionally drop factor levels (e.g. masses/traces outside the window) that
+  # are not visible in the plotted data
+  plot_data <- apply_drop_unused_levels(
+    plot_data,
+    drop_unused_levels,
+    "cycle",
+    cycle_window,
+    c("uidx", "analysis", "species", "channel", "mass", "type")
+  )
 
   # validate aesthetic expressions against the actual plot data
   check_aes_expr(color_quo, "color", plot_data)
