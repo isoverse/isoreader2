@@ -17,25 +17,21 @@ label_scientific <- function() {
 
 #' Default isoreader2 plotting theme
 #'
+#' This theme is always applied by the plotting functions
+#' ([ir_plot_continuous_flow()], [ir_plot_dual_inlet()], [ir_plot_scans()]).
+#' To customize a plot, add a [ggplot2::theme()] on top of the returned plot,
+#' e.g. `ir_plot_continuous_flow(...) + ggplot2::theme(text = element_text(size = 20))`.
+#'
 #' @param text_size base font size in points (default: `16`)
-#' @param facet_text_size font size for facet strip labels in points. Default
-#'   `NULL` leaves the strip labels at the inherited base size; set a number to
-#'   override it.
 #' @return a `ggplot2` theme object
 #' @export
-ir_default_theme <- function(text_size = 16, facet_text_size = NULL) {
+ir_default_theme <- function(text_size = 16) {
   check_arg(
     text_size,
     is.numeric(text_size) && length(text_size) == 1L,
     "must be a single number"
   )
-  check_arg(
-    facet_text_size,
-    is.null(facet_text_size) ||
-      (is.numeric(facet_text_size) && length(facet_text_size) == 1L),
-    "must be NULL or a single number"
-  )
-  theme <- ggplot2::theme_bw() +
+  ggplot2::theme_bw() +
     ggplot2::theme(
       text = ggplot2::element_text(size = text_size),
       panel.grid = ggplot2::element_blank(),
@@ -44,13 +40,6 @@ ir_default_theme <- function(text_size = 16, facet_text_size = NULL) {
       strip.background = ggplot2::element_blank(),
       legend.background = ggplot2::element_blank()
     )
-  if (!is.null(facet_text_size)) {
-    theme <- theme +
-      ggplot2::theme(
-        strip.text = ggplot2::element_text(size = facet_text_size)
-      )
-  }
-  theme
 }
 
 # internal: add faceting to a plot based on the captured `facet` expression.
@@ -337,10 +326,9 @@ filter_plot_data <- function(plot_data, species, mass, .env = caller_env()) {
 #'   bracketing points). Default `NULL` shows the full x range.
 #' @param n_x_breaks desired number of x axis tick marks (default: `5`)
 #' @param n_y_breaks desired number of y axis tick marks (default: `5`)
-#' @param theme ggplot2 theme to apply (default: [ir_default_theme()])
-#' @return a `ggplot` object. To further customize the plot by adding ggplot2
-#'   layers (e.g. `+ ggplot2::labs(...)`), attach ggplot2 with
-#'   `library(ggplot2)` first.
+#' @return a `ggplot` object with [ir_default_theme()] applied. To customize the
+#'   plot, add ggplot2 layers on top (e.g. `+ ggplot2::theme(...)` or
+#'   `+ ggplot2::labs(...)`); attach ggplot2 with `library(ggplot2)` first.
 #' @export
 ir_plot_scans <- function(
   dataset,
@@ -358,7 +346,6 @@ ir_plot_scans <- function(
   x_window = NULL,
   n_x_breaks = 5,
   n_y_breaks = 5,
-  theme = ir_default_theme(),
   ...
 ) {
   # safety checks
@@ -611,7 +598,7 @@ ir_plot_scans <- function(
     p <- p + ggplot2::coord_cartesian(xlim = x_window, ylim = y_window)
   }
 
-  p <- p + theme
+  p <- p + ir_default_theme()
 
   return(p)
 }
@@ -670,10 +657,9 @@ ir_plot_scans <- function(
 #'   (default: `FALSE`)
 #' @param n_time_breaks desired number of time axis tick marks (default: `5`)
 #' @param n_y_breaks desired number of y axis tick marks (default: `5`)
-#' @param theme ggplot2 theme to apply (default: [ir_default_theme()])
-#' @return a `ggplot` object. To further customize the plot by adding ggplot2
-#'   layers (e.g. `+ ggplot2::labs(...)`), attach ggplot2 with
-#'   `library(ggplot2)` first.
+#' @return a `ggplot` object with [ir_default_theme()] applied. To customize the
+#'   plot, add ggplot2 layers on top (e.g. `+ ggplot2::theme(...)` or
+#'   `+ ggplot2::labs(...)`); attach ggplot2 with `library(ggplot2)` first.
 #' @export
 ir_plot_continuous_flow <- function(
   dataset,
@@ -691,7 +677,6 @@ ir_plot_continuous_flow <- function(
   short_time_labels = FALSE,
   n_time_breaks = 5,
   n_y_breaks = 5,
-  theme = ir_default_theme(),
   ...
 ) {
   # safety checks
@@ -918,7 +903,7 @@ ir_plot_continuous_flow <- function(
     p <- p + ggplot2::coord_cartesian(xlim = time_window, ylim = y_window)
   }
 
-  p <- p + theme
+  p <- p + ir_default_theme()
 
   return(p)
 }
@@ -973,12 +958,11 @@ ir_plot_continuous_flow <- function(
 #'   no data points of its own is allowed (the line is drawn between the
 #'   bracketing points). Default `NULL` shows all cycles.
 #' @param n_y_breaks desired number of y axis tick marks (default: `5`)
-#' @param theme ggplot2 theme to apply (default: [ir_default_theme()])
 #' @param ... additional arguments passed on to [ggplot2::facet_wrap()] or
 #'   [ggplot2::facet_grid()] (e.g. `labeller`)
-#' @return a `ggplot` object. To further customize the plot by adding ggplot2
-#'   layers (e.g. `+ ggplot2::labs(...)`), attach ggplot2 with
-#'   `library(ggplot2)` first.
+#' @return a `ggplot` object with [ir_default_theme()] applied. To customize the
+#'   plot, add ggplot2 layers on top (e.g. `+ ggplot2::theme(...)` or
+#'   `+ ggplot2::labs(...)`); attach ggplot2 with `library(ggplot2)` first.
 #' @export
 ir_plot_dual_inlet <- function(
   dataset,
@@ -995,7 +979,6 @@ ir_plot_dual_inlet <- function(
   scientific = FALSE,
   cycle_window = NULL,
   n_y_breaks = 5,
-  theme = ir_default_theme(),
   ...
 ) {
   # safety checks
@@ -1224,7 +1207,7 @@ ir_plot_dual_inlet <- function(
     p <- p + ggplot2::coord_cartesian(xlim = cycle_window, ylim = y_window)
   }
 
-  p <- p + theme
+  p <- p + ir_default_theme()
 
   return(p)
 }

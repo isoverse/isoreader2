@@ -19,7 +19,6 @@ ir_plot_dual_inlet(
   scientific = FALSE,
   cycle_window = NULL,
   n_y_breaks = 5,
-  theme = ir_default_theme(),
   ...
 )
 }
@@ -76,15 +75,13 @@ bracketing points). Default \code{NULL} shows all cycles.}
 
 \item{n_y_breaks}{desired number of y axis tick marks (default: \code{5})}
 
-\item{theme}{ggplot2 theme to apply (default: \code{\link[=ir_default_theme]{ir_default_theme()}})}
-
 \item{...}{additional arguments passed on to \code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}} or
 \code{\link[ggplot2:facet_grid]{ggplot2::facet_grid()}} (e.g. \code{labeller})}
 }
 \value{
-a \code{ggplot} object. To further customize the plot by adding ggplot2
-layers (e.g. \code{+ ggplot2::labs(...)}), attach ggplot2 with
-\code{library(ggplot2)} first.
+a \code{ggplot} object with \code{\link[=ir_default_theme]{ir_default_theme()}} applied. To customize the
+plot, add ggplot2 layers on top (e.g. \code{+ ggplot2::theme(...)} or
+\code{+ ggplot2::labs(...)}); attach ggplot2 with \code{library(ggplot2)} first.
 }
 \description{
 Plots cycle data from an \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}} result or a plain data

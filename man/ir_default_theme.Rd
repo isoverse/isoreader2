@@ -4,18 +4,17 @@
 \alias{ir_default_theme}
 \title{Default isoreader2 plotting theme}
 \usage{
-ir_default_theme(text_size = 16, facet_text_size = NULL)
+ir_default_theme(text_size = 16)
 }
 \arguments{
 \item{text_size}{base font size in points (default: \code{16})}
-
-\item{facet_text_size}{font size for facet strip labels in points. Default
-\code{NULL} leaves the strip labels at the inherited base size; set a number to
-override it.}
 }
 \value{
 a \code{ggplot2} theme object
 }
 \description{
-Default isoreader2 plotting theme
+This theme is always applied by the plotting functions
+(\code{\link[=ir_plot_continuous_flow]{ir_plot_continuous_flow()}}, \code{\link[=ir_plot_dual_inlet]{ir_plot_dual_inlet()}}, \code{\link[=ir_plot_scans]{ir_plot_scans()}}).
+To customize a plot, add a \code{\link[ggplot2:theme]{ggplot2::theme()}} on top of the returned plot,
+e.g. \code{ir_plot_continuous_flow(...) + ggplot2::theme(text = element_text(size = 20))}.
 }
