@@ -41,8 +41,7 @@
 <span>  <span class="va">file_paths</span>,</span>
 <span>  show_progress <span class="op">=</span> <span class="fu">is_interactive</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  show_problems <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  pretty_json <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  reextract <span class="op">=</span> <span class="va">pretty_json</span></span>
+<span>  reextract <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -62,18 +61,12 @@
 <dd><p>whether to show problems encountered along the way (rather than just keeping track of them with <code><a href="problems.html">ir_get_problems()</a></code>). Set to <code>show_problems = FALSE</code> to turn off the live printout. Either way, all encountered problems can be retrieved with running <code><a href="problems.html">ir_get_problems()</a></code> for the returned list</p></dd>
 
 
-<dt id="arg-pretty-json">pretty_json<a class="anchor" aria-label="anchor" href="#arg-pretty-json"></a></dt>
-<dd><p>whether to write the JSON output in human-readable
-pretty-printed format (default: <code>FALSE</code>). Useful for debugging; has no
-effect on the data read back. Note that pretty-printed files are larger
-than compact ones. Setting <code>pretty_json = TRUE</code> also sets
-<code>reextract = TRUE</code> by default.</p></dd>
-
-
 <dt id="arg-reextract">reextract<a class="anchor" aria-label="anchor" href="#arg-reextract"></a></dt>
 <dd><p>whether to re-extract files (uses isoextract to read files
-from scratch), if <code>FALSE</code> (default when <code>pretty_json = FALSE</code>) only
-extract files not previously extracted</p></dd>
+from scratch); if <code>FALSE</code> (default) only files that have not been extracted
+yet (or whose previous extraction is out of date) are extracted. Use
+<code><a href="ir_extract_isofiles.html">ir_extract_isofiles()</a></code> directly for finer control over extraction (e.g.
+<code>pretty_json</code> or <code>dry_run</code>).</p></dd>
 
 </dl></div>
     <div class="section level2">

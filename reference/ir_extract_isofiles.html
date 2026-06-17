@@ -43,6 +43,7 @@ this is usually not called directly</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ir_extract_isofiles</span><span class="op">(</span></span>
 <span>  <span class="va">file_paths</span>,</span>
 <span>  pretty_json <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  dry_run <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  show_progress <span class="op">=</span> <span class="fu">is_interactive</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  show_problems <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
@@ -65,6 +66,15 @@ effect on the data read back by <code><a href="ir_read_isofiles.html">ir_read_is
 pretty-printed files are larger than compact ones.</p></dd>
 
 
+<dt id="arg-dry-run">dry_run<a class="anchor" aria-label="anchor" href="#arg-dry-run"></a></dt>
+<dd><p>whether to run isoextract in "dry run" mode (default: <code>FALSE</code>).
+In dry run mode the files are parsed to test whether they can be read
+(a file-compatibility check) but no <code>.json</code> sidecar output is written.
+Combine with <code>show_problems = TRUE</code> to see which files (if any) cannot be
+extracted. Note that with <code>dry_run = TRUE</code>, the progress bar does not work
+as it depends on the JSON output files.</p></dd>
+
+
 <dt id="arg-show-progress">show_progress<a class="anchor" aria-label="anchor" href="#arg-show-progress"></a></dt>
 <dd><p>whether to show a progress bar, by default always enabled when running interactively e.g. inside Positron or RStudio (and disabled in a notebook), turn off with <code>show_progress = FALSE</code></p></dd>
 
@@ -76,7 +86,8 @@ pretty-printed files are larger than compact ones.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>called for its side effect of running isoextract to write a <code>.json</code>
-sidecar file next to each input file; returns <code>NULL</code> invisibly</p>
+sidecar file next to each input file (unless <code>dry_run = TRUE</code>); returns
+<code>NULL</code> invisibly</p>
     </div>
     <div class="section level2">
     <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>

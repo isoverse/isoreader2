@@ -9,6 +9,7 @@ not called directly
 ir_extract_isofiles(
   file_paths,
   pretty_json = FALSE,
+  dry_run = FALSE,
   show_progress = is_interactive(),
   show_problems = TRUE
 )
@@ -32,6 +33,15 @@ ir_get_isoextract_version()
   [`ir_read_isofiles()`](https://isoreader2.isoverse.org/reference/ir_read_isofiles.md).
   Note that pretty-printed files are larger than compact ones.
 
+- dry_run:
+
+  whether to run isoextract in "dry run" mode (default: `FALSE`). In dry
+  run mode the files are parsed to test whether they can be read (a
+  file-compatibility check) but no `.json` sidecar output is written.
+  Combine with `show_problems = TRUE` to see which files (if any) cannot
+  be extracted. Note that with `dry_run = TRUE`, the progress bar does
+  not work as it depends on the JSON output files.
+
 - show_progress:
 
   whether to show a progress bar, by default always enabled when running
@@ -51,7 +61,8 @@ ir_get_isoextract_version()
 ## Value
 
 called for its side effect of running isoextract to write a `.json`
-sidecar file next to each input file; returns `NULL` invisibly
+sidecar file next to each input file (unless `dry_run = TRUE`); returns
+`NULL` invisibly
 
 ## Functions
 
