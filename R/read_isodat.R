@@ -518,25 +518,38 @@ read_dxf_data_table <- function(json_path) {
     block_query,
     block_idx
   )
-  tables <- list()
-  g <- 0L
-  repeat {
-    peaklist_ptr <- sprintf("%s/%d/CGCPeakList", base, g)
-    if (
-      json_missing(query_json(
-        json_path,
-        paste0(peaklist_ptr, "/p/n_objects"),
-        required = FALSE
-      ))
-    ) {
-      break
-    }
-    tables[[length(tables) + 1L]] <- read_isodat_gc_peak_table(
+
+  # collect the CGCPeakList pointer for each gas. With multiple gases the
+  # CResultForGas entries are integer-indexed (CResultForGas/0, /1, ...); with a
+  # single gas the entry is inlined directly under CResultForGas (no index), so
+  # check that direct location first.
+  has_peaklist <- function(ptr) {
+    !json_missing(query_json(
       json_path,
-      peaklist_ptr
-    )
-    g <- g + 1L
+      paste0(ptr, "/p/n_objects"),
+      required = FALSE
+    ))
   }
+  single_ptr <- sprintf("%s/CGCPeakList", base)
+  if (has_peaklist(single_ptr)) {
+    peaklist_ptrs <- single_ptr
+  } else {
+    peaklist_ptrs <- character(0)
+    g <- 0L
+    repeat {
+      ptr <- sprintf("%s/%d/CGCPeakList", base, g)
+      if (!has_peaklist(ptr)) {
+        break
+      }
+      peaklist_ptrs <- c(peaklist_ptrs, ptr)
+      g <- g + 1L
+    }
+  }
+
+  tables <- lapply(
+    peaklist_ptrs,
+    function(ptr) read_isodat_gc_peak_table(json_path, ptr)
+  )
   out <- dplyr::bind_rows(tables)
   if (is.null(out) || nrow(out) == 0L) NULL else out
 }

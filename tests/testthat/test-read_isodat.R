@@ -208,6 +208,51 @@ test_that("read_did_data_table() pivots evaluated columns to cycle x column", {
   expect_equal(did[["AT% 13C/12C"]], c(1.1, 1.1, 1.1))
 })
 
+test_that("read_dxf_data_table() handles single- and multi-gas results", {
+  # one gas's CGCPeakList with a single peak carrying one evaluated cell
+  peaklist <- function(gas, area) {
+    sprintf(
+      '{"p": {"n_objects": 1, "objects": {"CSPeak": [
+        {"p": {"gas_name": "%s", "CEvalDataItemListTransferPart": {"p": {"objects": {
+          "CEvalDataDoubleTransferPart": {"idx": 0, "p": {"p": {"name": "Area", "units": "[mVs]"}, "data": %s}}
+        }}}}}
+      ]}}}',
+      gas,
+      area
+    )
+  }
+  results_block <- function(result_for_gas) {
+    sprintf(
+      '{"CContiniousFlowBlockData": {"p": {"objects": {"CBlockData": [
+        {"p": {"v": "Results"}, "objects": {"CResultArray": {"p": {"objects": {
+          "CResultForGas": %s
+        }}}}}
+      ]}}}}',
+      result_for_gas
+    )
+  }
+
+  # single gas: CResultForGas is inlined directly (no integer index) - this used
+  # to be missed entirely
+  single <- read_dxf_data_table(write_json_fixture(results_block(
+    sprintf('{"CGCPeakList": %s}', peaklist("Ar", 123.4))
+  )))
+  expect_s3_class(single, "tbl_df")
+  expect_equal(nrow(single), 1L)
+  expect_equal(single$species, "Ar")
+  expect_equal(single[["Area [mVs]"]], 123.4)
+
+  # multiple gases: CResultForGas is integer-indexed
+  multi <- read_dxf_data_table(write_json_fixture(results_block(sprintf(
+    '[{"CGCPeakList": %s}, {"CGCPeakList": %s}]',
+    peaklist("N2", 1.0),
+    peaklist("CO2", 2.0)
+  ))))
+  expect_equal(nrow(multi), 2L)
+  expect_equal(multi$species, c("N2", "CO2"))
+  expect_equal(multi[["Area [mVs]"]], c(1.0, 2.0))
+})
+
 test_that("ir_read_isofiles() reads every isodat example type", {
   skip_on_cran()
   skip_if(
