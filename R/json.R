@@ -83,7 +83,8 @@ find_json_block_idx_by_value <- function(
   block_query,
   value,
   max_idx = 100L,
-  required = TRUE
+  required = TRUE,
+  .call = caller_call()
 ) {
   i <- 0L
   while (i < max_idx) {
@@ -106,6 +107,7 @@ find_json_block_idx_by_value <- function(
     return(NA_integer_)
   }
   cli_abort(
-    "searched {i+1} CBlockData entr{?y/ies} but one with value {.val {value}} was not found in {col_green({block_query})}"
+    "searched {i+1} CBlockData entr{?y/ies} but one with value {.val {value}} was not found in {col_green({block_query})}",
+    call = .call
   )
 }

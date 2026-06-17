@@ -757,10 +757,16 @@ read_dxf_json <- function(json_path) {
 }
 
 read_dxf_metadata <- function(json_path) {
-  json_path |>
+  # The "Sequence Line Information" block is missing in some .dxf files
+  # --> cathch issues and re-issue as warning
+  seq_line <- json_path |>
     read_isodat_seq_line_info(
       "/CContiniousFlowBlockData/p/objects/CBlockData"
     ) |>
+    try_catch_cnds(error_value = tibble::tibble(analysis = 1L))
+  warn_cnds(seq_line$conditions, include_cnd_symbols = FALSE)
+
+  seq_line$result |>
     dplyr::mutate(
       type = "cf",
       timestamp = read_isodat_timestamp(json_path),

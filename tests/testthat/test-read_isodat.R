@@ -208,6 +208,32 @@ test_that("read_did_data_table() pivots evaluated columns to cycle x column", {
   expect_equal(did[["AT% 13C/12C"]], c(1.1, 1.1, 1.1))
 })
 
+test_that("read_dxf_metadata() survives a missing Sequence Line Information block", {
+  # a .dxf JSON with a timestamp but no "Sequence Line Information" CBlockData
+  f <- write_json_fixture(
+    r'({
+      "CFileHeader": {"p": {"objects": {"CTimeObject": {"datetime": "2026-06-12T21:26:44.0000000+00:00"}}}},
+      "CContiniousFlowBlockData": {"p": {"objects": {"CBlockData": [
+        {"p": {"v": "RawDataBlock"}, "objects": {}}
+      ]}}}
+    })'
+  )
+
+  res <- read_dxf_metadata(f) |> try_catch_cnds()
+
+  # the missing block is surfaced as a (non-fatal) warning, not a hard error
+  expect_equal(nrow(res$conditions), 1L)
+  expect_equal(res$conditions$type, "warning")
+  expect_match(res$conditions$message, "Sequence Line Information")
+
+  # the rest of the metadata is still returned
+  md <- res$result
+  expect_s3_class(md, "tbl_df")
+  expect_equal(nrow(md), 1L)
+  expect_equal(md$type, "cf")
+  expect_false(is.na(md$timestamp))
+})
+
 test_that("read_dxf_data_table() handles single- and multi-gas results", {
   # one gas's CGCPeakList with a single peak carrying one evaluated cell
   peaklist <- function(gas, area) {
