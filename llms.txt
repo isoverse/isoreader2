@@ -275,6 +275,7 @@ These functions allows reading of stable isotope data files/archives
 - [`ir_check_isoextract()`](https://isoreader2.isoverse.org/reference/ir_check_isoextract.md)
   : Check for the isoextract executable
 - [`ir_extract_isofiles()`](https://isoreader2.isoverse.org/reference/ir_extract_isofiles.md)
+  [`ir_get_isoextract_version()`](https://isoreader2.isoverse.org/reference/ir_extract_isofiles.md)
   : run the isoextract executable on a vector of file paths this is
   usually not called directly
 - [`ir_get_supported_file_types()`](https://isoreader2.isoverse.org/reference/ir_get_supported_file_types.md)

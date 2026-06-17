@@ -45,7 +45,9 @@ this is usually not called directly</p>
 <span>  pretty_json <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  show_progress <span class="op">=</span> <span class="fu">is_interactive</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  show_problems <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">ir_get_isoextract_version</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -76,6 +78,13 @@ pretty-printed files are larger than compact ones.</p></dd>
     <p>called for its side effect of running isoextract to write a <code>.json</code>
 sidecar file next to each input file; returns <code>NULL</code> invisibly</p>
     </div>
+    <div class="section level2">
+    <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>
+
+<ul><li><p><code>ir_get_isoextract_version()</code>: return the version of the installed
+<code>isoextract</code> executable as a <a href="https://rdrr.io/r/base/numeric_version.html" class="external-link">numeric_version</a>, or
+<code>NULL</code> if it is not installed (or does not report a recognizable version)</p></li>
+</ul></div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

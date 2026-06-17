@@ -12,6 +12,8 @@ ir_extract_isofiles(
   show_progress = is_interactive(),
   show_problems = TRUE
 )
+
+ir_get_isoextract_version()
 ```
 
 ## Arguments
@@ -50,3 +52,11 @@ ir_extract_isofiles(
 
 called for its side effect of running isoextract to write a `.json`
 sidecar file next to each input file; returns `NULL` invisibly
+
+## Functions
+
+- `ir_get_isoextract_version()`: return the version of the installed
+  `isoextract` executable as a
+  [numeric_version](https://rdrr.io/r/base/numeric_version.html), or
+  `NULL` if it is not installed (or does not report a recognizable
+  version)
