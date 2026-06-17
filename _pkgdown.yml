@@ -32,6 +32,7 @@ reference:
     These functions allows reading of stable isotope data files/archives
   contents:
   - ir_examples_folder
+  - ir_copy_examples
   - ir_find_isofiles
   - ir_find_continuous_flow
   - ir_find_dual_inlet

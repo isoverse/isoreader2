@@ -1,11 +1,53 @@
-#' Path to the bundled example files
-#' @description Returns the path to the folder with the example isodat files bundled with the package. This is a convenience wrapper around `system.file("extdata", package = "isoreader2")` for use in examples and for getting started.
-#' @return the path to the example files folder as a single string
+#' Bundled example files
+#' @description `ir_examples_folder()` returns the path to the folder with the
+#'   example isodat files bundled with the package (a convenience wrapper around
+#'   `system.file("extdata", package = "isoreader2")`). `ir_copy_examples()`
+#'   copies those example files into a local `folder` so they can be read,
+#'   re-extracted, or modified without touching the read-only package
+#'   installation.
+#' @return `ir_examples_folder()` returns the path to the example files folder as
+#'   a single string.
 #' @examples
 #' ir_examples_folder() |> ir_find_scans()
 #' @export
 ir_examples_folder <- function() {
   system.file("extdata", package = "isoreader2")
+}
+
+#' @describeIn ir_examples_folder copy the bundled example files into a local
+#'   `folder`, creating it if necessary and only copying files that do not
+#'   already exist there (existing files are left untouched).
+#' @param folder target directory to copy the example files into (default
+#'   `"examples"`); created if it does not exist
+#' @return `ir_copy_examples()` invisibly returns the paths of the example files
+#'   in `folder` (both newly copied and pre-existing).
+#' @examples
+#' \dontrun{
+#' ir_copy_examples() |> ir_find_continuous_flow()
+#' }
+#' @export
+ir_copy_examples <- function(folder = "examples") {
+  check_arg(
+    folder,
+    is_scalar_character(folder),
+    "must be a single folder path"
+  )
+  if (!dir.exists(folder)) {
+    dir.create(folder, recursive = TRUE, showWarnings = FALSE)
+  }
+  sources <- list.files(ir_examples_folder(), full.names = TRUE)
+  targets <- file.path(folder, basename(sources))
+  to_copy <- !file.exists(targets)
+  if (any(to_copy)) {
+    file.copy(sources[to_copy], folder, overwrite = FALSE)
+  }
+  cli_inform(c(
+    "v" = "copied {sum(to_copy)} example file{?s} to {.path {folder}}",
+    if (any(!to_copy)) {
+      c("i" = "skipped {sum(!to_copy)} already-existing file{?s}")
+    }
+  ))
+  invisible(targets)
 }
 
 #' Find isodat files
