@@ -34,14 +34,10 @@ file formats:
 | [`.bch`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/bch_structure.md) | Continuous flow | SerCon Callisto |
 | [`.iarc`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/iarc_larc_structure.md) | Continuous flow | Elementar IonOS |
 | [`.larc`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/iarc_larc_structure.md) | Continuous flow | Elementar LyticOS |
-| [`.imexp`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/imexp_structure.md)\* | Continuous flow | Thermo Fisher Qtegra |
+| [`.imexp`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/imexp_structure.md) | Continuous flow | Thermo Fisher Qtegra |
 | [`.did`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/isodat_structure.md) | Dual inlet | Thermo Fisher Isodat |
 | [`.caf`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/isodat_structure.md) | Dual inlet (legacy) | Thermo Fisher Isodat |
 | [`.scn`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/isodat_structure.md) | Scan | Thermo Fisher Isodat |
-
-> *\* the first step of reading Qtegra notebooks (extraction of the
-> virtual file system) requires a Windows computer at present but we’re
-> working on a solution that works on all major operating systems*
 
 ## Installation
 
@@ -123,9 +119,9 @@ file_paths <- ir_examples_folder() |> ir_find_dual_inlet()
 isofiles <- file_paths |> ir_read_isofiles()
 ```
 
-    > ✔ [325ms] ir_extract_isofiles() finished extracting 1 file/archive
+    > ✔ [138ms] ir_extract_isofiles() finished extracting 1 file/archive
 
-    > ✔ [186ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+    > ✔ [231ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 
 ``` r
 # show information about the files
@@ -146,7 +142,7 @@ isofiles
 dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
-    > ✔ [42ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+    > ✔ [46ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
     > intensity in V) from 1 file using the standard aggregator
 
 ``` r
@@ -207,8 +203,8 @@ ir_export_to_excel(
     > ✔ [3ms] ir_get_data() retrieved 102 records from the combination of metadata
     > (1) and cycles (102) via uidx and analysis
 
-    > ✔ [52ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of cycles
-    > to 'my_export.xlsx'
+    > ✔ [181ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
+    > cycles to 'my_export.xlsx'
 
 ## Package structure
 

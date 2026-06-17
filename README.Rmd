@@ -63,12 +63,10 @@ This package provides easy access to common IRMS (isotope ratio mass spectrometr
 | [`.bch`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/bch_structure.md)        | Continuous flow          | SerCon Callisto      |
 | [`.iarc`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/iarc_larc_structure.md) | Continuous flow          | Elementar IonOS      | 
 | [`.larc`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/iarc_larc_structure.md) | Continuous flow          | Elementar LyticOS    | 
-| [`.imexp`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/imexp_structure.md)*   | Continuous flow          | Thermo Fisher Qtegra | 
+| [`.imexp`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/imexp_structure.md)   | Continuous flow          | Thermo Fisher Qtegra | 
 | [`.did`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/isodat_structure.md)     | Dual inlet               | Thermo Fisher Isodat |
 | [`.caf`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/isodat_structure.md)     | Dual inlet (legacy)      | Thermo Fisher Isodat | 
 | [`.scn`](https://github.com/isoverse/IsofileExtractor/blob/main/docs/isodat_structure.md)     | Scan                     | Thermo Fisher Isodat | 
-
-> *\* the first step of reading Qtegra notebooks (extraction of the virtual file system) requires a Windows computer at present but we're working on a solution that works on all major operating systems*
 
 ## Installation
 
