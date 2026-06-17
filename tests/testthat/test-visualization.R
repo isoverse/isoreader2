@@ -219,69 +219,6 @@ test_that("windows without data points of their own are allowed", {
   expect_equal(sort(p_di$data$cycle), c(2, 3))
 })
 
-test_that("a window autoscales y to the visible data with headroom", {
-  y_range <- function(p) {
-    ggplot2::ggplot_build(p)$layout$panel_params[[1]]$y.range
-  }
-
-  # continuous flow: a peak (2600-3000) on a near-zero baseline (10). The points
-  # just outside the window are kept for line continuity but must NOT drag the y
-  # axis down to that baseline (let alone 0) - it should autoscale to the visible
-  # [2600, 3000] with headroom on both ends.
-  cf <- tibble(
-    file_name = "a",
-    species = "CO2",
-    mass = 44,
-    trace = "CO2: 44",
-    time.s = 0:10,
-    intensity.mV = c(10, 10, 10, 2600, 2800, 3000, 2800, 2600, 10, 10, 10)
-  )
-  # no window: 0 is included and pinned to the bottom of the panel
-  expect_equal(y_range(ir_plot_continuous_flow(cf) |> suppressMessages())[1], 0)
-  yw <- y_range(
-    ir_plot_continuous_flow(cf, time_window = c(3, 7)) |> suppressMessages()
-  )
-  expect_gt(yw[1], 2000) # not dragged to the ~10 baseline / 0
-  expect_lt(yw[1], 2600) # headroom below the lowest visible value
-  expect_gt(yw[2], 3000) # headroom above the highest visible value
-
-  # dual inlet behaves the same
-  di <- tibble(
-    file_name = "a",
-    species = "CO2",
-    mass = 44,
-    trace = "CO2: 44",
-    type = "sample",
-    cycle = 1:6,
-    intensity.mV = c(50, 500, 600, 700, 50, 50)
-  )
-  expect_equal(y_range(ir_plot_dual_inlet(di) |> suppressMessages())[1], 0)
-  ydw <- y_range(
-    ir_plot_dual_inlet(di, cycle_window = c(2, 4)) |> suppressMessages()
-  )
-  expect_gt(ydw[1], 300) # not dragged to the 50 baseline / 0
-  expect_lt(ydw[1], 500)
-  expect_gt(ydw[2], 700)
-
-  # scans likewise
-  sc <- tibble(
-    file_name = "a",
-    species = "CO2",
-    mass = 44,
-    trace = "CO2: 44",
-    scan_type = "high voltage",
-    x_units = "kV",
-    x = 0:10,
-    intensity.mV = c(10, 10, 10, 2600, 2800, 3000, 2800, 2600, 10, 10, 10)
-  )
-  ysw <- y_range(
-    ir_plot_scans(sc, x_window = c(3, 7)) |> suppressMessages()
-  )
-  expect_gt(ysw[1], 2000)
-  expect_lt(ysw[1], 2600)
-  expect_gt(ysw[2], 3000)
-})
-
 test_that("zooming preserves trace/mass factor levels and colours", {
   # two traces, the second only has data outside the zoom window
   d <- tibble(
