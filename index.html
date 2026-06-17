@@ -99,8 +99,7 @@
 <td>Elementar LyticOS</td>
 </tr>
 <tr>
-<td>
-<a href="https://github.com/isoverse/IsofileExtractor/blob/main/docs/imexp_structure.md" class="external-link"><code>.imexp</code></a>*</td>
+<td><a href="https://github.com/isoverse/IsofileExtractor/blob/main/docs/imexp_structure.md" class="external-link"><code>.imexp</code></a></td>
 <td>Continuous flow</td>
 <td>Thermo Fisher Qtegra</td>
 </tr>
@@ -121,9 +120,6 @@
 </tr>
 </tbody>
 </table>
-<blockquote>
-<p><em>* the first step of reading Qtegra notebooks (extraction of the virtual file system) requires a Windows computer at present but we’re working on a solution that works on all major operating systems</em></p>
-</blockquote>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -191,9 +187,9 @@ Plot of continuous flow examples
 <span></span>
 <span><span class="co"># read the files</span></span>
 <span><span class="va">isofiles</span> <span class="op">&lt;-</span> <span class="va">file_paths</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/ir_read_isofiles.html">ir_read_isofiles</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[307ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> finished extracting 1 file/archive
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[99ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> finished extracting 1 file/archive
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[260ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 1 isotope data file/archive
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[219ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 1 isotope data file/archive
 </code></pre>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># show information about the files</span></span>
@@ -212,7 +208,7 @@ Plot of continuous flow examples
 <code class="sourceCode R"><span><span class="co"># aggregate the data from the read files specifying which units to use</span></span>
 <span><span class="co"># (mV, V, nA, A, cps, etc.), conversion via resistor values happens automatically</span></span>
 <span><span class="va">dataset</span> <span class="op">&lt;-</span> <span class="va">isofiles</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles</a></span><span class="op">(</span><span class="st">"V"</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[45ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (1) and <span style="color: #0000BB;">cycles</span> (102,
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[46ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (1) and <span style="color: #0000BB;">cycles</span> (102,
 <span style="color: #00BB00;">intensity</span> in <span style="color: #BB00BB;">V</span>) from 1 file using the <span style="font-weight: bold; font-style: italic;">standard</span> aggregator
 </code></pre>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -266,7 +262,7 @@ Plot of dual inlet examples
 <pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[3ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 102 records from the combination of <span style="color: #0000BB;">metadata</span>
 (1) and <span style="color: #0000BB;">cycles</span> (102) via <span style="color: #00BB00;">uidx</span> and <span style="color: #00BB00;">analysis</span>
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[191ms]</span> <span style="font-weight: bold;">ir_export_to_excel()</span> exported 1 row of <span style="color: #00BB00;">metadata</span> and 102 rows of
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[206ms]</span> <span style="font-weight: bold;">ir_export_to_excel()</span> exported 1 row of <span style="color: #00BB00;">metadata</span> and 102 rows of
 <span style="color: #00BB00;">cycles</span> to <span style="color: #0000BB;">my_export.xlsx</span>
 </code></pre>
 </div>
