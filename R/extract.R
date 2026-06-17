@@ -13,12 +13,10 @@
 #'   a successful check (default: `TRUE`)
 #' @param source the URL (or local path) where to find isoextract, by default this is the latests release of the executables on github
 #' @param check_isosolfs whether to also ensure the `isosolfs` helper executable
-#'   is installed. `isosolfs` is required to read Qtegra notebooks (`.imexp`
-#'   files) and is released alongside isoextract; the same `install_if_missing` /
-#'   `reinstall_if_outdated` / `reinstall_always` / `show_version` settings are
-#'   applied to it. Default is currently `FALSE` because isosolfs has not been
-#'   released yet (enabling it would abort all reads); set to `TRUE` (or this
-#'   will become the default) once isosolfs is available.
+#'   is installed (default: `TRUE`). `isosolfs` is required to read Qtegra
+#'   notebooks (`.imexp` files) and is released alongside isoextract; the same
+#'   `install_if_missing` / `reinstall_if_outdated` / `reinstall_always` /
+#'   `show_version` settings are applied to it.
 #' @param ... passed on to `download.file` if (re-) installing isoextract (and isosolfs)
 #' @return called for its side effect of ensuring a working isoextract
 #'   executable (at least `min_version`) is installed — and, when
@@ -29,13 +27,13 @@ ir_check_isoextract <- function(
   install_if_missing = !on_cran(),
   reinstall_if_outdated = !on_cran(),
   reinstall_always = FALSE,
-  min_version = "0.2.1",
+  min_version = "0.3.0",
   show_version = TRUE,
   source = paste0(
     "https://github.com/isoverse/IsofileExtractor/releases/download/isoextract-v",
     min_version
   ),
-  check_isosolfs = FALSE,
+  check_isosolfs = TRUE,
   ...
 ) {
   check_assembly(
@@ -72,7 +70,7 @@ check_isosolfs <- function(
   install_if_missing = !on_cran(),
   reinstall_if_outdated = !on_cran(),
   reinstall_always = FALSE,
-  min_version = "0.1",
+  min_version = "0.9.0",
   show_version = TRUE,
   source = paste0(
     "https://github.com/isoverse/IsofileExtractor/releases/download/isosolfs-v",
@@ -81,7 +79,7 @@ check_isosolfs <- function(
   ...
 ) {
   check_assembly(
-    tool = "isosolfs",
+    tool = "isosolfs (helper to open Qtegra notebooks)",
     exe_path = get_isosolfs_path(),
     get_version = get_isosolfs_version,
     min_version = min_version,
@@ -211,13 +209,8 @@ get_assembly_runtime <- function() {
     Windows = "win",
     "win" # fall back to Windows naming for anything else
   )
-  # architecture detection is disabled until arm64 executables are released;
-  # all platforms use the x64 build for now (arm64 machines run it via emulation,
-  # e.g. Rosetta on Apple Silicon). Re-enable the lines below once arm64 binaries
-  # are available.
-  # machine <- tolower(Sys.info()[["machine"]])
-  # arch <- if (grepl("arm|aarch", machine)) "arm64" else "x64"
-  arch <- "x64"
+  machine <- tolower(Sys.info()[["machine"]])
+  arch <- if (grepl("arm|aarch", machine)) "arm64" else "x64"
   paste0(os, "-", arch)
 }
 
@@ -243,8 +236,9 @@ get_assembly_version <- function(exe_path, tool) {
     stderr = TRUE
   )
   if (
-    !is_scalar_character(version) ||
-      !grepl(paste(tool, "version"), version, fixed = TRUE)
+    is_empty(version) ||
+      !is_character(version) ||
+      !grepl("version", version[1], fixed = TRUE)
   ) {
     cli_bullets(
       c(
@@ -257,7 +251,11 @@ get_assembly_version <- function(exe_path, tool) {
     )
     return(NULL)
   }
-  regmatches(version, regexpr("\\d+(\\.\\d+)*", version)) |> numeric_version()
+  regmatches(
+    version[1],
+    regexpr("\\d+(\\.\\d+)*$", version[1])
+  ) |>
+    numeric_version()
 }
 
 get_isoextract_path <- function() get_assembly_path("isoextract")
@@ -287,7 +285,7 @@ check_file_paths_parameter <- function(file_paths) {
     cli_abort(
       c(
         "{?this/these} path{?s} ({.file {file_paths[!is_bch]}}) {?is a/are} director{?y/ies}, not {?an /}isofile{?s}/archive{?s}",
-        "i" = "did you mean to run {.strong ir_find_continuous_flow()} instead?"
+        "i" = "did you mean to run {.strong ir_find_continuous_flow()}, {.strong ir_find_dual_inlet()}, or {.strong ir_find_scans()} instead?"
       )
     )
   }
