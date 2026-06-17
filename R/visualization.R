@@ -603,7 +603,7 @@ ir_plot_scans <- function(
 
   # group aesthetic: always set to ensure one line per scan trace
   group_cols <- intersect(
-    c("uidx", "analysis", "species", "mass"),
+    c("uidx", "analysis", "species", "mass", "channel"),
     names(plot_data)
   )
 
@@ -612,7 +612,7 @@ ir_plot_scans <- function(
     ggplot2::aes(
       x = !!sym("x"),
       y = !!sym(intensity_col),
-      group = interaction(!!!rlang::syms(group_cols))
+      group = paste(!!!rlang::syms(group_cols))
     ) +
     ggplot2::geom_line() +
     ggplot2::labs(x = x_lab, y = y_lab) +
@@ -924,7 +924,7 @@ ir_plot_continuous_flow <- function(
 
   # group aesthetic: always set to ensure one line per trace
   group_cols <- intersect(
-    c("uidx", "analysis", "species", "mass"),
+    c("uidx", "analysis", "species", "mass", "channel"),
     names(plot_data)
   )
 
@@ -937,7 +937,7 @@ ir_plot_continuous_flow <- function(
     ggplot2::aes(
       x = !!sym(time_col),
       y = !!sym(intensity_col),
-      group = interaction(!!!rlang::syms(group_cols))
+      group = paste(!!!rlang::syms(group_cols))
     ) +
     ggplot2::geom_line() +
     ggplot2::labs(x = x_lab, y = y_lab) +
@@ -1239,7 +1239,7 @@ ir_plot_dual_inlet <- function(
 
   # group aesthetic: always set to ensure one line per cycle trace
   group_cols <- intersect(
-    c("uidx", "analysis", "species", "mass", "type"),
+    c("uidx", "analysis", "species", "mass", "type", "channel"),
     names(plot_data)
   )
 
@@ -1248,7 +1248,7 @@ ir_plot_dual_inlet <- function(
     ggplot2::aes(
       x = !!sym("cycle"),
       y = !!sym(intensity_col),
-      group = interaction(!!!rlang::syms(group_cols))
+      group = paste(!!!rlang::syms(group_cols))
     ) +
     ggplot2::geom_line() +
     ggplot2::geom_point() +
