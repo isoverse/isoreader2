@@ -44,12 +44,12 @@ This function runs automatically when needed and does not usually need to be cal
 <span>  install_if_missing <span class="op">=</span> <span class="op">!</span><span class="fu">on_cran</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  reinstall_if_outdated <span class="op">=</span> <span class="op">!</span><span class="fu">on_cran</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  reinstall_always <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  min_version <span class="op">=</span> <span class="st">"0.2.1"</span>,</span>
+<span>  min_version <span class="op">=</span> <span class="st">"0.3.0"</span>,</span>
 <span>  show_version <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  source <span class="op">=</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"https://github.com/isoverse/IsofileExtractor/releases/download/isoextract-v"</span>,</span>
 <span>    <span class="va">min_version</span><span class="op">)</span>,</span>
-<span>  check_isosolfs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  check_isosolfs <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -85,12 +85,10 @@ a successful check (default: <code>TRUE</code>)</p></dd>
 
 <dt id="arg-check-isosolfs">check_isosolfs<a class="anchor" aria-label="anchor" href="#arg-check-isosolfs"></a></dt>
 <dd><p>whether to also ensure the <code>isosolfs</code> helper executable
-is installed. <code>isosolfs</code> is required to read Qtegra notebooks (<code>.imexp</code>
-files) and is released alongside isoextract; the same <code>install_if_missing</code> /
-<code>reinstall_if_outdated</code> / <code>reinstall_always</code> / <code>show_version</code> settings are
-applied to it. Default is currently <code>FALSE</code> because isosolfs has not been
-released yet (enabling it would abort all reads); set to <code>TRUE</code> (or this
-will become the default) once isosolfs is available.</p></dd>
+is installed (default: <code>TRUE</code>). <code>isosolfs</code> is required to read Qtegra
+notebooks (<code>.imexp</code> files) and is released alongside isoextract; the same
+<code>install_if_missing</code> / <code>reinstall_if_outdated</code> / <code>reinstall_always</code> /
+<code>show_version</code> settings are applied to it.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

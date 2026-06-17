@@ -11,12 +11,12 @@ ir_check_isoextract(
   install_if_missing = !on_cran(),
   reinstall_if_outdated = !on_cran(),
   reinstall_always = FALSE,
-  min_version = "0.2.1",
+  min_version = "0.3.0",
   show_version = TRUE,
   source =
     paste0("https://github.com/isoverse/IsofileExtractor/releases/download/isoextract-v",
     min_version),
-  check_isosolfs = FALSE,
+  check_isosolfs = TRUE,
   ...
 )
 ```
@@ -51,13 +51,11 @@ ir_check_isoextract(
 
 - check_isosolfs:
 
-  whether to also ensure the `isosolfs` helper executable is installed.
-  `isosolfs` is required to read Qtegra notebooks (`.imexp` files) and
-  is released alongside isoextract; the same `install_if_missing` /
-  `reinstall_if_outdated` / `reinstall_always` / `show_version` settings
-  are applied to it. Default is currently `FALSE` because isosolfs has
-  not been released yet (enabling it would abort all reads); set to
-  `TRUE` (or this will become the default) once isosolfs is available.
+  whether to also ensure the `isosolfs` helper executable is installed
+  (default: `TRUE`). `isosolfs` is required to read Qtegra notebooks
+  (`.imexp` files) and is released alongside isoextract; the same
+  `install_if_missing` / `reinstall_if_outdated` / `reinstall_always` /
+  `show_version` settings are applied to it.
 
 - ...:
 

@@ -69,6 +69,7 @@ numerical order.</p>
 <span>  color <span class="op">=</span> <span class="va">trace</span>,</span>
 <span>  linetype <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  color_values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/palette.html" class="external-link">palette.colors</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  drop_unused_levels <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  scientific <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  time_window <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  short_time_labels <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -134,6 +135,14 @@ them explicitly.</p></dd>
 <dd><p>named or unnamed character vector of colours passed to
 <code><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">ggplot2::scale_color_manual()</a></code>, or <code>NULL</code> to use the ggplot2 default
 colour palette (default: <code><a href="https://rdrr.io/r/grDevices/palette.html" class="external-link">palette.colors()</a></code>)</p></dd>
+
+
+<dt id="arg-drop-unused-levels">drop_unused_levels<a class="anchor" aria-label="anchor" href="#arg-drop-unused-levels"></a></dt>
+<dd><p>whether to drop unused factor levels (e.g. masses or
+traces that are absent after filtering by <code>species</code>/<code>mass</code> or zooming to a
+window) from the colour scale and legend. Default <code>FALSE</code> keeps every level
+so the colour mapping stays stable across subsets of the same dataset; set
+to <code>TRUE</code> to show only the levels actually present in the plotted data.</p></dd>
 
 
 <dt id="arg-scientific">scientific<a class="anchor" aria-label="anchor" href="#arg-scientific"></a></dt>

@@ -27,6 +27,7 @@ ir_plot_scans(
   color = trace,
   linetype = NULL,
   color_values = palette.colors(),
+  drop_unused_levels = FALSE,
   scientific = FALSE,
   x_window = NULL,
   n_x_breaks = 5,
@@ -106,6 +107,15 @@ ir_plot_scans(
   [`ggplot2::scale_color_manual()`](https://ggplot2.tidyverse.org/reference/scale_manual.html),
   or `NULL` to use the ggplot2 default colour palette (default:
   [`palette.colors()`](https://rdrr.io/r/grDevices/palette.html))
+
+- drop_unused_levels:
+
+  whether to drop unused factor levels (e.g. masses or traces that are
+  absent after filtering by `species`/`mass` or zooming to a window)
+  from the colour scale and legend. Default `FALSE` keeps every level so
+  the colour mapping stays stable across subsets of the same dataset;
+  set to `TRUE` to show only the levels actually present in the plotted
+  data.
 
 - scientific:
 

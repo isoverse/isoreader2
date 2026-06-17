@@ -262,7 +262,8 @@ to Sebastian Kopf.
 These functions allows reading of stable isotope data files/archives
 
 - [`ir_examples_folder()`](https://isoreader2.isoverse.org/reference/ir_examples_folder.md)
-  : Path to the bundled example files
+  [`ir_copy_examples()`](https://isoreader2.isoverse.org/reference/ir_examples_folder.md)
+  : Bundled example files
 - [`ir_find_isofiles()`](https://isoreader2.isoverse.org/reference/ir_find_isofiles.md)
   [`ir_find_continuous_flow()`](https://isoreader2.isoverse.org/reference/ir_find_isofiles.md)
   [`ir_find_dual_inlet()`](https://isoreader2.isoverse.org/reference/ir_find_isofiles.md)
