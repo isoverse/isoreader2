@@ -77,7 +77,6 @@ numerical order.</p>
 <span>  x_window <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  n_x_breaks <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  n_y_breaks <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>  theme <span class="op">=</span> <span class="fu"><a href="ir_default_theme.html">ir_default_theme</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -171,10 +170,6 @@ bracketing points). Default <code>NULL</code> shows the full x range.</p></dd>
 <dd><p>desired number of y axis tick marks (default: <code>5</code>)</p></dd>
 
 
-<dt id="arg-theme">theme<a class="anchor" aria-label="anchor" href="#arg-theme"></a></dt>
-<dd><p>ggplot2 theme to apply (default: <code><a href="ir_default_theme.html">ir_default_theme()</a></code>)</p></dd>
-
-
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>additional arguments passed on to <code><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">ggplot2::facet_wrap()</a></code> or
 <code><a href="https://ggplot2.tidyverse.org/reference/facet_grid.html" class="external-link">ggplot2::facet_grid()</a></code> (e.g. <code>labeller</code>)</p></dd>
@@ -182,9 +177,9 @@ bracketing points). Default <code>NULL</code> shows the full x range.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>a <code>ggplot</code> object. To further customize the plot by adding ggplot2
-layers (e.g. <code>+ ggplot2::labs(...)</code>), attach ggplot2 with
-<code><a href="https://ggplot2.tidyverse.org" class="external-link">library(ggplot2)</a></code> first.</p>
+    <p>a <code>ggplot</code> object with <code><a href="ir_default_theme.html">ir_default_theme()</a></code> applied. To customize the
+plot, add ggplot2 layers on top (e.g. <code>+ ggplot2::theme(...)</code> or
+<code>+ ggplot2::labs(...)</code>); attach ggplot2 with <code><a href="https://ggplot2.tidyverse.org" class="external-link">library(ggplot2)</a></code> first.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -31,7 +31,6 @@ ir_plot_scans(
   x_window = NULL,
   n_x_breaks = 5,
   n_y_breaks = 5,
-  theme = ir_default_theme(),
   ...
 )
 ```
@@ -133,11 +132,6 @@ ir_plot_scans(
 
   desired number of y axis tick marks (default: `5`)
 
-- theme:
-
-  ggplot2 theme to apply (default:
-  [`ir_default_theme()`](https://isoreader2.isoverse.org/reference/ir_default_theme.md))
-
 - ...:
 
   additional arguments passed on to
@@ -148,6 +142,8 @@ ir_plot_scans(
 
 ## Value
 
-a `ggplot` object. To further customize the plot by adding ggplot2
-layers (e.g. `+ ggplot2::labs(...)`), attach ggplot2 with
+a `ggplot` object with
+[`ir_default_theme()`](https://isoreader2.isoverse.org/reference/ir_default_theme.md)
+applied. To customize the plot, add ggplot2 layers on top (e.g.
+`+ ggplot2::theme(...)` or `+ ggplot2::labs(...)`); attach ggplot2 with
 [`library(ggplot2)`](https://ggplot2.tidyverse.org) first.
