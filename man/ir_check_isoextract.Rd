@@ -2,7 +2,8 @@
 % Please edit documentation in R/extract.R
 \name{ir_check_isoextract}
 \alias{ir_check_isoextract}
-\title{Check for the isoextract executable}
+\alias{ir_check_isosolfs}
+\title{Check for the isoextract executables}
 \usage{
 ir_check_isoextract(
   install_if_missing = !on_cran(),
@@ -16,36 +17,59 @@ ir_check_isoextract(
   check_isosolfs = TRUE,
   ...
 )
+
+ir_check_isosolfs(
+  install_if_missing = !on_cran(),
+  reinstall_if_outdated = !on_cran(),
+  reinstall_always = FALSE,
+  min_version = "0.9.0",
+  show_version = TRUE,
+  source =
+    paste0("https://github.com/isoverse/IsofileExtractor/releases/download/isosolfs-v",
+    min_version),
+  ...
+)
 }
 \arguments{
-\item{install_if_missing}{install isoextract if it's missing}
+\item{install_if_missing}{install the executable if it's missing}
 
-\item{reinstall_if_outdated}{install isoextract if it's outdated (i.e. not at least \code{min_version})}
+\item{reinstall_if_outdated}{install the executable if it's outdated (i.e. not at least \code{min_version})}
 
 \item{reinstall_always}{whether to (re-)install no matter what}
 
 \item{min_version}{the minimum version number required}
 
-\item{show_version}{whether to print the installed isoextract version after
+\item{show_version}{whether to print the installed version after
 a successful check (default: \code{TRUE})}
 
-\item{source}{the URL (or local path) where to find isoextract, by default this is the latests release of the executables on github}
+\item{source}{the URL (or local path) where to find the executable, by default this is the latest release of the executables on github}
 
 \item{check_isosolfs}{whether to also ensure the \code{isosolfs} helper executable
-is installed (default: \code{TRUE}). \code{isosolfs} is required to read Qtegra
-notebooks (\code{.imexp} files) and is released alongside isoextract; the same
-\code{install_if_missing} / \code{reinstall_if_outdated} / \code{reinstall_always} /
-\code{show_version} settings are applied to it.}
+is installed (default: \code{TRUE}), by calling \code{\link[=ir_check_isosolfs]{ir_check_isosolfs()}}. \code{isosolfs}
+is required to read Qtegra notebooks (\code{.imexp} files) and is released
+alongside isoextract; the same \code{install_if_missing} / \code{reinstall_if_outdated}
+/ \code{reinstall_always} / \code{show_version} settings are applied to it.}
 
-\item{...}{passed on to \code{download.file} if (re-) installing isoextract (and isosolfs)}
+\item{...}{passed on to \code{download.file} if (re-) installing the executable(s)}
 }
 \value{
-called for its side effect of ensuring a working isoextract
-executable (at least \code{min_version}) is installed — and, when
+called for its side effect of ensuring a working executable (at least
+\code{min_version}) is installed — and, for \code{ir_check_isoextract()} when
 \code{check_isosolfs = TRUE}, isosolfs as well; returns \code{NULL} invisibly and
 aborts if a required executable cannot be made available
 }
 \description{
-By default, this will install isoextract if it is missing or outdated.
-This function runs automatically when needed and does not usually need to be called directly by the user.
+By default, these will install the executable if it is missing or outdated.
+They run automatically when needed and do not usually need to be called
+directly by the user. In particular, \code{ir_check_isoextract()} calls
+\code{ir_check_isosolfs()} automatically (unless \code{check_isosolfs = FALSE}), so
+\code{ir_check_isosolfs()} rarely needs to be called on its own.
 }
+\section{Functions}{
+\itemize{
+\item \code{ir_check_isosolfs()}: ensure the \code{isosolfs} helper executable (used
+to read Qtegra \code{.imexp} notebooks) is installed. Released alongside
+isoextract and called automatically by \code{ir_check_isoextract()}, so it
+rarely needs to be called directly.
+
+}}

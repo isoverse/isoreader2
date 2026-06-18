@@ -1,27 +1,31 @@
 # isoextract installation ========
 
-#' Check for the isoextract executable
+#' Check for the isoextract executables
 #'
-#' By default, this will install isoextract if it is missing or outdated.
-#' This function runs automatically when needed and does not usually need to be called directly by the user.
+#' By default, these will install the executable if it is missing or outdated.
+#' They run automatically when needed and do not usually need to be called
+#' directly by the user. In particular, `ir_check_isoextract()` calls
+#' `ir_check_isosolfs()` automatically (unless `check_isosolfs = FALSE`), so
+#' `ir_check_isosolfs()` rarely needs to be called on its own.
 #'
-#' @param install_if_missing install isoextract if it's missing
-#' @param reinstall_if_outdated install isoextract if it's outdated (i.e. not at least `min_version`)
+#' @param install_if_missing install the executable if it's missing
+#' @param reinstall_if_outdated install the executable if it's outdated (i.e. not at least `min_version`)
 #' @param reinstall_always whether to (re-)install no matter what
 #' @param min_version the minimum version number required
-#' @param show_version whether to print the installed isoextract version after
+#' @param show_version whether to print the installed version after
 #'   a successful check (default: `TRUE`)
-#' @param source the URL (or local path) where to find isoextract, by default this is the latests release of the executables on github
+#' @param source the URL (or local path) where to find the executable, by default this is the latest release of the executables on github
 #' @param check_isosolfs whether to also ensure the `isosolfs` helper executable
-#'   is installed (default: `TRUE`). `isosolfs` is required to read Qtegra
-#'   notebooks (`.imexp` files) and is released alongside isoextract; the same
-#'   `install_if_missing` / `reinstall_if_outdated` / `reinstall_always` /
-#'   `show_version` settings are applied to it.
-#' @param ... passed on to `download.file` if (re-) installing isoextract (and isosolfs)
-#' @return called for its side effect of ensuring a working isoextract
-#'   executable (at least `min_version`) is installed — and, when
+#'   is installed (default: `TRUE`), by calling [ir_check_isosolfs()]. `isosolfs`
+#'   is required to read Qtegra notebooks (`.imexp` files) and is released
+#'   alongside isoextract; the same `install_if_missing` / `reinstall_if_outdated`
+#'   / `reinstall_always` / `show_version` settings are applied to it.
+#' @param ... passed on to `download.file` if (re-) installing the executable(s)
+#' @return called for its side effect of ensuring a working executable (at least
+#'   `min_version`) is installed — and, for `ir_check_isoextract()` when
 #'   `check_isosolfs = TRUE`, isosolfs as well; returns `NULL` invisibly and
 #'   aborts if a required executable cannot be made available
+#' @name ir_check_isoextract
 #' @export
 ir_check_isoextract <- function(
   install_if_missing = !on_cran(),
@@ -51,7 +55,7 @@ ir_check_isoextract <- function(
 
   # isosolfs helper (needed to read Qtegra .imexp notebooks)
   if (check_isosolfs) {
-    check_isosolfs(
+    ir_check_isosolfs(
       install_if_missing = install_if_missing,
       reinstall_if_outdated = reinstall_if_outdated,
       reinstall_always = reinstall_always,
@@ -63,10 +67,12 @@ ir_check_isoextract <- function(
   invisible(NULL)
 }
 
-# ensure the isosolfs helper executable (used to read Qtegra .imexp notebooks)
-# is installed; mirrors ir_check_isoextract(). isosolfs is released alongside
-# isoextract in the IsofileExtractor repository.
-check_isosolfs <- function(
+#' @describeIn ir_check_isoextract ensure the `isosolfs` helper executable (used
+#'   to read Qtegra `.imexp` notebooks) is installed. Released alongside
+#'   isoextract and called automatically by `ir_check_isoextract()`, so it
+#'   rarely needs to be called directly.
+#' @export
+ir_check_isosolfs <- function(
   install_if_missing = !on_cran(),
   reinstall_if_outdated = !on_cran(),
   reinstall_always = FALSE,
