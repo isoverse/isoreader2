@@ -1,8 +1,11 @@
-# Check for the isoextract executable
+# Check for the isoextract executables
 
-By default, this will install isoextract if it is missing or outdated.
-This function runs automatically when needed and does not usually need
-to be called directly by the user.
+By default, these will install the executable if it is missing or
+outdated. They run automatically when needed and do not usually need to
+be called directly by the user. In particular, `ir_check_isoextract()`
+calls `ir_check_isosolfs()` automatically (unless
+`check_isosolfs = FALSE`), so `ir_check_isosolfs()` rarely needs to be
+called on its own.
 
 ## Usage
 
@@ -19,17 +22,30 @@ ir_check_isoextract(
   check_isosolfs = TRUE,
   ...
 )
+
+ir_check_isosolfs(
+  install_if_missing = !on_cran(),
+  reinstall_if_outdated = !on_cran(),
+  reinstall_always = FALSE,
+  min_version = "0.9.0",
+  show_version = TRUE,
+  source =
+    paste0("https://github.com/isoverse/IsofileExtractor/releases/download/isosolfs-v",
+    min_version),
+  ...
+)
 ```
 
 ## Arguments
 
 - install_if_missing:
 
-  install isoextract if it's missing
+  install the executable if it's missing
 
 - reinstall_if_outdated:
 
-  install isoextract if it's outdated (i.e. not at least `min_version`)
+  install the executable if it's outdated (i.e. not at least
+  `min_version`)
 
 - reinstall_always:
 
@@ -41,30 +57,37 @@ ir_check_isoextract(
 
 - show_version:
 
-  whether to print the installed isoextract version after a successful
-  check (default: `TRUE`)
+  whether to print the installed version after a successful check
+  (default: `TRUE`)
 
 - source:
 
-  the URL (or local path) where to find isoextract, by default this is
-  the latests release of the executables on github
+  the URL (or local path) where to find the executable, by default this
+  is the latest release of the executables on github
 
 - check_isosolfs:
 
   whether to also ensure the `isosolfs` helper executable is installed
-  (default: `TRUE`). `isosolfs` is required to read Qtegra notebooks
-  (`.imexp` files) and is released alongside isoextract; the same
-  `install_if_missing` / `reinstall_if_outdated` / `reinstall_always` /
-  `show_version` settings are applied to it.
+  (default: `TRUE`), by calling `ir_check_isosolfs()`. `isosolfs` is
+  required to read Qtegra notebooks (`.imexp` files) and is released
+  alongside isoextract; the same `install_if_missing` /
+  `reinstall_if_outdated` / `reinstall_always` / `show_version` settings
+  are applied to it.
 
 - ...:
 
-  passed on to `download.file` if (re-) installing isoextract (and
-  isosolfs)
+  passed on to `download.file` if (re-) installing the executable(s)
 
 ## Value
 
-called for its side effect of ensuring a working isoextract executable
-(at least `min_version`) is installed — and, when
+called for its side effect of ensuring a working executable (at least
+`min_version`) is installed — and, for `ir_check_isoextract()` when
 `check_isosolfs = TRUE`, isosolfs as well; returns `NULL` invisibly and
 aborts if a required executable cannot be made available
+
+## Functions
+
+- `ir_check_isosolfs()`: ensure the `isosolfs` helper executable (used
+  to read Qtegra `.imexp` notebooks) is installed. Released alongside
+  isoextract and called automatically by `ir_check_isoextract()`, so it
+  rarely needs to be called directly.
