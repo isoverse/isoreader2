@@ -108,11 +108,11 @@ isofiles <- file_paths |> ir_read_isofiles()
 ```
 
 ``` fansi
-✔ [99ms] ir_extract_isofiles() finished extracting 1 file/archive
+✔ [95ms] ir_extract_isofiles() finished extracting 1 file/archive
 ```
 
 ``` fansi
-✔ [219ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+✔ [225ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 ```
 
 ``` r
@@ -141,7 +141,7 @@ dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
 ``` fansi
-✔ [46ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+✔ [49ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
 intensity in V) from 1 file using the standard aggregator
 ```
 
@@ -182,7 +182,7 @@ library(ggplot2)
 dataset |>
   ir_filter_metadata(file_name == "caf_dual_inlet_example") |>
   ir_plot_dual_inlet(mass = c(44:48)) +
-  # use ggplot2 to modify the plot with custom theming (or any other ggplot elements)
+  # use ggplot2 to modify with custom theming (or any other ggplot elements)
   theme(strip.text = element_text(size = 30))
 ```
 
@@ -214,9 +214,27 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [206ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
+✔ [225ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
 cycles to my_export.xlsx
 ```
+
+### Bonus: explore isofiles interactively
+
+``` r
+
+# you can also use the isoexplorer package to explore isofiles
+# interactively and generate visualization code from the GUI
+# (use ie_explore_continuous_flow/dual_inlet/scans)
+if (!requireNamespace("isoexplorer", quietly = TRUE)) {
+  pak::pak("isoverse/isoexplorer")
+}
+example_files <- ir_copy_examples() |> ir_find_isofiles() |> ir_read_isofiles()
+example_files |> isoexplorer::ie_explore_continuous_flow()
+```
+
+![Isoexplorer screenshot](reference/figures/isoexplorer_screenshot.png)
+
+Isoexplorer screenshot
 
 ## Package structure
 

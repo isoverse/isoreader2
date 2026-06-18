@@ -27,8 +27,8 @@ ir_copy_examples(folder = "examples")
 `ir_examples_folder()` returns the path to the example files folder as a
 single string.
 
-`ir_copy_examples()` invisibly returns the paths of the example files in
-`folder` (both newly copied and pre-existing).
+`ir_copy_examples()` invisibly returns the path to the created examples
+folder
 
 ## Functions
 
