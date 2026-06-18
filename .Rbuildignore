@@ -12,3 +12,4 @@
 ^cache$
 ^tmp$
 CNAME
+inst/extdata/*.json

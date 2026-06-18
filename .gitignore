@@ -32,8 +32,11 @@ doc
 Meta
 release
 pkgdown
+.quarto
+**/*.quarto_ipynb
+inst/extdata/*.json
 
 # Package specific auxiliary files
 tmp
-
-
+examples
+README.html
