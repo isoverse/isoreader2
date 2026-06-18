@@ -119,9 +119,9 @@ file_paths <- ir_examples_folder() |> ir_find_dual_inlet()
 isofiles <- file_paths |> ir_read_isofiles()
 ```
 
-    > ✔ [138ms] ir_extract_isofiles() finished extracting 1 file/archive
+    > ✔ [107ms] ir_extract_isofiles() finished extracting 1 file/archive
 
-    > ✔ [231ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+    > ✔ [190ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 
 ``` r
 # show information about the files
@@ -142,7 +142,7 @@ isofiles
 dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
-    > ✔ [46ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+    > ✔ [54ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
     > intensity in V) from 1 file using the standard aggregator
 
 ``` r
@@ -172,7 +172,7 @@ library(ggplot2)
 dataset |>
   ir_filter_metadata(file_name == "caf_dual_inlet_example") |>
   ir_plot_dual_inlet(mass = c(44:48)) +
-  # use ggplot2 to modify the plot with custom theming (or any other ggplot elements)
+  # use ggplot2 to modify with custom theming (or any other ggplot elements)
   theme(strip.text = element_text(size = 30))
 ```
 
@@ -200,11 +200,30 @@ ir_export_to_excel(
 
     > ✔ [2ms] ir_get_data() retrieved 1 records from metadata
 
-    > ✔ [3ms] ir_get_data() retrieved 102 records from the combination of metadata
+    > ✔ [5ms] ir_get_data() retrieved 102 records from the combination of metadata
     > (1) and cycles (102) via uidx and analysis
 
-    > ✔ [181ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
+    > ✔ [241ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
     > cycles to 'my_export.xlsx'
+
+### Bonus: explore isofiles interactively
+
+``` r
+# you can also use the isoexplorer package to explore isofiles
+# interactively and generate visualization code from the GUI
+# (use ie_explore_continuous_flow/dual_inlet/scans)
+if (!requireNamespace("isoexplorer", quietly = TRUE)) {
+  pak::pak("isoverse/isoexplorer")
+}
+example_files <- ir_copy_examples() |> ir_find_isofiles() |> ir_read_isofiles()
+example_files |> isoexplorer::ie_explore_continuous_flow()
+```
+
+<figure>
+<img src="man/figures/isoexplorer_screenshot.png"
+alt="Isoexplorer screenshot" />
+<figcaption aria-hidden="true">Isoexplorer screenshot</figcaption>
+</figure>
 
 ## Package structure
 

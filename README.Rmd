@@ -166,7 +166,7 @@ library(ggplot2)
 dataset |>
   ir_filter_metadata(file_name == "caf_dual_inlet_example") |>
   ir_plot_dual_inlet(mass = c(44:48)) +
-  # use ggplot2 to modify the plot with custom theming (or any other ggplot elements)
+  # use ggplot2 to modify with custom theming (or any other ggplot elements)
   theme(strip.text = element_text(size = 30))
 ```
 
@@ -186,6 +186,21 @@ ir_export_to_excel(
 unlink("my_export.xlsx")
 unlink("tmp/project", recursive = TRUE, force = TRUE)
 ```
+
+### Bonus: explore isofiles interactively
+
+```{r, eval = FALSE}
+# you can also use the isoexplorer package to explore isofiles
+# interactively and generate visualization code from the GUI
+# (use ie_explore_continuous_flow/dual_inlet/scans)
+if (!requireNamespace("isoexplorer", quietly = TRUE)) {
+  pak::pak("isoverse/isoexplorer")
+}
+example_files <- ir_copy_examples() |> ir_find_isofiles() |> ir_read_isofiles()
+example_files |> isoexplorer::ie_explore_continuous_flow()
+```
+
+![Isoexplorer screenshot](man/figures/isoexplorer_screenshot.png)
 
 ## Package structure
 
