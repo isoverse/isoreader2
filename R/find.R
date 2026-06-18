@@ -19,8 +19,7 @@ ir_examples_folder <- function() {
 #'   already exist there (existing files are left untouched).
 #' @param folder target directory to copy the example files into (default
 #'   `"examples"`); created if it does not exist
-#' @return `ir_copy_examples()` invisibly returns the paths of the example files
-#'   in `folder` (both newly copied and pre-existing).
+#' @return `ir_copy_examples()` invisibly returns the path to the created examples folder
 #' @examples
 #' \dontrun{
 #' ir_copy_examples() |> ir_find_continuous_flow()
@@ -47,7 +46,7 @@ ir_copy_examples <- function(folder = "examples") {
       c("i" = "skipped {sum(!to_copy)} already-existing file{?s}")
     }
   ))
-  invisible(targets)
+  invisible(folder)
 }
 
 #' Find isodat files

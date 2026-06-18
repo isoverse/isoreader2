@@ -17,8 +17,7 @@ ir_copy_examples(folder = "examples")
 \code{ir_examples_folder()} returns the path to the example files folder as
 a single string.
 
-\code{ir_copy_examples()} invisibly returns the paths of the example files
-in \code{folder} (both newly copied and pre-existing).
+\code{ir_copy_examples()} invisibly returns the path to the created examples folder
 }
 \description{
 \code{ir_examples_folder()} returns the path to the folder with the
