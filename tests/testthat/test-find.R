@@ -14,10 +14,9 @@ test_that("ir_copy_examples() only copies files that don't exist yet", {
   # bad argument
   expect_error(ir_copy_examples(folder = 1), "single folder path")
 
-  # first call copies everything and returns the full set of target paths
+  # first call copies everything and returns the target folder
   copied <- ir_copy_examples(target) |> suppressMessages()
-  expect_setequal(basename(copied), sources)
-  expect_true(all(file.exists(copied)))
+  expect_identical(copied, target)
   expect_setequal(list.files(target), sources)
 
   # mark a file so we can tell whether it gets overwritten, and remove another
