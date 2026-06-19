@@ -14,6 +14,15 @@
 #' @param min_version the minimum version number required
 #' @param show_version whether to print the installed version after
 #'   a successful check (default: `TRUE`)
+#' @param ask_permission whether to ask for the user's permission before
+#'   downloading a missing or outdated executable (default: `TRUE`). The prompt
+#'   only appears in interactive sessions and only when a download is actually
+#'   needed; if it is declined - or the session is not interactive - no download
+#'   is attempted and the function aborts with instructions. Set to `FALSE` to
+#'   allow the download without prompting (e.g. in scripts). When
+#'   `ir_check_isoextract()` downloads isoextract with the user's consent it
+#'   passes `ask_permission = FALSE` on to `ir_check_isosolfs()` so the user is
+#'   not asked a second time.
 #' @param source the URL (or local path) where to find the executable, by default this is the latest release of the executables on github
 #' @param check_isosolfs whether to also ensure the `isosolfs` helper executable
 #'   is installed (default: `TRUE`), by calling [ir_check_isosolfs()]. `isosolfs`
@@ -33,6 +42,7 @@ ir_check_isoextract <- function(
   reinstall_always = FALSE,
   min_version = "0.3.0",
   show_version = TRUE,
+  ask_permission = TRUE,
   source = paste0(
     "https://github.com/isoverse/IsofileExtractor/releases/download/isoextract-v",
     min_version
@@ -40,7 +50,7 @@ ir_check_isoextract <- function(
   check_isosolfs = TRUE,
   ...
 ) {
-  check_assembly(
+  granted <- check_assembly(
     tool = "isoextract",
     exe_path = get_isoextract_path(),
     get_version = ir_get_isoextract_version,
@@ -50,16 +60,19 @@ ir_check_isoextract <- function(
     reinstall_if_outdated = reinstall_if_outdated,
     reinstall_always = reinstall_always,
     show_version = show_version,
+    ask_permission = ask_permission,
     ...
   )
 
-  # isosolfs helper (needed to read Qtegra .imexp notebooks)
+  # isosolfs helper (needed to read Qtegra .imexp notebooks). If the user already
+  # consented to downloading isoextract, don't ask again for isosolfs.
   if (check_isosolfs) {
     ir_check_isosolfs(
       install_if_missing = install_if_missing,
       reinstall_if_outdated = reinstall_if_outdated,
       reinstall_always = reinstall_always,
       show_version = show_version,
+      ask_permission = if (isTRUE(granted)) FALSE else ask_permission,
       ...
     )
   }
@@ -78,6 +91,7 @@ ir_check_isosolfs <- function(
   reinstall_always = FALSE,
   min_version = "0.9.0",
   show_version = TRUE,
+  ask_permission = TRUE,
   source = paste0(
     "https://github.com/isoverse/IsofileExtractor/releases/download/isosolfs-v",
     min_version
@@ -94,8 +108,24 @@ ir_check_isosolfs <- function(
     reinstall_if_outdated = reinstall_if_outdated,
     reinstall_always = reinstall_always,
     show_version = show_version,
+    ask_permission = ask_permission,
     ...
   )
+}
+
+# ask the user for permission to download an executable. Returns TRUE if granted.
+# In a non-interactive session there is nobody to ask, so it returns FALSE (the
+# caller then aborts with instructions to set `ask_permission = FALSE`).
+request_download_permission <- function(tool, dest_dir, source) {
+  cli_bullets(c(
+    "!" = "{tool} is not installed (or is outdated) and needs to be downloaded before it can be used.",
+    "i" = "Source: {.url {source}}",
+    "i" = "Install location: {.path {dest_dir}}"
+  ))
+  if (!interactive()) {
+    return(FALSE)
+  }
+  utils::menu(c("Yes, download it now", "No")) == 1L
 }
 
 # generic install/version check for a downloadable IsofileExtractor assembly
@@ -103,7 +133,9 @@ ir_check_isosolfs <- function(
 # from `source` if missing/outdated/forced, and aborts if a working executable of
 # at least `min_version` cannot be made available. `get_version` is a function
 # returning the installed numeric_version (or NULL). `...` is passed on to
-# `download.file`.
+# `download.file`. When `ask_permission` is TRUE, the user is prompted before a
+# download is started. Returns (invisibly) TRUE if a download happened with the
+# user's explicit consent, FALSE otherwise (so the caller can avoid re-prompting).
 check_assembly <- function(
   tool,
   exe_path,
@@ -114,6 +146,7 @@ check_assembly <- function(
   reinstall_if_outdated,
   reinstall_always,
   show_version,
+  ask_permission = FALSE,
   ...
 ) {
   start <- start_info()
@@ -135,11 +168,24 @@ check_assembly <- function(
   }
 
   # do we need to install?
+  permission_granted <- FALSE
   if (
     reinstall_always ||
       (!exists && install_if_missing) ||
       (outdated && reinstall_if_outdated)
   ) {
+    # ask for permission before downloading anything
+    if (ask_permission) {
+      if (!request_download_permission(tool, dirname(exe_path), source)) {
+        cli_abort(c(
+          "cannot install {tool}: permission to download was not granted",
+          "i" = "re-run with {.code ask_permission = FALSE} to allow the download without being asked",
+          "i" = "or install {tool} manually into {.path {dirname(exe_path)}}"
+        ))
+      }
+      permission_granted <- TRUE
+    }
+
     cli_inform(c(
       ">" = "Trying to {if (exists) 're'}install {tool} for your operating system {.pkg {basename(exe_path)}} (this requires an internet connection and may take a moment)..."
     ))
@@ -178,7 +224,7 @@ check_assembly <- function(
         "successfully installed {tool} version {version}",
         start = start
       )
-      return(invisible(NULL))
+      return(invisible(permission_granted))
     }
   }
 
@@ -194,7 +240,7 @@ check_assembly <- function(
       start = start
     )
   }
-  invisible(NULL)
+  invisible(permission_granted)
 }
 
 # check if we're on cran

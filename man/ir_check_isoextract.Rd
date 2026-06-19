@@ -11,6 +11,7 @@ ir_check_isoextract(
   reinstall_always = FALSE,
   min_version = "0.3.0",
   show_version = TRUE,
+  ask_permission = TRUE,
   source =
     paste0("https://github.com/isoverse/IsofileExtractor/releases/download/isoextract-v",
     min_version),
@@ -24,6 +25,7 @@ ir_check_isosolfs(
   reinstall_always = FALSE,
   min_version = "0.9.0",
   show_version = TRUE,
+  ask_permission = TRUE,
   source =
     paste0("https://github.com/isoverse/IsofileExtractor/releases/download/isosolfs-v",
     min_version),
@@ -41,6 +43,16 @@ ir_check_isosolfs(
 
 \item{show_version}{whether to print the installed version after
 a successful check (default: \code{TRUE})}
+
+\item{ask_permission}{whether to ask for the user's permission before
+downloading a missing or outdated executable (default: \code{TRUE}). The prompt
+only appears in interactive sessions and only when a download is actually
+needed; if it is declined - or the session is not interactive - no download
+is attempted and the function aborts with instructions. Set to \code{FALSE} to
+allow the download without prompting (e.g. in scripts). When
+\code{ir_check_isoextract()} downloads isoextract with the user's consent it
+passes \code{ask_permission = FALSE} on to \code{ir_check_isosolfs()} so the user is
+not asked a second time.}
 
 \item{source}{the URL (or local path) where to find the executable, by default this is the latest release of the executables on github}
 

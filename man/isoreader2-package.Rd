@@ -8,7 +8,7 @@
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-Interface to the raw data file formats commonly encountered in scientific disciplines that make use of stable isotopes.
+Interface to the raw data and metadata stored in the file formats commonly encountered in scientific disciplines that make use of stable isotopes. Supports 'Isodat' ('.dxf', '.cf', '.did', '.caf', '.scn'), 'IonOS' ('.iarc'), 'LyticOS' ('.larc'), 'Callisto' ('.bch'), and 'Qtegra' ('.imexp') file formats. Provides a consistent data structure together with tools to aggregate, convert signal units, filter, and visualize the extracted data.
 }
 \details{
 Resources:
