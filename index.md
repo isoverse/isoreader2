@@ -66,9 +66,12 @@ isoreader2::ir_check_isoextract()
 # load library
 library(isoreader2)
 
+# copy the bundled example files into a local "examples" folder
+data_folder <- ir_copy_examples()
+
 # load data
 dataset <-
-  ir_examples_folder() |>
+  data_folder |>
   ir_find_continuous_flow() |>
   ir_read_isofiles() |>
   ir_aggregate_isofiles("mV")
@@ -93,26 +96,22 @@ Plot of continuous flow examples
 library(isoreader2)
 
 # specify where the data files are located (relative or absolute path)
-data_folder <- "tmp/project/data"
+data_folder <- "examples"
 
 # search for dual inlet files (all known file types) in that folder
 # (or use ir_find_continuous_flow or ir_find_scans instead)
-file_paths <- ir_find_dual_inlet(data_folder)
-
-# for this example, we use the example files bundled with the package
-# instead (remove this line if working with your own data)
-file_paths <- ir_examples_folder() |> ir_find_dual_inlet()
+file_paths <- data_folder |> ir_find_dual_inlet()
 
 # read the files
 isofiles <- file_paths |> ir_read_isofiles()
 ```
 
 ``` fansi
-✔ [95ms] ir_extract_isofiles() finished extracting 1 file/archive
+✔ [106ms] ir_extract_isofiles() finished extracting 1 file/archive
 ```
 
 ``` fansi
-✔ [225ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+✔ [213ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 ```
 
 ``` r
@@ -141,7 +140,7 @@ dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
 ``` fansi
-✔ [49ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+✔ [43ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
 intensity in V) from 1 file using the standard aggregator
 ```
 
@@ -214,7 +213,7 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [225ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
+✔ [199ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
 cycles to my_export.xlsx
 ```
 
@@ -251,7 +250,7 @@ Example files are very helpful for fixing bugs so please consider
 including an example data file (you will have to attach it as a zip
 archive).
 
-## isoverse [![isoverse logo](reference/figures/isoverse_logo_thumb.png)](http://www.isoverse.org)
+## isoverse [![isoverse logo](reference/figures/isoverse_logo_thumb.png)](https://www.isoverse.org/)
 
 This package is part of the isoverse suite of data tools for stable
 isotopes. If you like the functionality that isoverse packages provide,
@@ -266,5 +265,5 @@ form](https://www.isoverse.org/feedback/).
 
 This project is supported by a grant from the US National Science
 Foundation
-([EAR-2411458](https://www.nsf.gov/awardsearch/show-award?AWD_ID=2411458))
+([EAR-2411458](https://www.nsf.gov/awardsearch/show-award/?AWD_ID=2411458))
 to Sebastian Kopf.

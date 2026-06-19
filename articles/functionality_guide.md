@@ -32,15 +32,15 @@ ir_get_supported_file_types()
 # A tibble: 9 × 3
   file_type min_isoextract_version vendor_software
   <chr>     <chr>                  <chr>          
-1 dxf       0.2.0                  Isodat         
-2 cf        0.2.0                  Isodat         
-3 iarc      0.2.0                  IonOS          
-4 larc      0.2.0                  LyticOS        
-5 bch       0.2.0                  Callisto       
-6 imexp     0.2.0                  Qtegra         
-7 did       0.2.0                  Isodat         
-8 caf       0.2.0                  Isodat         
-9 scn       0.2.0                  Isodat         
+1 dxf       0.3.0                  Isodat         
+2 cf        0.3.0                  Isodat         
+3 iarc      0.3.0                  IonOS          
+4 larc      0.3.0                  LyticOS        
+5 bch       0.3.0                  Callisto       
+6 imexp     0.3.0                  Qtegra         
+7 did       0.3.0                  Isodat         
+8 caf       0.3.0                  Isodat         
+9 scn       0.3.0                  Isodat         
 ```
 
 ### `ir_find_isofiles()` \*
@@ -84,19 +84,12 @@ isofiles <- file_paths |> ir_read_isofiles()
 ```
 
 ``` fansi
-→ Trying to install isoextract for your operating system isoextract-linux-x64
-  (this requires an internet connection and may take a moment)...
-✔ [3.6s] check_assembly() successfully installed isoextract version 0.3.0.0
+✔ [2ms] ir_extract_isofiles() is finished, 0 files/archives required
+(re-)extraction
+```
 
-→ Trying to install isosolfs (helper to open Qtegra notebooks) for your
-  operating system isosolfs-linux-x64 (this requires an internet connection and
-  may take a moment)...
-✔ [2.6s] check_assembly() successfully installed isosolfs (helper to open
-Qtegra notebooks) version 0.9.0.0
-
-✔ [204ms] ir_extract_isofiles() finished extracting 2 files/archives
-
-✔ [534ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+``` fansi
+✔ [462ms] ir_read_isofiles() finished reading 2 isotope data files/archives
 ```
 
 ``` r
@@ -107,6 +100,9 @@ isofiles
 
 ``` fansi
 ─────── 2 isofiles with 2 analyses - combine with ir_aggregate_isofiles() ──────
+```
+
+``` fansi
 1. continuous_flow_ea_example.dxf: with 1.1k time points for N2 (masses 28, 29,
 and 30); 1.34k time points for CO2 (masses 44, 45, and 46); 20 metadata columns
 2. continuous_flow_gc_example.cf:   with 8.6k time points for HD (masses 2 and
@@ -153,7 +149,7 @@ isofiles |> ir_save_isofiles(file.path("tmp", "my_isofiles"))
 ```
 
 ``` fansi
-✔ [78ms] ir_save_isofiles() saved 2 isofiles to tmp/my_isofiles.rds
+✔ [48ms] ir_save_isofiles() saved 2 isofiles to tmp/my_isofiles.rds
 ```
 
 ``` r
@@ -162,7 +158,7 @@ reloaded <- ir_load_isofiles(file.path("tmp", "my_isofiles"))
 ```
 
 ``` fansi
-✔ [6ms] ir_load_isofiles() loaded 2 isofiles from tmp/my_isofiles.rds
+✔ [7ms] ir_load_isofiles() loaded 2 isofiles from tmp/my_isofiles.rds
 ```
 
 ## Aggregating data
@@ -181,7 +177,7 @@ dataset <- isofiles |> ir_aggregate_isofiles()
 ```
 
 ``` fansi
-✔ [270ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+✔ [299ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 intensity in mV) from 2 files using the standard aggregator
 ```
 
@@ -325,7 +321,7 @@ isofiles |> ir_aggregate_isofiles(aggregator = "extended")
 ```
 
 ``` fansi
-✔ [619ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
+✔ [595ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
 intensity in mV), resistors (8), and vendor_data_table (25) from 2 files using
 the extended aggregator
 ```
@@ -449,7 +445,7 @@ isofiles |> ir_aggregate_isofiles(aggregator = "my_aggregator")
 ```
 
 ``` fansi
-✔ [181ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+✔ [166ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 intensity in mV) from 2 files using the my_aggregator aggregator
 ```
 
@@ -580,7 +576,7 @@ dataset |>
 ```
 
 ``` fansi
-✔ [11ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [10ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
@@ -619,7 +615,7 @@ dataset |> ir_get_metadata()
 ```
 
 ``` fansi
-✔ [5ms] ir_get_data() retrieved 2 records from metadata
+✔ [4ms] ir_get_data() retrieved 2 records from metadata
 ```
 
 ``` fansi
@@ -643,7 +639,7 @@ dataset |> ir_get_traces()
 ```
 
 ``` fansi
-✔ [11ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [10ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
@@ -684,7 +680,7 @@ dataset_ext <- isofiles |> ir_aggregate_isofiles(aggregator = "extended")
 ```
 
 ``` fansi
-✔ [621ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
+✔ [606ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
 intensity in mV), resistors (8), and vendor_data_table (25) from 2 files using
 the extended aggregator
 ```
@@ -740,7 +736,7 @@ dataset |>
 ```
 
 ``` fansi
-✔ [4ms] ir_get_data() retrieved 2 records from metadata
+✔ [5ms] ir_get_data() retrieved 2 records from metadata
 ```
 
 ``` fansi
@@ -797,15 +793,16 @@ data_folder |>
 ```
 
 ``` fansi
-✔ [143ms] ir_extract_isofiles() finished extracting 1 file/archive
+✔ [1ms] ir_extract_isofiles() is finished, 0 files/archives required
+(re-)extraction
 ```
 
 ``` fansi
-✔ [473ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+✔ [422ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 ```
 
 ``` fansi
-✔ [158ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+✔ [143ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
 intensity in V) from 1 file using the standard aggregator
 ```
 
@@ -825,15 +822,16 @@ data_folder |>
 ```
 
 ``` fansi
-✔ [138ms] ir_extract_isofiles() finished extracting 4 files/archives
+✔ [1ms] ir_extract_isofiles() is finished, 0 files/archives required
+(re-)extraction
 ```
 
 ``` fansi
-✔ [197ms] ir_read_isofiles() finished reading 4 isotope data files/archives
+✔ [190ms] ir_read_isofiles() finished reading 4 isotope data files/archives
 ```
 
 ``` fansi
-✔ [388ms] ir_aggregate_isofiles() aggregated metadata (4) and scans (17.8k,
+✔ [379ms] ir_aggregate_isofiles() aggregated metadata (4) and scans (17.8k,
 intensity in V) from 4 files using the standard aggregator
 ```
 
@@ -862,11 +860,11 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [11ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [10ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
 ``` fansi
-✔ [997ms] ir_export_to_excel() exported 2 rows of metadata and 24.5k rows of
+✔ [974ms] ir_export_to_excel() exported 2 rows of metadata and 24.5k rows of
 traces to tmp/my_dataset.xlsx
 ```

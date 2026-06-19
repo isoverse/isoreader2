@@ -55,6 +55,7 @@ directly by the user. In particular, <code>ir_check_isoextract()</code> calls
 <span>  reinstall_always <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  min_version <span class="op">=</span> <span class="st">"0.3.0"</span>,</span>
 <span>  show_version <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  ask_permission <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  source <span class="op">=</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"https://github.com/isoverse/IsofileExtractor/releases/download/isoextract-v"</span>,</span>
 <span>    <span class="va">min_version</span><span class="op">)</span>,</span>
@@ -68,6 +69,7 @@ directly by the user. In particular, <code>ir_check_isoextract()</code> calls
 <span>  reinstall_always <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  min_version <span class="op">=</span> <span class="st">"0.9.0"</span>,</span>
 <span>  show_version <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  ask_permission <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  source <span class="op">=</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"https://github.com/isoverse/IsofileExtractor/releases/download/isosolfs-v"</span>,</span>
 <span>    <span class="va">min_version</span><span class="op">)</span>,</span>
@@ -98,6 +100,18 @@ directly by the user. In particular, <code>ir_check_isoextract()</code> calls
 <dt id="arg-show-version">show_version<a class="anchor" aria-label="anchor" href="#arg-show-version"></a></dt>
 <dd><p>whether to print the installed version after
 a successful check (default: <code>TRUE</code>)</p></dd>
+
+
+<dt id="arg-ask-permission">ask_permission<a class="anchor" aria-label="anchor" href="#arg-ask-permission"></a></dt>
+<dd><p>whether to ask for the user's permission before
+downloading a missing or outdated executable (default: <code>TRUE</code>). The prompt
+only appears in interactive sessions and only when a download is actually
+needed; if it is declined - or the session is not interactive - no download
+is attempted and the function aborts with instructions. Set to <code>FALSE</code> to
+allow the download without prompting (e.g. in scripts). When
+<code>ir_check_isoextract()</code> downloads isoextract with the user's consent it
+passes <code>ask_permission = FALSE</code> on to <code>ir_check_isosolfs()</code> so the user is
+not asked a second time.</p></dd>
 
 
 <dt id="arg-source">source<a class="anchor" aria-label="anchor" href="#arg-source"></a></dt>

@@ -77,7 +77,10 @@ a single string.</p>
 
 <ul><li><p><code>ir_copy_examples()</code>: copy the bundled example files into a local
 <code>folder</code>, creating it if necessary and only copying files that do not
-already exist there (existing files are left untouched).</p></li>
+already exist there (existing files are left untouched). Only the original
+data files are copied, not their bundled <code>.json</code> sidecars, so reading from
+the copied folder re-extracts them from scratch (requires the isoextract
+executable).</p></li>
 </ul></div>
 
     <div class="section level2">

@@ -14,8 +14,8 @@
 <link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Read Stable Isotope Data Files">
-<meta name="description" content="Interface to the raw data file formats commonly encountered in scientific disciplines that make use of stable isotopes.">
-<meta property="og:description" content="Interface to the raw data file formats commonly encountered in scientific disciplines that make use of stable isotopes.">
+<meta name="description" content="Interface to the raw data and metadata stored in the file formats commonly encountered in scientific disciplines that make use of stable isotopes. Supports Isodat (.dxf, .cf, .did, .caf, .scn), IonOS (.iarc), LyticOS (.larc), Callisto (.bch), and Qtegra (.imexp) file formats. Provides a consistent data structure together with tools to aggregate, convert signal units, filter, and visualize the extracted data.">
+<meta property="og:description" content="Interface to the raw data and metadata stored in the file formats commonly encountered in scientific disciplines that make use of stable isotopes. Supports Isodat (.dxf, .cf, .did, .caf, .scn), IonOS (.iarc), LyticOS (.larc), Callisto (.bch), and Qtegra (.imexp) file formats. Provides a consistent data structure together with tools to aggregate, convert signal units, filter, and visualize the extracted data.">
 <meta property="og:image" content="https://isoreader2.isoverse.org/logo.png">
 </head>
 <body>
@@ -148,9 +148,12 @@
 <code class="sourceCode R"><span><span class="co"># load library</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://isoreader2.isoverse.org/">isoreader2</a></span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># copy the bundled example files into a local "examples" folder</span></span>
+<span><span class="va">data_folder</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ir_examples_folder.html">ir_copy_examples</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
 <span><span class="co"># load data</span></span>
 <span><span class="va">dataset</span> <span class="op">&lt;-</span></span>
-<span>  <span class="fu"><a href="reference/ir_examples_folder.html">ir_examples_folder</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="va">data_folder</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/ir_find_isofiles.html">ir_find_continuous_flow</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/ir_read_isofiles.html">ir_read_isofiles</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles</a></span><span class="op">(</span><span class="st">"mV"</span><span class="op">)</span></span>
@@ -175,21 +178,17 @@ Plot of continuous flow examples
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://isoreader2.isoverse.org/">isoreader2</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># specify where the data files are located (relative or absolute path)</span></span>
-<span><span class="va">data_folder</span> <span class="op">&lt;-</span> <span class="st">"tmp/project/data"</span></span>
+<span><span class="va">data_folder</span> <span class="op">&lt;-</span> <span class="st">"examples"</span></span>
 <span></span>
 <span><span class="co"># search for dual inlet files (all known file types) in that folder</span></span>
 <span><span class="co"># (or use ir_find_continuous_flow or ir_find_scans instead)</span></span>
-<span><span class="va">file_paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ir_find_isofiles.html">ir_find_dual_inlet</a></span><span class="op">(</span><span class="va">data_folder</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># for this example, we use the example files bundled with the package</span></span>
-<span><span class="co"># instead (remove this line if working with your own data)</span></span>
-<span><span class="va">file_paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ir_examples_folder.html">ir_examples_folder</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/ir_find_isofiles.html">ir_find_dual_inlet</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">file_paths</span> <span class="op">&lt;-</span> <span class="va">data_folder</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/ir_find_isofiles.html">ir_find_dual_inlet</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># read the files</span></span>
 <span><span class="va">isofiles</span> <span class="op">&lt;-</span> <span class="va">file_paths</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/ir_read_isofiles.html">ir_read_isofiles</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[95ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> finished extracting 1 file/archive
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[106ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> finished extracting 1 file/archive
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[225ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 1 isotope data file/archive
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[213ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 1 isotope data file/archive
 </code></pre>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># show information about the files</span></span>
@@ -208,7 +207,7 @@ Plot of continuous flow examples
 <code class="sourceCode R"><span><span class="co"># aggregate the data from the read files specifying which units to use</span></span>
 <span><span class="co"># (mV, V, nA, A, cps, etc.), conversion via resistor values happens automatically</span></span>
 <span><span class="va">dataset</span> <span class="op">&lt;-</span> <span class="va">isofiles</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles</a></span><span class="op">(</span><span class="st">"V"</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[49ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (1) and <span style="color: #0000BB;">cycles</span> (102,
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[43ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (1) and <span style="color: #0000BB;">cycles</span> (102,
 <span style="color: #00BB00;">intensity</span> in <span style="color: #BB00BB;">V</span>) from 1 file using the <span style="font-weight: bold; font-style: italic;">standard</span> aggregator
 </code></pre>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -262,7 +261,7 @@ Plot of dual inlet examples
 <pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[3ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 102 records from the combination of <span style="color: #0000BB;">metadata</span>
 (1) and <span style="color: #0000BB;">cycles</span> (102) via <span style="color: #00BB00;">uidx</span> and <span style="color: #00BB00;">analysis</span>
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[225ms]</span> <span style="font-weight: bold;">ir_export_to_excel()</span> exported 1 row of <span style="color: #00BB00;">metadata</span> and 102 rows of
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[199ms]</span> <span style="font-weight: bold;">ir_export_to_excel()</span> exported 1 row of <span style="color: #00BB00;">metadata</span> and 102 rows of
 <span style="color: #00BB00;">cycles</span> to <span style="color: #0000BB;">my_export.xlsx</span>
 </code></pre>
 </div>
@@ -456,7 +455,7 @@ Click on the individual functions to jump straight to their documenation.
 <p>If you encounter a bug, please file an issue with a minimal reproducible example on <a href="https://github.com/isoverse/isoreader2/issues" class="external-link">GitHub</a>. Example files are very helpful for fixing bugs so please consider including an example data file (you will have to attach it as a zip archive).</p>
 </div>
 <div class="section level2">
-<h2 id="isoverse-">isoverse <a href="http://www.isoverse.org" class="external-link"><img src="reference/figures/isoverse_logo_thumb.png" align="right" width="100" alt="isoverse logo"></a>
+<h2 id="isoverse-">isoverse <a href="https://www.isoverse.org/" class="external-link"><img src="reference/figures/isoverse_logo_thumb.png" align="right" width="100" alt="isoverse logo"></a>
 <a class="anchor" aria-label="anchor" href="#isoverse-"></a>
 </h2>
 <p>This package is part of the isoverse suite of data tools for stable isotopes. If you like the functionality that isoverse packages provide, please help us spread the word and include an isoverse or individual package logo on one of your posters or slides. All logos are posted in high resolution in <a href="https://github.com/isoverse/logos" class="external-link">this repository</a>. If you have suggestions for new features or other constructive feedback, please let us know on this short <a href="https://www.isoverse.org/feedback/" class="external-link">feeback form</a>.</p>
@@ -465,7 +464,7 @@ Click on the individual functions to jump straight to their documenation.
 <h2 id="funding-">Funding <a href="https://www.nsf.gov/" class="external-link"><img src="reference/figures/NSF_logo.svg" align="right" width="100" alt="NSF logo"></a>
 <a class="anchor" aria-label="anchor" href="#funding-"></a>
 </h2>
-<p>This project is supported by a grant from the US National Science Foundation (<a href="https://www.nsf.gov/awardsearch/show-award?AWD_ID=2411458" class="external-link">EAR-2411458</a>) to Sebastian Kopf.</p>
+<p>This project is supported by a grant from the US National Science Foundation (<a href="https://www.nsf.gov/awardsearch/show-award/?AWD_ID=2411458" class="external-link">EAR-2411458</a>) to Sebastian Kopf.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
@@ -479,8 +478,7 @@ Click on the individual functions to jump straight to their documenation.
 <div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
-<li><a href="LICENSE.html">Full license</a></li>
-<li><small>AGPL (&gt;= 3) + file <a href="LICENSE-text.html">LICENSE</a></small></li>
+<li>AGPL (&gt;= 3)</li>
 </ul>
 </div>
 

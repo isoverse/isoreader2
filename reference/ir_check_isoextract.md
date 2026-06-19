@@ -16,6 +16,7 @@ ir_check_isoextract(
   reinstall_always = FALSE,
   min_version = "0.3.0",
   show_version = TRUE,
+  ask_permission = TRUE,
   source =
     paste0("https://github.com/isoverse/IsofileExtractor/releases/download/isoextract-v",
     min_version),
@@ -29,6 +30,7 @@ ir_check_isosolfs(
   reinstall_always = FALSE,
   min_version = "0.9.0",
   show_version = TRUE,
+  ask_permission = TRUE,
   source =
     paste0("https://github.com/isoverse/IsofileExtractor/releases/download/isosolfs-v",
     min_version),
@@ -59,6 +61,18 @@ ir_check_isosolfs(
 
   whether to print the installed version after a successful check
   (default: `TRUE`)
+
+- ask_permission:
+
+  whether to ask for the user's permission before downloading a missing
+  or outdated executable (default: `TRUE`). The prompt only appears in
+  interactive sessions and only when a download is actually needed; if
+  it is declined - or the session is not interactive - no download is
+  attempted and the function aborts with instructions. Set to `FALSE` to
+  allow the download without prompting (e.g. in scripts). When
+  `ir_check_isoextract()` downloads isoextract with the user's consent
+  it passes `ask_permission = FALSE` on to `ir_check_isosolfs()` so the
+  user is not asked a second time.
 
 - source:
 
