@@ -9,8 +9,14 @@ Authors@R:
         role = c("aut", "cre"), 
         comment = c(ORCID = "0000-0002-2044-0201"))
     )
-Description: Interface to the raw data file formats commonly encountered in scientific disciplines that make use of stable isotopes.
-License: AGPL (>= 3) + file LICENSE
+Description: Interface to the raw data and metadata stored in the file formats 
+    commonly encountered in scientific disciplines that make use of
+    stable isotopes. Supports 'Isodat' ('.dxf', '.cf', '.did', '.caf', '.scn'),
+    'IonOS' ('.iarc'), 'LyticOS' ('.larc'), 'Callisto' ('.bch'), and 'Qtegra' 
+    ('.imexp') file formats. Provides a consistent data structure together 
+    with tools to aggregate, convert signal units, filter, and visualize the 
+    extracted data.
+License: AGPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 URL: https://isoreader2.isoverse.org/, https://github.com/isoverse/isoreader2
