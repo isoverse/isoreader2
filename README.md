@@ -237,7 +237,7 @@ Example files are very helpful for fixing bugs so please consider
 including an example data file (you will have to attach it as a zip
 archive).
 
-## isoverse <a href='http://www.isoverse.org'><img src='man/figures/isoverse_logo_thumb.png' align="right" width="100" alt="isoverse logo"/></a>
+## isoverse <a href='https://www.isoverse.org/'><img src='man/figures/isoverse_logo_thumb.png' align="right" width="100" alt="isoverse logo"/></a>
 
 This package is part of the isoverse suite of data tools for stable
 isotopes. If you like the functionality that isoverse packages provide,
@@ -252,5 +252,5 @@ form](https://www.isoverse.org/feedback/).
 
 This project is supported by a grant from the US National Science
 Foundation
-([EAR-2411458](https://www.nsf.gov/awardsearch/show-award?AWD_ID=2411458))
+([EAR-2411458](https://www.nsf.gov/awardsearch/show-award/?AWD_ID=2411458))
 to Sebastian Kopf.
