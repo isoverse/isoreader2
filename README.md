@@ -74,9 +74,12 @@ isoreader2::ir_check_isoextract()
 # load library
 library(isoreader2)
 
+# copy the bundled example files into a local "examples" folder
+data_folder <- ir_copy_examples()
+
 # load data
 dataset <-
-  ir_examples_folder() |>
+  data_folder |>
   ir_find_continuous_flow() |>
   ir_read_isofiles() |>
   ir_aggregate_isofiles("mV")
@@ -105,23 +108,19 @@ Plot of continuous flow examples
 library(isoreader2)
 
 # specify where the data files are located (relative or absolute path)
-data_folder <- "tmp/project/data"
+data_folder <- "examples"
 
 # search for dual inlet files (all known file types) in that folder
 # (or use ir_find_continuous_flow or ir_find_scans instead)
-file_paths <- ir_find_dual_inlet(data_folder)
-
-# for this example, we use the example files bundled with the package
-# instead (remove this line if working with your own data)
-file_paths <- ir_examples_folder() |> ir_find_dual_inlet()
+file_paths <- data_folder |> ir_find_dual_inlet()
 
 # read the files
 isofiles <- file_paths |> ir_read_isofiles()
 ```
 
-    > ✔ [107ms] ir_extract_isofiles() finished extracting 1 file/archive
+    > ✔ [118ms] ir_extract_isofiles() finished extracting 1 file/archive
 
-    > ✔ [190ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+    > ✔ [216ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 
 ``` r
 # show information about the files
@@ -142,7 +141,7 @@ isofiles
 dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
-    > ✔ [54ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+    > ✔ [46ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
     > intensity in V) from 1 file using the standard aggregator
 
 ``` r
@@ -200,11 +199,11 @@ ir_export_to_excel(
 
     > ✔ [2ms] ir_get_data() retrieved 1 records from metadata
 
-    > ✔ [5ms] ir_get_data() retrieved 102 records from the combination of metadata
+    > ✔ [3ms] ir_get_data() retrieved 102 records from the combination of metadata
     > (1) and cycles (102) via uidx and analysis
 
-    > ✔ [241ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
-    > cycles to 'my_export.xlsx'
+    > ✔ [67ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of cycles
+    > to 'my_export.xlsx'
 
 ### Bonus: explore isofiles interactively
 

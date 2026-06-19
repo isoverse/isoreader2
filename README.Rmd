@@ -93,18 +93,20 @@ isoreader2::ir_check_isoextract()
 ## Show me some code
 
 ```{r, include = FALSE}
-isoreader2::ir_examples_folder() |>
-  list.files("\\.json", full.names = TRUE) |>
-  unlink()
+# remove all files in the examples folder
+unlink(list.files("examples", full.names = TRUE))
 ```
 
 ```{r "continuous_flow_example", message=FALSE, fig.width = 8, fig.height = 6, fig.cap = "Plot of continuous flow examples"}
 # load library
 library(isoreader2)
 
+# copy the bundled example files into a local "examples" folder
+data_folder <- ir_copy_examples()
+
 # load data
 dataset <-
-  ir_examples_folder() |>
+  data_folder |>
   ir_find_continuous_flow() |>
   ir_read_isofiles() |>
   ir_aggregate_isofiles("mV")
@@ -117,10 +119,9 @@ dataset |>
 ## Show me more details
 
 ```{r, include = FALSE}
-isoreader2::ir_examples_folder() |>
-  list.files("\\.json", full.names = TRUE) |>
-  unlink()
-dir.create("tmp/project/data", recursive = TRUE)
+dir.create("tmp/project/data", recursive = TRUE, showWarnings = FALSE)
+# remove cached .json sidecars so the read below re-extracts from the originals
+unlink(list.files("examples", "\\.json$", full.names = TRUE))
 ```
 
 ### Read isotope data files
@@ -130,15 +131,11 @@ dir.create("tmp/project/data", recursive = TRUE)
 library(isoreader2)
 
 # specify where the data files are located (relative or absolute path)
-data_folder <- "tmp/project/data"
+data_folder <- "examples"
 
 # search for dual inlet files (all known file types) in that folder
 # (or use ir_find_continuous_flow or ir_find_scans instead)
-file_paths <- ir_find_dual_inlet(data_folder)
-
-# for this example, we use the example files bundled with the package
-# instead (remove this line if working with your own data)
-file_paths <- ir_examples_folder() |> ir_find_dual_inlet()
+file_paths <- data_folder |> ir_find_dual_inlet()
 
 # read the files
 isofiles <- file_paths |> ir_read_isofiles()
@@ -185,6 +182,7 @@ ir_export_to_excel(
 ```{r, include = FALSE}
 unlink("my_export.xlsx")
 unlink("tmp/project", recursive = TRUE, force = TRUE)
+unlink("examples", recursive = TRUE, force = TRUE)
 ```
 
 ### Bonus: explore isofiles interactively

@@ -9,15 +9,18 @@ test_that("ir_examples_folder()", {
 test_that("ir_copy_examples() only copies files that don't exist yet", {
   folder <- withr::local_tempdir()
   target <- file.path(folder, "examples")
-  sources <- list.files(ir_examples_folder())
+  # only the original data files are copied, never the bundled .json sidecars
+  all <- list.files(ir_examples_folder())
+  sources <- all[tools::file_ext(all) != "json"]
 
   # bad argument
   expect_error(ir_copy_examples(folder = 1), "single folder path")
 
-  # first call copies everything and returns the target folder
+  # first call copies the originals (no .json) and returns the target folder
   copied <- ir_copy_examples(target) |> suppressMessages()
   expect_identical(copied, target)
   expect_setequal(list.files(target), sources)
+  expect_false(any(tools::file_ext(list.files(target)) == "json"))
 
   # mark a file so we can tell whether it gets overwritten, and remove another
   marker <- file.path(target, sources[1])

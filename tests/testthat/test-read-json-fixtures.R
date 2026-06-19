@@ -1,11 +1,11 @@
 # The core functionality of the package - reading the .json sidecars produced by
-# isoextract - does not require the isoextract binary. The fixtures in
-# test_files/ are pre-extracted .json files whose source binaries are
-# intentionally absent, so ir_read_isofiles() reads them as-is (no re-extraction,
-# no binary, no internet) and these tests run anywhere, including on CRAN.
+# isoextract - does not require the isoextract binary. The bundled examples in
+# inst/extdata ship with their pre-extracted .json sidecars, so ir_read_isofiles()
+# reads them as-is (no re-extraction, no binary, no internet) and these tests run
+# anywhere, including on CRAN.
 
 test_that("ir_read_isofiles() reads pre-extracted .json fixtures without the binary", {
-  files <- ir_find_isofiles(test_path("test_files"))
+  files <- ir_find_isofiles(ir_examples_folder())
   expect_gt(length(files), 0L)
 
   iso <- ir_read_isofiles(
@@ -37,7 +37,7 @@ test_that("ir_read_isofiles() reads pre-extracted .json fixtures without the bin
 
 test_that("each read_*_json() reader parses its fixture", {
   read_fixture <- function(name) {
-    json <- test_path("test_files", name)
+    json <- file.path(ir_examples_folder(), name)
     ext <- tolower(tools::file_ext(sub("\\.json$", "", name)))
     reader <- get(
       sprintf("read_%s_json", ext),

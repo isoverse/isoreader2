@@ -16,7 +16,10 @@ ir_examples_folder <- function() {
 
 #' @describeIn ir_examples_folder copy the bundled example files into a local
 #'   `folder`, creating it if necessary and only copying files that do not
-#'   already exist there (existing files are left untouched).
+#'   already exist there (existing files are left untouched). Only the original
+#'   data files are copied, not their bundled `.json` sidecars, so reading from
+#'   the copied folder re-extracts them from scratch (requires the isoextract
+#'   executable).
 #' @param folder target directory to copy the example files into (default
 #'   `"examples"`); created if it does not exist
 #' @return `ir_copy_examples()` invisibly returns the path to the created examples folder
@@ -31,21 +34,27 @@ ir_copy_examples <- function(folder = "examples") {
     is_scalar_character(folder),
     "must be a single folder path"
   )
+  start <- start_info()
   if (!dir.exists(folder)) {
     dir.create(folder, recursive = TRUE, showWarnings = FALSE)
   }
+  # only the original data files, not the bundled .json sidecars
   sources <- list.files(ir_examples_folder(), full.names = TRUE)
+  sources <- sources[tools::file_ext(sources) != "json"]
   targets <- file.path(folder, basename(sources))
   to_copy <- !file.exists(targets)
   if (any(to_copy)) {
     file.copy(sources[to_copy], folder, overwrite = FALSE)
   }
-  cli_inform(c(
-    "v" = "copied {sum(to_copy)} example file{?s} to {.path {folder}}",
-    if (any(!to_copy)) {
-      c("i" = "skipped {sum(!to_copy)} already-existing file{?s}")
-    }
-  ))
+  finish_info(
+    c(
+      "copied {sum(to_copy)} example file{?s} to {.path {folder}}",
+      if (any(!to_copy)) {
+        " (skipped {sum(!to_copy)} already-existing file{?s})"
+      }
+    ),
+    start = start
+  )
   invisible(folder)
 }
 

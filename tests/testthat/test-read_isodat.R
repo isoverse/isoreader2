@@ -286,13 +286,14 @@ test_that("ir_read_isofiles() reads every isodat example type", {
     "isoextract binary is not installed"
   )
 
-  # copy all bundled examples to a temp folder (so .json sidecars are not
-  # written into the installed package) and read them
+  # copy the original example files (not their bundled .json sidecars) to a temp
+  # folder so this test actually exercises the isoextract binary extraction path
+  # rather than reading the pre-extracted json, and so sidecars are not written
+  # into the installed package
   data_dir <- withr::local_tempdir()
-  file.copy(
-    list.files(ir_examples_folder(), full.names = TRUE),
-    data_dir
-  )
+  originals <- list.files(ir_examples_folder(), full.names = TRUE)
+  originals <- originals[tools::file_ext(originals) != "json"]
+  file.copy(originals, data_dir)
 
   read_one <- function(pattern) {
     data_dir |>

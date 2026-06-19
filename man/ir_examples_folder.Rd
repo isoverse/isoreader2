@@ -31,7 +31,10 @@ installation.
 \itemize{
 \item \code{ir_copy_examples()}: copy the bundled example files into a local
 \code{folder}, creating it if necessary and only copying files that do not
-already exist there (existing files are left untouched).
+already exist there (existing files are left untouched). Only the original
+data files are copied, not their bundled \code{.json} sidecars, so reading from
+the copied folder re-extracts them from scratch (requires the isoextract
+executable).
 
 }}
 \examples{
