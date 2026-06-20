@@ -452,41 +452,35 @@ read_isodat_gc_peak_table <- function(json_path, peaklist_ptr) {
 # Read the retention-time geometry of one CSPeak from its per-trace CGCPeak
 # objects: shared chromatographic window `Start`/`Rt`/`End` (seconds, taken from
 # the first/major trace, as Isodat reports it) plus per-mass apex amplitude
-# (`Ampl <mass>`) and background (`BGD <mass>`) in mV. Returns NULL if absent.
+# (`Ampl <mass>`) and background (`BGD <mass>`) in mV. In debug mode
+# (`ir_get_option("debug")`) the peak's `square peak` flag and per-mass time
+# shifts (`Shift <mass> [s]`) are also included. Returns NULL if absent.
 read_isodat_gc_peak_geometry <- function(json_path, cspeak_ptr) {
   gc <- query_json(
     json_path,
     sprintf("%s/p/p/objects/CGCPeak", cspeak_ptr),
-    required = FALSE
+    required = FALSE,
+    list_as_tibble = TRUE
   )
   if (json_missing(gc)) {
     return(NULL)
   }
-  # normalise to parallel per-trace vectors (data frame for >1 trace, else a
-  # single named list)
-  if (is.data.frame(gc)) {
-    p <- gc$p
-    start_rt <- gc$start_rt
-    apex_rt <- gc$apex_rt
-    end_rt <- gc$end_rt
-    apex_signal <- gc$apex_signal
-  } else {
-    p <- list(gc$p)
-    start_rt <- gc$start_rt
-    apex_rt <- gc$apex_rt
-    end_rt <- gc$end_rt
-    apex_signal <- gc$apex_signal
-  }
+  # get out the peak information
+  p <- gc$p
+  start_rt <- gc$start_rt
+  apex_rt <- gc$apex_rt
+  end_rt <- gc$end_rt
+  apex_signal <- gc$apex_signal
   mass <- vapply(
     p,
     function(x) as.character(x$mass %||% NA_character_),
     character(1)
   )
-  bgd <- vapply(p, function(x) as.numeric(x$bgd0 %||% NA_real_), numeric(1))
+  bgd <- vapply(p, function(x) as.numeric(x$bgd1 %||% NA_real_), numeric(1))
   if (length(mass) == 0L) {
     return(NULL)
   }
-  c(
+  geometry <- c(
     list(
       `Start [s]` = as.numeric(start_rt[1]),
       `Rt [s]` = as.numeric(apex_rt[1]),
@@ -498,6 +492,21 @@ read_isodat_gc_peak_geometry <- function(json_path, cspeak_ptr) {
     ),
     stats::setNames(as.list(bgd), sprintf("BGD %s [mV]", mass))
   )
+
+  # debug-only extras: the square-peak flag (0/1 -> FALSE/TRUE) and the per-mass
+  # time shifts (`Shift <mass> [s]`)
+  if (ir_get_option("debug")) {
+    geometry <- c(
+      geometry,
+      list(`square peak` = as.logical(as.numeric(gc$square_peak[1] %||% NA))),
+      stats::setNames(
+        as.list(as.numeric(gc$time_shift %||% rep(NA_real_, length(mass)))),
+        sprintf("Shift %s [s]", mass)
+      )
+    )
+  }
+
+  geometry
 }
 
 # .dxf — peak lists are grouped per gas under CResultArray/CResultForGas in the
