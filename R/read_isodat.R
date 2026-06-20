@@ -453,8 +453,9 @@ read_isodat_gc_peak_table <- function(json_path, peaklist_ptr) {
 # objects: shared chromatographic window `Start`/`Rt`/`End` (seconds, taken from
 # the first/major trace, as Isodat reports it) plus per-mass apex amplitude
 # (`Ampl <mass>`) and background (`BGD <mass>`) in mV. In debug mode
-# (`ir_get_option("debug")`) the peak's `square peak` flag and per-mass time
-# shifts (`Shift <mass> [s]`) are also included. Returns NULL if absent.
+# (`ir_get_option("debug")`) the Start/Rt/End window in sample indices
+# (`Start/Rt/End [idx]`), the peak's `square peak` flag, and per-mass time shifts
+# (`Shift <mass> [s]`) are also included. Returns NULL if absent.
 read_isodat_gc_peak_geometry <- function(json_path, cspeak_ptr) {
   gc <- query_json(
     json_path,
@@ -493,12 +494,17 @@ read_isodat_gc_peak_geometry <- function(json_path, cspeak_ptr) {
     stats::setNames(as.list(bgd), sprintf("BGD %s [mV]", mass))
   )
 
-  # debug-only extras: the square-peak flag (0/1 -> FALSE/TRUE) and the per-mass
-  # time shifts (`Shift <mass> [s]`)
+  # debug-only extras: the Start/Rt/End window in sample indices, the square-peak
+  # flag (0/1 -> FALSE/TRUE), and the per-mass time shifts (`Shift <mass> [s]`)
   if (ir_get_option("debug")) {
     geometry <- c(
       geometry,
-      list(`square peak` = as.logical(as.numeric(gc$square_peak[1] %||% NA))),
+      list(
+        `Start [idx]` = as.integer(gc$start_idx[1]),
+        `Rt [idx]` = as.integer(gc$apex_idx[1]),
+        `End [idx]` = as.integer(gc$end_idx[1]),
+        `square peak` = as.logical(as.numeric(gc$square_peak[1] %||% NA))
+      ),
       stats::setNames(
         as.list(as.numeric(gc$time_shift %||% rep(NA_real_, length(mass)))),
         sprintf("Shift %s [s]", mass)

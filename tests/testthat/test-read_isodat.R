@@ -42,8 +42,8 @@ test_that("read_isodat_gc_peak_geometry() reads RT window and per-mass values", 
   f <- write_json_fixture(
     r'({
       "cspeak": {"p": {"p": {"objects": {"CGCPeak": [
-        {"idx": 1, "p": {"mass": 28, "bgd0": 35.1, "bgd1": 20.1}, "start_rt": 40.1, "apex_rt": 60.0, "end_rt": 63.3, "apex_signal": 3024.0, "square_peak": 0, "time_shift": 0.0},
-        {"idx": 2, "p": {"mass": 29, "bgd0": 36.2, "bgd1": 16.6}, "start_rt": 40.1, "apex_rt": 60.2, "end_rt": 63.3, "apex_signal": 2194.0, "square_peak": 0, "time_shift": 0.18}
+        {"idx": 1, "p": {"mass": 28, "bgd0": 35.1, "bgd1": 20.1}, "start_idx": 401, "apex_idx": 600, "end_idx": 633, "start_rt": 40.1, "apex_rt": 60.0, "end_rt": 63.3, "apex_signal": 3024.0, "square_peak": 0, "time_shift": 0.0},
+        {"idx": 2, "p": {"mass": 29, "bgd0": 36.2, "bgd1": 16.6}, "start_idx": 401, "apex_idx": 602, "end_idx": 633, "start_rt": 40.1, "apex_rt": 60.2, "end_rt": 63.3, "apex_signal": 2194.0, "square_peak": 0, "time_shift": 0.18}
       ]}}}}
     })'
   )
@@ -74,7 +74,7 @@ test_that("read_isodat_gc_peak_geometry() reads RT window and per-mass values", 
   f2 <- write_json_fixture(
     r'({
       "cspeak": {"p": {"p": {"objects": {"CGCPeak":
-        {"idx": 1, "p": {"mass": 2, "bgd0": 10.0, "bgd1": 4.0}, "start_rt": 5.0, "apex_rt": 7.0, "end_rt": 9.0, "apex_signal": 100.0, "square_peak": 1, "time_shift": 0.5}
+        {"idx": 1, "p": {"mass": 2, "bgd0": 10.0, "bgd1": 4.0}, "start_idx": 50, "apex_idx": 70, "end_idx": 90, "start_rt": 5.0, "apex_rt": 7.0, "end_rt": 9.0, "apex_signal": 100.0, "square_peak": 1, "time_shift": 0.5}
       }}}}
     })'
   )
@@ -86,7 +86,8 @@ test_that("read_isodat_gc_peak_geometry() reads RT window and per-mass values", 
   expect_equal(geom2[["Ampl 2 [mV]"]], 100.0)
   expect_equal(geom2[["BGD 2 [mV]"]], 4.0)
 
-  # debug mode adds the square-peak flag (0/1 -> FALSE/TRUE) and per-mass shifts
+  # debug mode adds the Start/Rt/End indices, the square-peak flag (0/1 ->
+  # FALSE/TRUE), and the per-mass shifts
   withr::local_options(list(isoreader2.debug = TRUE))
   geom_dbg <- read_isodat_gc_peak_geometry(f, "/cspeak")
   expect_equal(
@@ -99,11 +100,18 @@ test_that("read_isodat_gc_peak_geometry() reads RT window and per-mass values", 
       "Ampl 29 [mV]",
       "BGD 28 [mV]",
       "BGD 29 [mV]",
+      "Start [idx]",
+      "Rt [idx]",
+      "End [idx]",
       "square peak",
       "Shift 28 [s]",
       "Shift 29 [s]"
     )
   )
+  # indices come from the first (major) trace
+  expect_equal(geom_dbg[["Start [idx]"]], 401)
+  expect_equal(geom_dbg[["Rt [idx]"]], 600)
+  expect_equal(geom_dbg[["End [idx]"]], 633)
   expect_identical(geom_dbg[["square peak"]], FALSE)
   expect_equal(geom_dbg[["Shift 29 [s]"]], 0.18)
   # a square peak flag of 1 -> TRUE
