@@ -118,9 +118,9 @@ file_paths <- data_folder |> ir_find_dual_inlet()
 isofiles <- file_paths |> ir_read_isofiles()
 ```
 
-    > ✔ [118ms] ir_extract_isofiles() finished extracting 1 file/archive
+    > ✔ [116ms] ir_extract_isofiles() finished extracting 1 file/archive
 
-    > ✔ [216ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+    > ✔ [221ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 
 ``` r
 # show information about the files
@@ -141,7 +141,7 @@ isofiles
 dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
-    > ✔ [46ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+    > ✔ [43ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
     > intensity in V) from 1 file using the standard aggregator
 
 ``` r
@@ -202,7 +202,7 @@ ir_export_to_excel(
     > ✔ [3ms] ir_get_data() retrieved 102 records from the combination of metadata
     > (1) and cycles (102) via uidx and analysis
 
-    > ✔ [67ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of cycles
+    > ✔ [52ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of cycles
     > to 'my_export.xlsx'
 
 ### Bonus: explore isofiles interactively

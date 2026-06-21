@@ -52,6 +52,7 @@ reference:
   contents:
   - ir_aggregate_isofiles
   - c.ir_aggregated_data
+  - ir_calculate_ratios
   - ir_convert_intensity
   - ir_start_aggregator
   - ir_add_to_aggregator

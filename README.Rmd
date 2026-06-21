@@ -253,4 +253,3 @@ This package is part of the isoverse suite of data tools for stable isotopes. If
 ## Funding <a href='https://www.nsf.gov/'><img src='man/figures/NSF_logo.svg' align="right" width="100" alt="NSF logo"/></a>
 
 This project is supported by a grant from the US National Science Foundation ([EAR-2411458](https://www.nsf.gov/awardsearch/show-award/?AWD_ID=2411458)) to Sebastian Kopf. 
-
