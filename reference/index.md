@@ -37,6 +37,8 @@ These functions combine the data from multiple isofiles for combined use
   : Aggregate data from isofiles
 - [`c(`*`<ir_aggregated_data>`*`)`](https://isoreader2.isoverse.org/reference/c.ir_aggregated_data.md)
   : Combine aggregated isofile data
+- [`ir_calculate_ratios()`](https://isoreader2.isoverse.org/reference/ir_calculate_ratios.md)
+  : Calculate isotope ratios
 - [`ir_convert_intensity()`](https://isoreader2.isoverse.org/reference/ir_convert_intensity.md)
   : Convert intensity between units
 - [`ir_start_aggregator()`](https://isoreader2.isoverse.org/reference/ir_aggregator.md)
