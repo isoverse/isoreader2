@@ -2,13 +2,14 @@
 
 Plots chromatographic trace data from an
 [`ir_aggregate_isofiles()`](https://isoreader2.isoverse.org/reference/ir_aggregate_isofiles.md)
-result or a plain data frame. When `dataset` is an `ir_aggregated_data`
-object, the `$traces` dataset is inner-joined with `$metadata` (bringing
-in all metadata columns not already present in `$traces`) before
-plotting. The plot data must contain `time.s`, `mass`, and an
-`intensity.*` column — an error is thrown if any are missing. The
-intensity unit suffix becomes the y axis label. If `mass` is not already
-a factor it is converted to one with levels sorted in numerical order.
+result or a plain data frame. The data is prepared with
+[`ir_generate_traces_tibble()`](https://isoreader2.isoverse.org/reference/ir_generate_tibble.md)
+(which, for an `ir_aggregated_data` object, inner-joins the `$traces`
+dataset with `$metadata`). The plot data must contain `species`,
+`time.s`, `mass`, and an `intensity.*` column — an error is thrown if
+any are missing. A `trace` identifier (`"<species>: <mass>"`) is always
+regenerated and the plotted `value` together with a `data_type` label
+(`"intensity [UNITS]"`, or `"ratios"` for ratio rows) are added.
 
 ## Usage
 
@@ -17,7 +18,9 @@ ir_plot_continuous_flow(
   dataset,
   species = NULL,
   mass = NULL,
-  facet = file_name,
+  ratio = NULL,
+  ratio_fold_range = c(0.1, 10),
+  facet = data_type,
   scales = "free",
   nrow = NULL,
   ncol = 1,
@@ -40,8 +43,8 @@ ir_plot_continuous_flow(
 
   an `ir_aggregated_data` object from
   [`ir_aggregate_isofiles()`](https://isoreader2.isoverse.org/reference/ir_aggregate_isofiles.md)
-  or a plain data frame with `time.s`, `mass`, and an `intensity.*`
-  column
+  or a plain data frame with `species`, `time.s`, `mass`, and an
+  `intensity.*` column
 
 - species:
 
@@ -50,16 +53,42 @@ ir_plot_continuous_flow(
 
 - mass:
 
-  optional vector to filter the displayed data to specific masses (e.g.
-  `44` or `c(44, 45)`); default `NULL` shows all masses.
+  which masses to include as intensity traces: `NULL` (default) shows
+  all masses, a vector (e.g. `44` or `c(44, 45)`) shows specific masses,
+  and a zero-length vector (`numeric(0)`/`character(0)`) shows none.
+  Note that [`c()`](https://rdrr.io/r/base/c.html) is `NULL` in R (i.e.
+  all masses).
+
+- ratio:
+
+  which ratios to additionally include (computed with
+  [`ir_calculate_ratios()`](https://isoreader2.isoverse.org/reference/ir_calculate_ratios.md)):
+  `NULL` (default) shows all available ratios, a character vector of
+  ratio names (e.g. `c("45/44", "46/44")`) shows specific ones, and
+  `character(0)` shows none. Requesting specific ratio names when ratios
+  have not been calculated is an error pointing to
+  [`ir_calculate_ratios()`](https://isoreader2.isoverse.org/reference/ir_calculate_ratios.md)
+  (with `ratio = NULL` and no ratios present, none are simply added).
+  Ratio rows are plotted on the same `value` axis with
+  `data_type = "ratios"`; the default `facet = data_type` (with free
+  scales) separates them from the intensities.
+
+- ratio_fold_range:
+
+  length-2 numeric `c(min, max)` to clamp ratio values into before
+  plotting (values below `min` become `min`, above `max` become `max`);
+  default `c(0.1, 10)`. Set to `NULL` to leave ratios unclamped. Most
+  useful with the default normalized ratios from
+  [`ir_calculate_ratios()`](https://isoreader2.isoverse.org/reference/ir_calculate_ratios.md)
+  (centered around 1, so `c(0.1, 10)` keeps within a 10-fold band).
 
 - facet:
 
-  column or expression to facet by (default: `file_name`). A plain
-  column or expression (e.g. `file_name` or `paste(species, mass)`) is
-  faceted with
+  column or expression to facet by (default: `data_type`, which
+  separates intensities from ratios). A plain column or expression (e.g.
+  `file_name` or `paste(species, mass)`) is faceted with
   [`ggplot2::facet_wrap()`](https://ggplot2.tidyverse.org/reference/facet_wrap.html);
-  a two-sided formula (e.g. `species ~ mass`) is faceted with
+  a two-sided formula (e.g. `data_type ~ file_name`) is faceted with
   [`ggplot2::facet_grid()`](https://ggplot2.tidyverse.org/reference/facet_grid.html).
   Set to `NULL` to suppress faceting.
 
@@ -85,7 +114,10 @@ ir_plot_continuous_flow(
 - color:
 
   column or expression for the colour aesthetic (default: `trace`, the
-  per-species/mass trace identifier, e.g. `"CO2: 44"`)
+  per-species/mass trace identifier, e.g. `"CO2: 44"`). When colouring
+  by `trace`, traces that share the same species and (numerator) mass
+  are given the same colour, so an intensity trace (`"N2: 29"`) and its
+  ratio traces (`"N2: 29/28"`) match.
 
 - linetype:
 
@@ -101,12 +133,11 @@ ir_plot_continuous_flow(
 
 - drop_unused_levels:
 
-  whether to drop unused factor levels (e.g. masses or traces that are
-  absent after filtering by `species`/`mass` or zooming to a window)
-  from the colour scale and legend. Default `FALSE` keeps every level so
-  the colour mapping stays stable across subsets of the same dataset;
-  set to `TRUE` to show only the levels actually present in the plotted
-  data.
+  whether to drop unused `trace` factor levels (e.g. traces that are
+  absent after zooming to a window) from the colour scale and legend.
+  Default `FALSE` keeps every level so the colour mapping stays stable
+  across subsets of the same dataset; set to `TRUE` to show only the
+  levels actually present in the plotted data.
 
 - scientific:
 

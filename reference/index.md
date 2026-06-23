@@ -81,6 +81,10 @@ These functions plot aggregated isofiles data.
   : Plot continuous flow data
 - [`ir_plot_dual_inlet()`](https://isoreader2.isoverse.org/reference/ir_plot_dual_inlet.md)
   : Plot dual inlet cycle data
+- [`ir_generate_traces_tibble()`](https://isoreader2.isoverse.org/reference/ir_generate_tibble.md)
+  [`ir_generate_cycles_tibble()`](https://isoreader2.isoverse.org/reference/ir_generate_tibble.md)
+  [`ir_generate_scans_tibble()`](https://isoreader2.isoverse.org/reference/ir_generate_tibble.md)
+  : Generate the tibble used by the plotting functions
 
 ## Export & storage
 

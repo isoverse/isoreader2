@@ -89,7 +89,7 @@ isofiles <- file_paths |> ir_read_isofiles()
 ```
 
 ``` fansi
-✔ [434ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+✔ [443ms] ir_read_isofiles() finished reading 2 isotope data files/archives
 ```
 
 ``` r
@@ -149,7 +149,7 @@ isofiles |> ir_save_isofiles(file.path("tmp", "my_isofiles"))
 ```
 
 ``` fansi
-✔ [45ms] ir_save_isofiles() saved 2 isofiles to tmp/my_isofiles.rds
+✔ [49ms] ir_save_isofiles() saved 2 isofiles to tmp/my_isofiles.rds
 ```
 
 ``` r
@@ -177,7 +177,7 @@ dataset <- isofiles |> ir_aggregate_isofiles()
 ```
 
 ``` fansi
-✔ [269ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+✔ [266ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 intensity in mV) from 2 files using the standard aggregator
 ```
 
@@ -202,8 +202,8 @@ NA), Pre Script (all NA), Post Script (all NA)
 ```
 
 ``` fansi
-→ traces (24.5k): uidx, analysis, species, mass, trace, time.s, intensity.mV;
-(not aggregated: channel)
+→ traces (24.5k): uidx, analysis, species, mass, tp, time.s, intensity.mV; (not
+aggregated: channel)
 ```
 
 ``` fansi
@@ -240,7 +240,7 @@ Dataset traces:
  → analysis = as.integer(analysis)
  → species = as.character(species)
  → mass = as.character(mass)
- → trace = as.character(sprintf(species, mass, fmt = "%s: %s"))
+ → tp = as.integer(tp)
  → time.s = as.numeric(time.s)
  → (intensity\\..*) = as.numeric(all_matches("(intensity\\..*)"))
 Dataset cycles:
@@ -249,13 +249,11 @@ Dataset cycles:
  → cycle = as.integer(cycle)
  → type = as.character(type)
  → mass = as.character(mass)
- → trace = as.character(sprintf(species, mass, fmt = "%s: %s"))
  → (intensity\\..*) = as.numeric(all_matches("(intensity\\..*)"))
 Dataset scans:
  → analysis = as.integer(analysis)
  → species = as.character(species)
  → mass = as.character(mass)
- → trace = as.character(sprintf(species, mass, fmt = "%s: %s"))
  → x = as.numeric(x)
  → (intensity\\..*) = as.numeric(all_matches("(intensity\\..*)"))
 ```
@@ -280,7 +278,7 @@ Dataset traces:
  → analysis = as.integer(analysis)
  → species = as.character(species)
  → mass = as.character(mass)
- → trace = as.character(sprintf(species, mass, fmt = "%s: %s"))
+ → tp = as.integer(tp)
  → time.s = as.numeric(time.s)
  → (intensity\\..*) = as.numeric(all_matches("(intensity\\..*)"))
  → channel = as.integer(channel)
@@ -291,14 +289,12 @@ Dataset cycles:
  → cycle = as.integer(cycle)
  → type = as.character(type)
  → mass = as.character(mass)
- → trace = as.character(sprintf(species, mass, fmt = "%s: %s"))
  → (intensity\\..*) = as.numeric(all_matches("(intensity\\..*)"))
  → channel = as.integer(channel)
 Dataset scans:
  → analysis = as.integer(analysis)
  → species = as.character(species)
  → mass = as.character(mass)
- → trace = as.character(sprintf(species, mass, fmt = "%s: %s"))
  → x = as.numeric(x)
  → (intensity\\..*) = as.numeric(all_matches("(intensity\\..*)"))
  → channel = as.integer(channel)
@@ -321,7 +317,7 @@ isofiles |> ir_aggregate_isofiles(aggregator = "extended")
 ```
 
 ``` fansi
-✔ [582ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
+✔ [576ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
 intensity in mV), resistors (8), and vendor_data_table (25) from 2 files using
 the extended aggregator
 ```
@@ -340,7 +336,7 @@ NA), Pre Script (all NA), Post Script (all NA)
 ```
 
 ``` fansi
-→ traces (24.5k): uidx, analysis, species, mass, trace, time.s, intensity.mV,
+→ traces (24.5k): uidx, analysis, species, mass, tp, time.s, intensity.mV,
 channel, config (all NA)
 ```
 
@@ -418,7 +414,7 @@ Dataset traces:
  → analysis = as.integer(analysis)
  → species = as.character(species)
  → mass = as.character(mass)
- → trace = as.character(sprintf(species, mass, fmt = "%s: %s"))
+ → tp = as.integer(tp)
  → time.s = as.numeric(time.s)
  → (intensity\\..*) = as.numeric(all_matches("(intensity\\..*)"))
 Dataset cycles:
@@ -427,13 +423,11 @@ Dataset cycles:
  → cycle = as.integer(cycle)
  → type = as.character(type)
  → mass = as.character(mass)
- → trace = as.character(sprintf(species, mass, fmt = "%s: %s"))
  → (intensity\\..*) = as.numeric(all_matches("(intensity\\..*)"))
 Dataset scans:
  → analysis = as.integer(analysis)
  → species = as.character(species)
  → mass = as.character(mass)
- → trace = as.character(sprintf(species, mass, fmt = "%s: %s"))
  → x = as.numeric(x)
  → (intensity\\..*) = as.numeric(all_matches("(intensity\\..*)"))
 ```
@@ -445,7 +439,7 @@ isofiles |> ir_aggregate_isofiles(aggregator = "my_aggregator")
 ```
 
 ``` fansi
-✔ [163ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+✔ [159ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 intensity in mV) from 2 files using the my_aggregator aggregator
 ```
 
@@ -462,8 +456,8 @@ Pre Script, Post Script)
 ```
 
 ``` fansi
-→ traces (24.5k): uidx, analysis, species, mass, trace, time.s, intensity.mV;
-(not aggregated: channel)
+→ traces (24.5k): uidx, analysis, species, mass, tp, time.s, intensity.mV; (not
+aggregated: channel)
 ```
 
 ``` fansi
@@ -550,18 +544,18 @@ dataset$traces
 
 ``` fansi
 # A tibble: 24,515 × 7
-    uidx analysis species mass  trace  time.s intensity.mV
-   <int>    <int> <chr>   <chr> <chr>   <dbl>        <dbl>
- 1     1        1 N2      28    N2: 28  0.209         21.2
- 2     1        1 N2      28    N2: 28  0.418         21.1
- 3     1        1 N2      28    N2: 28  0.627         21.1
- 4     1        1 N2      28    N2: 28  0.836         21.1
- 5     1        1 N2      28    N2: 28  1.04          21.1
- 6     1        1 N2      28    N2: 28  1.25          21.1
- 7     1        1 N2      28    N2: 28  1.46          21.1
- 8     1        1 N2      28    N2: 28  1.67          21.1
- 9     1        1 N2      28    N2: 28  1.88          21.1
-10     1        1 N2      28    N2: 28  2.09          21.0
+    uidx analysis species mass     tp time.s intensity.mV
+   <int>    <int> <chr>   <chr> <int>  <dbl>        <dbl>
+ 1     1        1 N2      28        1  0.209         21.2
+ 2     1        1 N2      28        2  0.418         21.1
+ 3     1        1 N2      28        3  0.627         21.1
+ 4     1        1 N2      28        4  0.836         21.1
+ 5     1        1 N2      28        5  1.04          21.1
+ 6     1        1 N2      28        6  1.25          21.1
+ 7     1        1 N2      28        7  1.46          21.1
+ 8     1        1 N2      28        8  1.67          21.1
+ 9     1        1 N2      28        9  1.88          21.1
+10     1        1 N2      28       10  2.09          21.0
 # ℹ 24,505 more rows
 ```
 
@@ -576,7 +570,7 @@ dataset |>
 ```
 
 ``` fansi
-✔ [14ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [10ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
@@ -615,7 +609,7 @@ dataset |> ir_get_metadata()
 ```
 
 ``` fansi
-✔ [4ms] ir_get_data() retrieved 2 records from metadata
+✔ [5ms] ir_get_data() retrieved 2 records from metadata
 ```
 
 ``` fansi
@@ -639,24 +633,24 @@ dataset |> ir_get_traces()
 ```
 
 ``` fansi
-✔ [10ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [9ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
 ``` fansi
 # A tibble: 24,515 × 8
-    uidx analysis file_name              species mass  trace time.s intensity.mV
-   <int>    <int> <chr>                  <chr>   <chr> <chr>  <dbl>        <dbl>
- 1     1        1 continuous_flow_ea_ex… N2      28    N2: …  0.209         21.2
- 2     1        1 continuous_flow_ea_ex… N2      28    N2: …  0.418         21.1
- 3     1        1 continuous_flow_ea_ex… N2      28    N2: …  0.627         21.1
- 4     1        1 continuous_flow_ea_ex… N2      28    N2: …  0.836         21.1
- 5     1        1 continuous_flow_ea_ex… N2      28    N2: …  1.04          21.1
- 6     1        1 continuous_flow_ea_ex… N2      28    N2: …  1.25          21.1
- 7     1        1 continuous_flow_ea_ex… N2      28    N2: …  1.46          21.1
- 8     1        1 continuous_flow_ea_ex… N2      28    N2: …  1.67          21.1
- 9     1        1 continuous_flow_ea_ex… N2      28    N2: …  1.88          21.1
-10     1        1 continuous_flow_ea_ex… N2      28    N2: …  2.09          21.0
+    uidx analysis file_name              species mass     tp time.s intensity.mV
+   <int>    <int> <chr>                  <chr>   <chr> <int>  <dbl>        <dbl>
+ 1     1        1 continuous_flow_ea_ex… N2      28        1  0.209         21.2
+ 2     1        1 continuous_flow_ea_ex… N2      28        2  0.418         21.1
+ 3     1        1 continuous_flow_ea_ex… N2      28        3  0.627         21.1
+ 4     1        1 continuous_flow_ea_ex… N2      28        4  0.836         21.1
+ 5     1        1 continuous_flow_ea_ex… N2      28        5  1.04          21.1
+ 6     1        1 continuous_flow_ea_ex… N2      28        6  1.25          21.1
+ 7     1        1 continuous_flow_ea_ex… N2      28        7  1.46          21.1
+ 8     1        1 continuous_flow_ea_ex… N2      28        8  1.67          21.1
+ 9     1        1 continuous_flow_ea_ex… N2      28        9  1.88          21.1
+10     1        1 continuous_flow_ea_ex… N2      28       10  2.09          21.0
 # ℹ 24,505 more rows
 ```
 
@@ -680,7 +674,7 @@ dataset_ext <- isofiles |> ir_aggregate_isofiles(aggregator = "extended")
 ```
 
 ``` fansi
-✔ [584ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
+✔ [605ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
 intensity in mV), resistors (8), and vendor_data_table (25) from 2 files using
 the extended aggregator
 ```
@@ -798,11 +792,11 @@ data_folder |>
 ```
 
 ``` fansi
-✔ [409ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+✔ [408ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 ```
 
 ``` fansi
-✔ [142ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+✔ [135ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
 intensity in V) from 1 file using the standard aggregator
 ```
 
@@ -827,11 +821,11 @@ data_folder |>
 ```
 
 ``` fansi
-✔ [194ms] ir_read_isofiles() finished reading 4 isotope data files/archives
+✔ [311ms] ir_read_isofiles() finished reading 4 isotope data files/archives
 ```
 
 ``` fansi
-✔ [392ms] ir_aggregate_isofiles() aggregated metadata (4) and scans (17.8k,
+✔ [336ms] ir_aggregate_isofiles() aggregated metadata (4) and scans (17.8k,
 intensity in V) from 4 files using the standard aggregator
 ```
 
@@ -860,11 +854,11 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [10ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [8ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
 ``` fansi
-✔ [978ms] ir_export_to_excel() exported 2 rows of metadata and 24.5k rows of
+✔ [1.1s] ir_export_to_excel() exported 2 rows of metadata and 24.5k rows of
 traces to tmp/my_dataset.xlsx
 ```

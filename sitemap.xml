@@ -18,6 +18,7 @@
 <url><loc>https://isoreader2.isoverse.org/reference/ir_extract_isofiles.html</loc></url>
 <url><loc>https://isoreader2.isoverse.org/reference/ir_filter_for.html</loc></url>
 <url><loc>https://isoreader2.isoverse.org/reference/ir_find_isofiles.html</loc></url>
+<url><loc>https://isoreader2.isoverse.org/reference/ir_generate_tibble.html</loc></url>
 <url><loc>https://isoreader2.isoverse.org/reference/ir_get_data.html</loc></url>
 <url><loc>https://isoreader2.isoverse.org/reference/ir_get_supported_file_types.html</loc></url>
 <url><loc>https://isoreader2.isoverse.org/reference/ir_isofiles_storage.html</loc></url>

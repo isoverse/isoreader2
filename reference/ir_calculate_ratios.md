@@ -15,7 +15,7 @@ columns. Calling this function again recomputes (overwrites) the
 ## Usage
 
 ``` r
-ir_calculate_ratios(aggregated_data, ...)
+ir_calculate_ratios(aggregated_data, ..., normalize_ratios = TRUE)
 ```
 
 ## Arguments
@@ -32,6 +32,12 @@ ir_calculate_ratios(aggregated_data, ...)
   Species not listed here use their numerically lowest measured mass as
   the base mass.
 
+- normalize_ratios:
+
+  whether to normalize each ratio by the mean ratio of its
+  `uidx`/`analysis`/`ratio_name` group (so ratios are centered around
+  1). Default `TRUE`.
+
 ## Value
 
 the `aggregated_data` with `ratio_name` and `ratio` columns added to
@@ -44,3 +50,9 @@ requested base mass could not be found).
 The base mass for a species is, by default, the numerically lowest mass
 measured for that species. Override it for individual species via `...`
 (e.g. `SO2 = 64`, `N2 = 28`).
+
+With `normalize_ratios = TRUE` (the default) each ratio is additionally
+divided by the mean ratio of its `uidx`/`analysis`/`ratio_name` group,
+so the stored ratios are centered around 1 (a value of 2 then means
+twice the file's average ratio). Set `normalize_ratios = FALSE` to keep
+the raw intensity ratios.

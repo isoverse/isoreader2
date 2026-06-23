@@ -121,7 +121,7 @@ values; <code>ir_get_option()</code> returns the value of the single requested o
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">analysis</span> = <span style="font-style: italic;">as.integer(analysis)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">species</span> = <span style="font-style: italic;">as.character(species)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">mass</span> = <span style="font-style: italic;">as.character(mass)</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">trace</span> = <span style="font-style: italic;">as.character(sprintf(species, mass, fmt = "%s: %s"))</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">tp</span> = <span style="font-style: italic;">as.integer(tp)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">time.s</span> = <span style="font-style: italic;">as.numeric(time.s)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #BB00BB;">(intensity\\..*)</span> = <span style="font-style: italic;">as.numeric(all_matches("(intensity\\..*)"))</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Dataset</span> <span style="color: #0000BB;">cycles</span>:</span>
@@ -130,13 +130,11 @@ values; <code>ir_get_option()</code> returns the value of the single requested o
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">cycle</span> = <span style="font-style: italic;">as.integer(cycle)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">type</span> = <span style="font-style: italic;">as.character(type)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">mass</span> = <span style="font-style: italic;">as.character(mass)</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">trace</span> = <span style="font-style: italic;">as.character(sprintf(species, mass, fmt = "%s: %s"))</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #BB00BB;">(intensity\\..*)</span> = <span style="font-style: italic;">as.numeric(all_matches("(intensity\\..*)"))</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Dataset</span> <span style="color: #0000BB;">scans</span>:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">analysis</span> = <span style="font-style: italic;">as.integer(analysis)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">species</span> = <span style="font-style: italic;">as.character(species)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">mass</span> = <span style="font-style: italic;">as.character(mass)</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">trace</span> = <span style="font-style: italic;">as.character(sprintf(species, mass, fmt = "%s: %s"))</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">x</span> = <span style="font-style: italic;">as.numeric(x)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #BB00BB;">(intensity\\..*)</span> = <span style="font-style: italic;">as.numeric(all_matches("(intensity\\..*)"))</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -152,7 +150,7 @@ values; <code>ir_get_option()</code> returns the value of the single requested o
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">analysis</span> = <span style="font-style: italic;">as.integer(analysis)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">species</span> = <span style="font-style: italic;">as.character(species)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">mass</span> = <span style="font-style: italic;">as.character(mass)</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">trace</span> = <span style="font-style: italic;">as.character(sprintf(species, mass, fmt = "%s: %s"))</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">tp</span> = <span style="font-style: italic;">as.integer(tp)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">time.s</span> = <span style="font-style: italic;">as.numeric(time.s)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #BB00BB;">(intensity\\..*)</span> = <span style="font-style: italic;">as.numeric(all_matches("(intensity\\..*)"))</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Dataset</span> <span style="color: #0000BB;">cycles</span>:</span>
@@ -161,13 +159,11 @@ values; <code>ir_get_option()</code> returns the value of the single requested o
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">cycle</span> = <span style="font-style: italic;">as.integer(cycle)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">type</span> = <span style="font-style: italic;">as.character(type)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">mass</span> = <span style="font-style: italic;">as.character(mass)</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">trace</span> = <span style="font-style: italic;">as.character(sprintf(species, mass, fmt = "%s: %s"))</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #BB00BB;">(intensity\\..*)</span> = <span style="font-style: italic;">as.numeric(all_matches("(intensity\\..*)"))</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Dataset</span> <span style="color: #0000BB;">scans</span>:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">analysis</span> = <span style="font-style: italic;">as.integer(analysis)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">species</span> = <span style="font-style: italic;">as.character(species)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">mass</span> = <span style="font-style: italic;">as.character(mass)</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">trace</span> = <span style="font-style: italic;">as.character(sprintf(species, mass, fmt = "%s: %s"))</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">x</span> = <span style="font-style: italic;">as.numeric(x)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #BB00BB;">(intensity\\..*)</span> = <span style="font-style: italic;">as.numeric(all_matches("(intensity\\..*)"))</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -183,7 +179,7 @@ values; <code>ir_get_option()</code> returns the value of the single requested o
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">analysis</span> = <span style="font-style: italic;">as.integer(analysis)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">species</span> = <span style="font-style: italic;">as.character(species)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">mass</span> = <span style="font-style: italic;">as.character(mass)</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">trace</span> = <span style="font-style: italic;">as.character(sprintf(species, mass, fmt = "%s: %s"))</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">tp</span> = <span style="font-style: italic;">as.integer(tp)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">time.s</span> = <span style="font-style: italic;">as.numeric(time.s)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #BB00BB;">(intensity\\..*)</span> = <span style="font-style: italic;">as.numeric(all_matches("(intensity\\..*)"))</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">channel</span> = <span style="font-style: italic;">as.integer(channel)</span></span>
@@ -194,14 +190,12 @@ values; <code>ir_get_option()</code> returns the value of the single requested o
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">cycle</span> = <span style="font-style: italic;">as.integer(cycle)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">type</span> = <span style="font-style: italic;">as.character(type)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">mass</span> = <span style="font-style: italic;">as.character(mass)</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">trace</span> = <span style="font-style: italic;">as.character(sprintf(species, mass, fmt = "%s: %s"))</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #BB00BB;">(intensity\\..*)</span> = <span style="font-style: italic;">as.numeric(all_matches("(intensity\\..*)"))</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">channel</span> = <span style="font-style: italic;">as.integer(channel)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Dataset</span> <span style="color: #0000BB;">scans</span>:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">analysis</span> = <span style="font-style: italic;">as.integer(analysis)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">species</span> = <span style="font-style: italic;">as.character(species)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">mass</span> = <span style="font-style: italic;">as.character(mass)</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">trace</span> = <span style="font-style: italic;">as.character(sprintf(species, mass, fmt = "%s: %s"))</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">x</span> = <span style="font-style: italic;">as.numeric(x)</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #BB00BB;">(intensity\\..*)</span> = <span style="font-style: italic;">as.numeric(all_matches("(intensity\\..*)"))</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  → <span style="color: #00BB00;">channel</span> = <span style="font-style: italic;">as.integer(channel)</span></span>

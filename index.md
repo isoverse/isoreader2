@@ -76,9 +76,13 @@ dataset <-
   ir_read_isofiles() |>
   ir_aggregate_isofiles("mV")
 
-# visualize data
+# visualize data (intensities together with a calculated isotope ratio)
 dataset |>
-  ir_plot_continuous_flow()
+  ir_calculate_ratios() |>
+  ir_plot_continuous_flow(
+    facet = data_type,
+    time_window = c(250, 600)
+  )
 ```
 
 ![Plot of continuous flow
@@ -107,11 +111,11 @@ isofiles <- file_paths |> ir_read_isofiles()
 ```
 
 ``` fansi
-✔ [106ms] ir_extract_isofiles() finished extracting 1 file/archive
+✔ [87ms] ir_extract_isofiles() finished extracting 1 file/archive
 ```
 
 ``` fansi
-✔ [255ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+✔ [204ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 ```
 
 ``` r
@@ -140,7 +144,7 @@ dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
 ``` fansi
-✔ [49ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+✔ [46ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
 intensity in V) from 1 file using the standard aggregator
 ```
 
@@ -163,8 +167,8 @@ Preparation, Pre Script, Post Script, Method
 ```
 
 ``` fansi
-→ cycles (102): uidx, analysis, species, cycle, type, mass, trace, intensity.V;
-(not aggregated: channel)
+→ cycles (102): uidx, analysis, species, cycle, type, mass, intensity.V; (not
+aggregated: channel)
 ```
 
 ``` fansi
@@ -213,7 +217,7 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [185ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
+✔ [205ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
 cycles to my_export.xlsx
 ```
 

@@ -158,9 +158,13 @@
 <span>  <span class="fu"><a href="reference/ir_read_isofiles.html">ir_read_isofiles</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles</a></span><span class="op">(</span><span class="st">"mV"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># visualize data</span></span>
+<span><span class="co"># visualize data (intensities together with a calculated isotope ratio)</span></span>
 <span><span class="va">dataset</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="reference/ir_plot_continuous_flow.html">ir_plot_continuous_flow</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="reference/ir_calculate_ratios.html">ir_calculate_ratios</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/ir_plot_continuous_flow.html">ir_plot_continuous_flow</a></span><span class="op">(</span></span>
+<span>    facet <span class="op">=</span> <span class="va">data_type</span>,</span>
+<span>    time_window <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">250</span>, <span class="fl">600</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
 <div class="figure">
 <img src="reference/figures/README-continuous_flow_example-1.png" alt="Plot of continuous flow examples" width="100%"><p class="caption">
 Plot of continuous flow examples
@@ -186,9 +190,9 @@ Plot of continuous flow examples
 <span></span>
 <span><span class="co"># read the files</span></span>
 <span><span class="va">isofiles</span> <span class="op">&lt;-</span> <span class="va">file_paths</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/ir_read_isofiles.html">ir_read_isofiles</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[106ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> finished extracting 1 file/archive
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[87ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> finished extracting 1 file/archive
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[255ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 1 isotope data file/archive
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[204ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 1 isotope data file/archive
 </code></pre>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># show information about the files</span></span>
@@ -207,7 +211,7 @@ Plot of continuous flow examples
 <code class="sourceCode R"><span><span class="co"># aggregate the data from the read files specifying which units to use</span></span>
 <span><span class="co"># (mV, V, nA, A, cps, etc.), conversion via resistor values happens automatically</span></span>
 <span><span class="va">dataset</span> <span class="op">&lt;-</span> <span class="va">isofiles</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles</a></span><span class="op">(</span><span class="st">"V"</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[49ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (1) and <span style="color: #0000BB;">cycles</span> (102,
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[46ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (1) and <span style="color: #0000BB;">cycles</span> (102,
 <span style="color: #00BB00;">intensity</span> in <span style="color: #BB00BB;">V</span>) from 1 file using the <span style="font-weight: bold; font-style: italic;">standard</span> aggregator
 </code></pre>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -221,8 +225,8 @@ Plot of continuous flow examples
 <span style="color: #00BB00;">Refill</span>, <span style="color: #00BB00;">Weight [mg]</span>, <span style="color: #00BB00;">Sample</span>, <span style="color: #00BB00;">Identifier 1</span>, <span style="color: #00BB00;">Identifier 2</span>, <span style="color: #00BB00;">Analysis</span>, <span style="color: #00BB00;">Comment</span>,
 <span style="color: #00BB00;">Preparation</span>, <span style="color: #00BB00;">Pre Script</span>, <span style="color: #00BB00;">Post Script</span>, <span style="color: #00BB00;">Method</span>
 </code></pre>
-<pre class="fansi fansi-message"><code>→ <span style="color: #0000BB;">cycles</span> (102): <span style="color: #00BB00;">uidx</span>, <span style="color: #00BB00;">analysis</span>, <span style="color: #00BB00;">species</span>, <span style="color: #00BB00;">cycle</span>, <span style="color: #00BB00;">type</span>, <span style="color: #00BB00;">mass</span>, <span style="color: #00BB00;">trace</span>, <span style="color: #00BB00;">intensity.V</span>;
-(<span style="font-style: italic;">not aggregated</span>: <span style="color: #BBBB00; font-style: italic;">channel</span>)
+<pre class="fansi fansi-message"><code>→ <span style="color: #0000BB;">cycles</span> (102): <span style="color: #00BB00;">uidx</span>, <span style="color: #00BB00;">analysis</span>, <span style="color: #00BB00;">species</span>, <span style="color: #00BB00;">cycle</span>, <span style="color: #00BB00;">type</span>, <span style="color: #00BB00;">mass</span>, <span style="color: #00BB00;">intensity.V</span>; (<span style="font-style: italic;">not</span>
+<span style="font-style: italic;">aggregated</span>: <span style="color: #BBBB00; font-style: italic;">channel</span>)
 </code></pre>
 <pre class="fansi fansi-message"><code>→ <span style="color: #0000BB;">problems</span>: has <span style="color: #00BB00;">no issues</span>
 </code></pre>
@@ -261,7 +265,7 @@ Plot of dual inlet examples
 <pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[3ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 102 records from the combination of <span style="color: #0000BB;">metadata</span>
 (1) and <span style="color: #0000BB;">cycles</span> (102) via <span style="color: #00BB00;">uidx</span> and <span style="color: #00BB00;">analysis</span>
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[185ms]</span> <span style="font-weight: bold;">ir_export_to_excel()</span> exported 1 row of <span style="color: #00BB00;">metadata</span> and 102 rows of
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[205ms]</span> <span style="font-weight: bold;">ir_export_to_excel()</span> exported 1 row of <span style="color: #00BB00;">metadata</span> and 102 rows of
 <span style="color: #00BB00;">cycles</span> to <span style="color: #0000BB;">my_export.xlsx</span>
 </code></pre>
 </div>
