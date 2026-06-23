@@ -111,9 +111,13 @@ dataset <-
   ir_read_isofiles() |>
   ir_aggregate_isofiles("mV")
 
-# visualize data
+# visualize data (intensities together with a calculated isotope ratio)
 dataset |>
-  ir_plot_continuous_flow()
+  ir_calculate_ratios() |>
+  ir_plot_continuous_flow(
+    facet = data_type,
+    time_window = c(250, 600)
+  )
 ```
 
 ## Show me more details

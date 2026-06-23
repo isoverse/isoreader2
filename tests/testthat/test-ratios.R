@@ -64,7 +64,8 @@ test_that("ir_calculate_ratios() validates its input", {
 })
 
 test_that("ir_calculate_ratios() adds ratio columns to the source series", {
-  res <- ir_calculate_ratios(agg_traces()) |> suppressMessages()
+  res <- ir_calculate_ratios(agg_traces(), normalize_ratios = FALSE) |>
+    suppressMessages()
   expect_s3_class(res, "ir_aggregated_data")
   # no new datasets are created; columns are added to `traces` instead
   expect_false(any(
@@ -103,6 +104,43 @@ test_that("ir_calculate_ratios() adds ratio columns to the source series", {
   )
 })
 
+test_that("ir_calculate_ratios() normalizes ratios by the group mean by default", {
+  res <- ir_calculate_ratios(agg_traces()) |> suppressMessages()
+  tr <- res$traces
+
+  # within each uidx/analysis/ratio_name group the normalized ratios average to 1
+  norm_means <- tapply(
+    tr$ratio[!is.na(tr$ratio_name)],
+    tr$ratio_name[!is.na(tr$ratio_name)],
+    mean
+  )
+  expect_true(all(abs(norm_means - 1) < 1e-9))
+
+  # N2 29/28: raw 0.4 (t=0) and 0.5 (t=1), mean 0.45 -> normalized 0.4/0.45, 0.5/0.45
+  expect_equal(
+    tr$ratio[tr$species == "N2" & tr$mass == "29" & tr$time.s == 0],
+    0.4 / 0.45
+  )
+  expect_equal(
+    tr$ratio[tr$species == "N2" & tr$mass == "29" & tr$time.s == 1],
+    0.5 / 0.45
+  )
+  # base mass rows stay NA after normalization
+  expect_true(all(is.na(tr$ratio[tr$mass == "28"])))
+
+  # normalize_ratios = FALSE keeps the raw intensity ratios
+  raw <- ir_calculate_ratios(agg_traces(), normalize_ratios = FALSE) |>
+    suppressMessages()
+  expect_equal(
+    raw$traces$ratio[
+      raw$traces$species == "N2" &
+        raw$traces$mass == "29" &
+        raw$traces$time.s == 0
+    ],
+    0.4
+  )
+})
+
 test_that("ir_calculate_ratios() is idempotent (overwrites prior columns)", {
   once <- ir_calculate_ratios(agg_traces()) |> suppressMessages()
   twice <- ir_calculate_ratios(once) |> suppressMessages()
@@ -114,7 +152,8 @@ test_that("ir_calculate_ratios() is idempotent (overwrites prior columns)", {
 })
 
 test_that("ir_calculate_ratios() honors per-species base mass overrides", {
-  res <- ir_calculate_ratios(agg_traces(), N2 = 29) |> suppressMessages()
+  res <- ir_calculate_ratios(agg_traces(), N2 = 29, normalize_ratios = FALSE) |>
+    suppressMessages()
   tr <- res$traces
 
   # N2 now uses 29 as base (NA there); CO2 keeps its default (44)
@@ -169,7 +208,8 @@ test_that("ir_calculate_ratios() handles cycles per type", {
     ),
     class = "ir_aggregated_data"
   )
-  cy <- (ir_calculate_ratios(agg) |> suppressMessages())$cycles
+  cy <- (ir_calculate_ratios(agg, normalize_ratios = FALSE) |>
+    suppressMessages())$cycles
 
   expect_equal(nrow(cy), 4L) # all rows kept
   # the base mass (44) is NA in both types; 45 gets the per-type ratio
@@ -202,7 +242,7 @@ test_that("ir_calculate_ratios() adds columns to each present series", {
     ),
     class = "ir_aggregated_data"
   )
-  r <- ir_calculate_ratios(agg) |> suppressMessages()
+  r <- ir_calculate_ratios(agg, normalize_ratios = FALSE) |> suppressMessages()
 
   # both series gain the ratio columns; no new datasets are created
   expect_true(all(c("ratio_name", "ratio") %in% names(r$traces)))
@@ -224,7 +264,8 @@ test_that("ir_calculate_ratios() works end-to-end on the bundled examples", {
     ir_aggregate_isofiles("mV") |>
     suppressMessages()
 
-  res <- ir_calculate_ratios(agg) |> suppressMessages()
+  res <- ir_calculate_ratios(agg, normalize_ratios = FALSE) |>
+    suppressMessages()
   # ratio columns are added to all three present series
   for (ds in c("traces", "cycles", "scans")) {
     expect_true(all(c("ratio_name", "ratio") %in% names(res[[ds]])))

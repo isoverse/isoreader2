@@ -4,7 +4,7 @@
 \alias{ir_calculate_ratios}
 \title{Calculate isotope ratios}
 \usage{
-ir_calculate_ratios(aggregated_data, ...)
+ir_calculate_ratios(aggregated_data, ..., normalize_ratios = TRUE)
 }
 \arguments{
 \item{aggregated_data}{datasets aggregated from \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}}
@@ -13,6 +13,10 @@ ir_calculate_ratios(aggregated_data, ...)
 \item{...}{named base masses for individual species, e.g. \verb{SO2 = 64, N2 = 28}.
 Species not listed here use their numerically lowest measured mass as the
 base mass.}
+
+\item{normalize_ratios}{whether to normalize each ratio by the mean ratio of
+its \code{uidx}/\code{analysis}/\code{ratio_name} group (so ratios are centered around 1).
+Default \code{TRUE}.}
 }
 \value{
 the \code{aggregated_data} with \code{ratio_name} and \code{ratio} columns added to
@@ -35,4 +39,10 @@ both columns. Calling this function again recomputes (overwrites) the
 The base mass for a species is, by default, the numerically lowest mass
 measured for that species. Override it for individual species via \code{...} (e.g.
 \code{SO2 = 64}, \code{N2 = 28}).
+
+With \code{normalize_ratios = TRUE} (the default) each ratio is additionally
+divided by the mean ratio of its \code{uidx}/\code{analysis}/\code{ratio_name} group, so the
+stored ratios are centered around 1 (a value of 2 then means twice the
+file's average ratio). Set \code{normalize_ratios = FALSE} to keep the raw
+intensity ratios.
 }

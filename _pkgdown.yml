@@ -76,6 +76,7 @@ reference:
   - ir_plot_scans
   - ir_plot_continuous_flow
   - ir_plot_dual_inlet
+  - ir_generate_tibble
 
 - title: Export & storage
   desc: >

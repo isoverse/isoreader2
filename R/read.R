@@ -189,6 +189,14 @@ ir_read_isofiles <- function(
         )
     }
 
+    # add a per-timepoint integer index (tp) to the traces of every reader
+    if (!is.null(out$result) && "traces" %in% names(out$result)) {
+      out$result$traces <- purrr::map(
+        out$result$traces,
+        add_trace_timepoint_index
+      )
+    }
+
     # merge problems from isoextract, this call, and any conditions in the result
     problems <- dplyr::bind_rows(isoextract_problems, out$conditions)
     if ("problems" %in% names(out$result)) {
@@ -288,4 +296,26 @@ read_json_meta <- function(json_path) {
     previous_file_size = meta$file_size_bytes,
     complete = meta$complete
   )
+}
+
+# add an integer per-timepoint index `tp` (1..n, ordered by `time.s`) to a traces
+# tibble, computed within each trace series (i.e. each unique combination of the
+# non-time/non-intensity columns such as species/channel/mass). Returns the input
+# unchanged if it is not a traces tibble with a `time.s` column.
+add_trace_timepoint_index <- function(traces) {
+  if (
+    is.null(traces) ||
+      !is.data.frame(traces) ||
+      !"time.s" %in% names(traces)
+  ) {
+    return(traces)
+  }
+  intensity_cols <- grep("^intensity\\.", names(traces), value = TRUE)
+  series_cols <- setdiff(names(traces), c("time.s", "tp", intensity_cols))
+  traces |>
+    dplyr::mutate(
+      .by = dplyr::all_of(series_cols),
+      tp = as.integer(dplyr::row_number(.data[["time.s"]]))
+    ) |>
+    dplyr::relocate("tp", .before = "time.s")
 }

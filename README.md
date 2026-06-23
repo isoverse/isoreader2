@@ -84,9 +84,13 @@ dataset <-
   ir_read_isofiles() |>
   ir_aggregate_isofiles("mV")
 
-# visualize data
+# visualize data (intensities together with a calculated isotope ratio)
 dataset |>
-  ir_plot_continuous_flow()
+  ir_calculate_ratios() |>
+  ir_plot_continuous_flow(
+    facet = data_type,
+    time_window = c(250, 600)
+  )
 ```
 
 <div class="figure">
@@ -118,9 +122,9 @@ file_paths <- data_folder |> ir_find_dual_inlet()
 isofiles <- file_paths |> ir_read_isofiles()
 ```
 
-    > ✔ [116ms] ir_extract_isofiles() finished extracting 1 file/archive
+    > ✔ [99ms] ir_extract_isofiles() finished extracting 1 file/archive
 
-    > ✔ [221ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+    > ✔ [178ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 
 ``` r
 # show information about the files
@@ -141,7 +145,7 @@ isofiles
 dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
-    > ✔ [43ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+    > ✔ [45ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
     > intensity in V) from 1 file using the standard aggregator
 
 ``` r
@@ -157,8 +161,8 @@ dataset
     > Refill, Weight [mg], Sample, Identifier 1, Identifier 2, Analysis, Comment,
     > Preparation, Pre Script, Post Script, Method
 
-    > → cycles (102): uidx, analysis, species, cycle, type, mass, trace, intensity.V;
-    > (not aggregated: channel)
+    > → cycles (102): uidx, analysis, species, cycle, type, mass, intensity.V; (not
+    > aggregated: channel)
 
     > → problems: has no issues
 
@@ -168,6 +172,11 @@ dataset
 # filter the data by a metadata field and mass range and plot it
 # (use ir_plot_continuous_flow() and ir_plot_scans(), respectively)
 library(ggplot2)
+```
+
+    > Learn more about the underlying theory at https://ggplot2-book.org/
+
+``` r
 dataset |>
   ir_filter_metadata(file_name == "caf_dual_inlet_example") |>
   ir_plot_dual_inlet(mass = c(44:48)) +
@@ -199,11 +208,11 @@ ir_export_to_excel(
 
     > ✔ [2ms] ir_get_data() retrieved 1 records from metadata
 
-    > ✔ [3ms] ir_get_data() retrieved 102 records from the combination of metadata
+    > ✔ [4ms] ir_get_data() retrieved 102 records from the combination of metadata
     > (1) and cycles (102) via uidx and analysis
 
-    > ✔ [52ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of cycles
-    > to 'my_export.xlsx'
+    > ✔ [221ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
+    > cycles to 'my_export.xlsx'
 
 ### Bonus: explore isofiles interactively
 

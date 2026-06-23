@@ -16,23 +16,37 @@
 #' measured for that species. Override it for individual species via `...` (e.g.
 #' `SO2 = 64`, `N2 = 28`).
 #'
+#' With `normalize_ratios = TRUE` (the default) each ratio is additionally
+#' divided by the mean ratio of its `uidx`/`analysis`/`ratio_name` group, so the
+#' stored ratios are centered around 1 (a value of 2 then means twice the
+#' file's average ratio). Set `normalize_ratios = FALSE` to keep the raw
+#' intensity ratios.
+#'
 #' @param aggregated_data datasets aggregated from [ir_aggregate_isofiles()]
 #'   (must include at least one of `traces`, `cycles`, or `scans`)
 #' @param ... named base masses for individual species, e.g. `SO2 = 64, N2 = 28`.
 #'   Species not listed here use their numerically lowest measured mass as the
 #'   base mass.
+#' @param normalize_ratios whether to normalize each ratio by the mean ratio of
+#'   its `uidx`/`analysis`/`ratio_name` group (so ratios are centered around 1).
+#'   Default `TRUE`.
 #' @return the `aggregated_data` with `ratio_name` and `ratio` columns added to
 #'   each of the `traces`, `cycles`, and/or `scans` datasets that is present.
 #'   Both columns are `NA` for base mass rows (and for any species whose
 #'   requested base mass could not be found).
 #' @export
-ir_calculate_ratios <- function(aggregated_data, ...) {
+ir_calculate_ratios <- function(aggregated_data, ..., normalize_ratios = TRUE) {
   # safety checks
   aggregated_data |>
     check_arg(
       !missing(aggregated_data) && is(aggregated_data, "ir_aggregated_data"),
       "must be a set of aggregated isofiles (use ir_aggregate_isofiles())"
     )
+  check_arg(
+    normalize_ratios,
+    rlang::is_bool(normalize_ratios),
+    "must be TRUE or FALSE"
+  )
 
   # parse base mass overrides from ...
   base_masses <- rlang::list2(...)
@@ -77,7 +91,8 @@ ir_calculate_ratios <- function(aggregated_data, ...) {
       aggregated_data[[nm]],
       x_col = series[[nm]],
       base_masses = base_masses,
-      group_extra = if (nm == "cycles") "type" else character(0)
+      group_extra = if (nm == "cycles") "type" else character(0),
+      normalize = normalize_ratios
     )
     aggregated_data[[nm]] <- res$data
     all_species <- union(all_species, names(res$base))
@@ -116,7 +131,8 @@ add_series_ratios <- function(
   data,
   x_col,
   base_masses = double(),
-  group_extra = character(0)
+  group_extra = character(0),
+  normalize = TRUE
 ) {
   intensity_col <- grep("^intensity\\.", names(data), value = TRUE)[1]
   group_cols <- intersect(
@@ -176,12 +192,25 @@ add_series_ratios <- function(
         .data[[intensity_col]] / .data$.base_intensity
       )
     ) |>
-    dplyr::select(-".base_mass", -".base_intensity", -".no_ratio") |>
-    dplyr::relocate(
-      "ratio_name",
-      "ratio",
-      .after = dplyr::all_of(intensity_col)
+    dplyr::select(-".base_mass", -".base_intensity", -".no_ratio")
+
+  # optionally normalize each ratio by the mean of its file/analysis/ratio_name
+  # group so the stored ratios are centered around 1 (base mass rows stay NA)
+  if (normalize) {
+    norm_cols <- intersect(c("uidx", "analysis", "ratio_name"), names(data))
+    data <- dplyr::mutate(
+      data,
+      .by = dplyr::all_of(norm_cols),
+      ratio = .data$ratio / mean(.data$ratio, na.rm = TRUE)
     )
+  }
+
+  data <- dplyr::relocate(
+    data,
+    "ratio_name",
+    "ratio",
+    .after = dplyr::all_of(intensity_col)
+  )
 
   list(data = data, base = base)
 }

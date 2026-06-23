@@ -16,7 +16,7 @@
 #' @importFrom stats setNames
 #' @importFrom dplyr everything
 ## usethis namespace: end
-utils::globalVariables(c("file_name", "mass", "species", "type"))
+utils::globalVariables(c("data_type", "file_name", "mass", "species", "type"))
 NULL
 
 # minimum required isoextract versions for different file types

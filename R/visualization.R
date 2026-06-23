@@ -104,19 +104,25 @@ add_facets <- function(
 }
 
 # internal: if a `trace` column is present and not already a factor, convert it
-# to a factor with levels sorted by the numerical mass number at the end of the
-# trace label (e.g. "CO2: 44" -> 44), mirroring how `mass` is sorted. Traces
-# without a trailing number sort last.
+# to a factor with levels sorted by species and then by the numerical (numerator)
+# mass number of the trace label. A trace label is either "<species>: <mass>"
+# (e.g. "CO2: 44") or, for a ratio, "<species>: <numerator>/<denominator>" (e.g.
+# "N2: 29/28"); both are keyed by their leading mass number (44, 29) so an
+# intensity trace and its ratios sort next to each other, with the intensity
+# trace before its ratios. Traces without a parseable number sort last.
 sort_trace_factor <- function(plot_data) {
   if ("trace" %in% names(plot_data) && !is.factor(plot_data$trace)) {
-    trace_levels <- unique(plot_data$trace)
-    # extract the trailing mass number as the sort key (NA for traces without
-    # one, which then sort last); coercion NAs are expected, so silence them
-    trace_mass <- suppressWarnings(
-      as.numeric(sub("^.* (\\d+\\.?\\d*)$", "\\1", trace_levels))
-    )
+    trace_levels <- unique(as.character(plot_data$trace))
+    # split each label into species, leading mass number, and ratio flag
+    species_part <- sub(":.*$", "", trace_levels)
+    mass_part <- sub("^[^:]*:\\s*", "", trace_levels)
+    # coercion NAs (labels without a number) are expected, so silence them
+    mass_number <- suppressWarnings(as.numeric(sub("/.*$", "", mass_part)))
+    is_ratio <- grepl("/", trace_levels)
     trace_levels <- trace_levels[order(
-      trace_mass,
+      species_part,
+      mass_number,
+      is_ratio,
       trace_levels,
       na.last = TRUE
     )]
@@ -126,6 +132,49 @@ sort_trace_factor <- function(plot_data) {
     )
   }
   return(plot_data)
+}
+
+# internal: build a named colour vector (trace level -> colour) so that traces
+# sharing the same species + (numerator) mass get the same colour - e.g. the
+# intensity trace "N2: 29" and the ratio trace "N2: 29/28" (whose numerator mass
+# is 29, carried in the `mass` column). Each distinct species/mass key is given
+# one colour, drawn from the supplied `color_values` palette when it has enough
+# entries, otherwise from an evenly spaced hue palette. Returns `color_values`
+# unchanged if the data lacks the columns needed to key by (it can then be used
+# as a plain ordered palette).
+build_trace_color_values <- function(plot_data, color_values) {
+  if (!all(c("trace", "species", "mass") %in% names(plot_data))) {
+    return(color_values)
+  }
+  trace_levels <- if (is.factor(plot_data$trace)) {
+    levels(plot_data$trace)
+  } else {
+    unique(as.character(plot_data$trace))
+  }
+  # distinct trace -> (species, mass) colour key, as present in the data
+  key_map <- plot_data |>
+    dplyr::distinct(.data$trace, .data$species, .data$mass) |>
+    dplyr::mutate(
+      .trace = as.character(.data$trace),
+      .key = paste(.data$species, .data$mass)
+    )
+  trace_to_key <- stats::setNames(key_map$.key, key_map$.trace)
+  # restrict to (and order by) the levels actually present in the data
+  trace_levels <- trace_levels[trace_levels %in% names(trace_to_key)]
+  keys_in_order <- unique(trace_to_key[trace_levels])
+  n_keys <- length(keys_in_order)
+  if (n_keys == 0) {
+    return(color_values)
+  }
+  # one colour per key: use the supplied palette if it is large enough, else hues
+  key_colors <- if (!is.null(color_values) && length(color_values) >= n_keys) {
+    unname(color_values)[seq_len(n_keys)]
+  } else {
+    scales::hue_pal()(n_keys)
+  }
+  key_colors <- stats::setNames(key_colors, keys_in_order)
+  # named vector: trace level -> its key's colour
+  stats::setNames(unname(key_colors[trace_to_key[trace_levels]]), trace_levels)
 }
 
 # internal: add the colour aesthetic and a matching colour scale. When the
@@ -240,65 +289,441 @@ apply_drop_unused_levels <- function(
   droplevels(plot_data)
 }
 
-# internal: filter plot data to the requested `species` and/or `mass` values
-# (compared as character, so numeric/character work interchangeably). Errors
-# informatively (listing what is available) if a selection leaves no data.
+# internal: keep rows of `plot_data` whose `col` matches `values` (compared as
+# character, so numeric/character work interchangeably). Errors informatively
+# (listing what is available) if nothing matches.
+filter_to_values <- function(plot_data, col, values, .env = caller_env()) {
+  if (!col %in% names(plot_data)) {
+    cli_abort(
+      "cannot filter by {.field {col}}: there is no {.field {col}} column in the data",
+      call = .env
+    )
+  }
+  keep <- as.character(plot_data[[col]]) %in% as.character(values)
+  if (!any(keep)) {
+    cli_abort(
+      c(
+        "no data left after filtering {.field {col}} to {.val {values}}",
+        "i" = "available {col}: {.val {unique(as.character(plot_data[[col]]))}}"
+      ),
+      call = .env
+    )
+  }
+  plot_data[keep, ]
+}
+
+# internal: filter plot data to the requested `species` and/or `mass` values.
+# A `NULL` selection keeps everything; a vector filters (erroring if it matches
+# nothing).
 filter_plot_data <- function(plot_data, species, mass, .env = caller_env()) {
-  filter_by <- function(plot_data, col, values) {
-    if (is.null(values)) {
-      return(plot_data)
-    }
-    if (!col %in% names(plot_data)) {
-      cli_abort(
-        "cannot filter by {.field {col}}: there is no {.field {col}} column in the data",
-        call = .env
-      )
-    }
-    keep <- as.character(plot_data[[col]]) %in% as.character(values)
-    if (!any(keep)) {
+  if (!is.null(species)) {
+    plot_data <- filter_to_values(plot_data, "species", species, .env = .env)
+  }
+  if (!is.null(mass)) {
+    plot_data <- filter_to_values(plot_data, "mass", mass, .env = .env)
+  }
+  plot_data
+}
+
+# internal: interpret a NULL/empty/values selection argument: `NULL` -> "all"
+# (no filtering), a zero-length but non-NULL vector (e.g. `character(0)`) ->
+# "none", anything else -> "some" (those specific values). Note that `c()` is
+# `NULL` in R and therefore maps to "all"; use `character(0)` / `numeric(0)` to
+# select none.
+selection_mode <- function(x) {
+  if (is.null(x)) {
+    "all"
+  } else if (length(x) == 0L) {
+    "none"
+  } else {
+    "some"
+  }
+}
+
+# internal: clamp `x` into the closed interval `range` (length-2 c(min, max));
+# a `NULL` range leaves `x` unchanged. Used to fold extreme ratios into a
+# plotting window (e.g. c(0.1, 10)).
+clamp_to_range <- function(x, range) {
+  if (is.null(range)) {
+    return(x)
+  }
+  pmin(pmax(x, range[1]), range[2])
+}
+
+# internal: turn the `dataset` argument (an `ir_aggregated_data` object or a
+# plain data frame) into the flat data frame the tibble/plotting functions work
+# on. For an `ir_aggregated_data` the named `dataset_name` ("traces"/"cycles"/
+# "scans") must be present and non-empty; it is inner-joined with `$metadata`
+# (bringing in every metadata column not already present) by uidx/analysis. A
+# plain data frame is returned unchanged. Errors if the dataset is a raw
+# isofiles object, is not a data frame/aggregated data, or is unavailable/empty.
+prepare_plot_data <- function(dataset, dataset_name, .env = caller_env()) {
+  if (!missing(dataset) && is(dataset, "ir_isofiles")) {
+    cli_abort(
+      c(
+        "{.arg dataset} is a raw isofiles object and cannot be plotted directly",
+        "i" = "aggregate it first with {.code ir_aggregate_isofiles(dataset)}"
+      ),
+      call = .env
+    )
+  }
+  check_arg(
+    dataset,
+    !missing(dataset) &&
+      (is.data.frame(dataset) || is(dataset, "ir_aggregated_data")),
+    "must be a data frame or a set of aggregated isofiles",
+    .arg = "dataset",
+    .env = .env
+  )
+
+  if (is(dataset, "ir_aggregated_data")) {
+    if (
+      !dataset_name %in% names(dataset) ||
+        ncol(dataset[[dataset_name]]) == 0 ||
+        nrow(dataset[[dataset_name]]) == 0
+    ) {
       cli_abort(
         c(
-          "no data left after filtering {.field {col}} to {.val {values}}",
-          "i" = "available {col}: {.val {unique(as.character(plot_data[[col]]))}}"
+          "no {.field {dataset_name}} available in the provided {.field dataset}",
+          "i" = "make sure you are reading the matching isofiles and the aggregator includes columns from {.field {dataset_name}}"
         ),
         call = .env
       )
     }
-    plot_data[keep, ]
+    meta_extra_cols <- setdiff(
+      names(dataset$metadata),
+      names(dataset[[dataset_name]])
+    )
+    plot_data <- dplyr::inner_join(
+      dataset[[dataset_name]],
+      dplyr::select(
+        dataset$metadata,
+        dplyr::any_of(c("uidx", "analysis", meta_extra_cols))
+      ),
+      by = c("uidx", "analysis")
+    )
+  } else {
+    plot_data <- dataset
   }
-  plot_data <- filter_by(plot_data, "species", species)
-  plot_data <- filter_by(plot_data, "mass", mass)
+
+  if (nrow(plot_data) == 0) {
+    cli_abort("no data to plot (0 rows)", call = .env)
+  }
   plot_data
+}
+
+# internal: shared core for ir_generate_traces/cycles/scans_tibble(). Prepares
+# the flat data (join + validation), filters by species, detects the intensity
+# column, then builds the plotting tibble of intensity rows and (optionally)
+# ratio rows:
+#  - intensity rows carry `trace` = "<species>: <mass>" (always regenerated),
+#    `data_type` = "intensity [UNITS]", and `value` = the intensity. They are
+#    selected by `mass`: NULL = all masses, character(0)/numeric(0) = none, a
+#    vector = those masses.
+#  - ratio rows carry `trace` = "<species>: <ratio_name>", `data_type` =
+#    "ratios", and `value` = the (optionally fold-clamped) ratio. They are
+#    selected by `ratio`: NULL = all available ratios, character(0) = none, a
+#    vector = those ratio names. Requesting specific ratios when the
+#    `ratio_name`/`ratio` columns are absent errors (pointing to
+#    ir_calculate_ratios()); with `ratio = NULL` and no ratio columns, no ratios
+#    are simply added.
+# `ratio_fold_range` (length-2 c(min, max), or NULL) clamps the ratio `value`s.
+# Finally `trace` is turned into a sorted factor.
+generate_plot_tibble <- function(
+  dataset,
+  dataset_name,
+  required_cols,
+  species = NULL,
+  mass = NULL,
+  ratio = NULL,
+  ratio_fold_range = c(0.1, 10),
+  .env = caller_env()
+) {
+  # validate filters
+  check_arg(
+    species,
+    is.null(species) || is.character(species) || is.numeric(species),
+    "must be NULL or a character/numeric vector",
+    .env = .env
+  )
+  check_arg(
+    mass,
+    is.null(mass) || is.character(mass) || is.numeric(mass),
+    "must be NULL or a character/numeric vector",
+    .env = .env
+  )
+  check_arg(
+    ratio,
+    is.null(ratio) || is.character(ratio),
+    "must be NULL or a character vector of ratio names (e.g. c(\"45/44\"))",
+    .env = .env
+  )
+  check_arg(
+    ratio_fold_range,
+    is.null(ratio_fold_range) ||
+      (is.numeric(ratio_fold_range) &&
+        length(ratio_fold_range) == 2 &&
+        ratio_fold_range[1] < ratio_fold_range[2]),
+    "must be NULL or a numeric vector of length 2 with min < max",
+    .env = .env
+  )
+
+  # join metadata / validate the dataset
+  plot_data <- prepare_plot_data(dataset, dataset_name, .env = .env)
+
+  # required columns
+  missing_cols <- setdiff(required_cols, names(plot_data))
+  if (length(missing_cols) > 0) {
+    cli_abort(
+      c(
+        "{dataset_name} data is missing required {qty(length(missing_cols))}column{?s}: {.field {missing_cols}}",
+        "i" = "make sure the aggregator includes {.field {required_cols}}"
+      ),
+      call = .env
+    )
+  }
+
+  # species filter applies to both intensities and ratios
+  plot_data <- filter_plot_data(plot_data, species, NULL, .env = .env)
+
+  # detect the intensity column -> units
+  intensity_cols <- grep("^intensity\\.", names(plot_data), value = TRUE)
+  if (length(intensity_cols) == 0) {
+    cli_abort(
+      c(
+        "no intensity column found in {dataset_name} data",
+        "i" = "expected a column whose name matches {.code intensity.*}"
+      ),
+      call = .env
+    )
+  }
+  intensity_col <- intensity_cols[1]
+  intensity_units <- sub("^intensity\\.", "", intensity_col)
+
+  # intensity rows: selected by `mass` (NULL = all, empty = none)
+  mass_mode <- selection_mode(mass)
+  intensity_rows <- switch(
+    mass_mode,
+    all = plot_data,
+    none = plot_data[0, ],
+    some = filter_to_values(plot_data, "mass", mass, .env = .env)
+  )
+  # (re)generate the trace identifier and the data_type/value plotting columns
+  # from scratch, so `trace` is always "<species>: <mass>"
+  intensity_rows <- dplyr::mutate(
+    intensity_rows,
+    trace = sprintf("%s: %s", .data$species, .data$mass),
+    data_type = paste0("intensity [", intensity_units, "]"),
+    value = .data[[intensity_col]]
+  )
+
+  # ratio rows: selected by `ratio` (NULL = all available, empty = none)
+  ratio_mode <- selection_mode(ratio)
+  has_ratio_cols <- all(c("ratio_name", "ratio") %in% names(plot_data))
+  ratio_rows <- plot_data[0, ]
+  if (ratio_mode != "none") {
+    if (!has_ratio_cols) {
+      # only an explicit ratio request errors; `ratio = NULL` just adds no ratios
+      if (ratio_mode == "some") {
+        cli_abort(
+          c(
+            "cannot include ratios: the {.field ratio_name}/{.field ratio} columns are not present in the {dataset_name} data",
+            "i" = "calculate ratios first with {.code ir_calculate_ratios()}"
+          ),
+          call = .env
+        )
+      }
+    } else {
+      ratio_rows <- dplyr::filter(plot_data, !is.na(.data$ratio_name))
+      if (ratio_mode == "some") {
+        keep <- ratio_rows$ratio_name %in% ratio
+        if (!any(keep)) {
+          available <- sort(unique(ratio_rows$ratio_name))
+          cli_abort(
+            c(
+              "no data left after filtering ratios to {.val {ratio}}",
+              "i" = "available ratio{?s}: {.val {available}}"
+            ),
+            call = .env
+          )
+        }
+        ratio_rows <- ratio_rows[keep, ]
+      }
+    }
+  }
+  if (nrow(ratio_rows) > 0) {
+    ratio_rows <- dplyr::mutate(
+      ratio_rows,
+      trace = sprintf("%s: %s", .data$species, .data$ratio_name),
+      data_type = "ratios",
+      value = clamp_to_range(.data$ratio, ratio_fold_range)
+    )
+  }
+
+  # combine intensities + ratios
+  plot_data <- dplyr::bind_rows(intensity_rows, ratio_rows)
+  if (nrow(plot_data) == 0) {
+    cli_abort(
+      c(
+        "no data to plot: the {.arg mass}/{.arg ratio} selection left no rows",
+        "i" = "use {.code mass = NULL} for all masses and/or {.code ratio = NULL} for all ratios"
+      ),
+      call = .env
+    )
+  }
+
+  # turn the trace identifier into a sorted factor (species + numerator mass)
+  sort_trace_factor(plot_data)
+}
+
+#' Generate the tibble used by the plotting functions
+#'
+#' These helpers build the exact flat tibble that [ir_plot_continuous_flow()]
+#' (`ir_generate_traces_tibble()`), [ir_plot_dual_inlet()]
+#' (`ir_generate_cycles_tibble()`), and [ir_plot_scans()]
+#' (`ir_generate_scans_tibble()`) plot, so it can be inspected or used
+#' independently of producing a plot. The `dataset` is prepared exactly as for
+#' the plotting functions (an `ir_aggregated_data` object has its `traces` /
+#' `cycles` / `scans` dataset inner-joined with `$metadata`; a plain data frame
+#' is used as is), filtered by `species`, and then split into intensity rows and
+#' (optionally) ratio rows, each augmented with three columns:
+#' \itemize{
+#'   \item `trace` - the identifier `"<species>: <mass>"` for intensity rows
+#'     (e.g. `"CO2: 44"`) or `"<species>: <ratio_name>"` for ratio rows (e.g.
+#'     `"CO2: 45/44"`), always (re)generated and returned as a factor sorted by
+#'     species and numerical (numerator) mass.
+#'   \item `data_type` - `"intensity [UNITS]"` (e.g. `"intensity [mV]"`) for the
+#'     intensity rows, or `"ratios"` for ratio rows.
+#'   \item `value` - the value to plot: the intensity for intensity rows, or the
+#'     (optionally fold-clamped) ratio for ratio rows.
+#' }
+#'
+#' @param dataset an `ir_aggregated_data` object from [ir_aggregate_isofiles()]
+#'   or a plain data frame with the required columns (see the matching plotting
+#'   function)
+#' @param species optional vector to filter to specific species (e.g. `"CO2"` or
+#'   `c("N2", "CO2")`); default `NULL` keeps all species.
+#' @param mass which masses to include as intensity traces: `NULL` (default) for
+#'   all masses, a vector (e.g. `44` or `c(44, 45)`) for specific masses, or a
+#'   zero-length vector (`numeric(0)`/`character(0)`) for none. Note that `c()`
+#'   is `NULL` in R, i.e. all masses.
+#' @param ratio which ratios to include (computed with [ir_calculate_ratios()]):
+#'   `NULL` (default) for all available ratios, a character vector of ratio names
+#'   (e.g. `c("45/44", "46/44")`) for specific ones, or `character(0)` for none.
+#'   Requesting specific ratio names when ratios have not been calculated is an
+#'   error pointing to [ir_calculate_ratios()]; with `ratio = NULL` and no ratios
+#'   present none are simply added.
+#' @param ratio_fold_range length-2 numeric `c(min, max)` to clamp ratio `value`s
+#'   into before plotting (ratios below `min` become `min`, above `max` become
+#'   `max`); default `c(0.1, 10)`. Set to `NULL` to leave ratios unclamped. Most
+#'   useful together with the default normalized ratios from
+#'   [ir_calculate_ratios()] (centered around 1).
+#' @return a tibble with the prepared data plus the `trace`, `data_type`, and
+#'   `value` columns described above.
+#' @name ir_generate_tibble
+#' @export
+ir_generate_traces_tibble <- function(
+  dataset,
+  species = NULL,
+  mass = NULL,
+  ratio = NULL,
+  ratio_fold_range = c(0.1, 10)
+) {
+  generate_plot_tibble(
+    dataset,
+    "traces",
+    required_cols = c("species", "time.s", "mass"),
+    species = species,
+    mass = mass,
+    ratio = ratio,
+    ratio_fold_range = ratio_fold_range
+  )
+}
+
+#' @rdname ir_generate_tibble
+#' @export
+ir_generate_cycles_tibble <- function(
+  dataset,
+  species = NULL,
+  mass = NULL,
+  ratio = NULL,
+  ratio_fold_range = c(0.1, 10)
+) {
+  generate_plot_tibble(
+    dataset,
+    "cycles",
+    required_cols = c("species", "cycle", "type", "mass"),
+    species = species,
+    mass = mass,
+    ratio = ratio,
+    ratio_fold_range = ratio_fold_range
+  )
+}
+
+#' @rdname ir_generate_tibble
+#' @export
+ir_generate_scans_tibble <- function(
+  dataset,
+  species = NULL,
+  mass = NULL,
+  ratio = NULL,
+  ratio_fold_range = c(0.1, 10)
+) {
+  generate_plot_tibble(
+    dataset,
+    "scans",
+    required_cols = c("species", "scan_type", "x_units", "x", "mass"),
+    species = species,
+    mass = mass,
+    ratio = ratio,
+    ratio_fold_range = ratio_fold_range
+  )
 }
 
 #' Plot scan data
 #'
 #' Plots scan data from an [ir_aggregate_isofiles()] result or a plain data
-#' frame. When `dataset` is an `ir_aggregated_data` object, the `$scans`
-#' dataset is inner-joined with `$metadata` (bringing in all metadata columns
-#' not already present in `$scans`) before plotting. The plot data must contain
-#' `x`, `scan_type`, `x_units`, `mass`, and an `intensity.*` column — an error
-#' is thrown if any are missing. The intensity unit suffix becomes the y axis
-#' label; `scan_type` and `x_units` are combined for the x axis label. If
-#' `mass` is not already a factor it is converted to one with levels sorted in
-#' numerical order.
+#' frame. The data is prepared with [ir_generate_scans_tibble()] (which, for an
+#' `ir_aggregated_data` object, inner-joins the `$scans` dataset with
+#' `$metadata`). The plot data must contain `species`, `x`, `scan_type`,
+#' `x_units`, `mass`, and an `intensity.*` column — an error is thrown if any are
+#' missing. A `trace` identifier (`"<species>: <mass>"`) is always regenerated
+#' and the plotted `value` together with a `data_type` label (`"intensity
+#' [UNITS]"`, or `"ratios"` for ratio rows) are added. `scan_type` and `x_units`
+#' are combined for the x axis label.
 #'
 #' @param dataset an `ir_aggregated_data` object from [ir_aggregate_isofiles()]
-#'   or a plain data frame with `x`, `scan_type`, `x_units`, `mass`, and an
-#'   `intensity.*` column
+#'   or a plain data frame with `species`, `x`, `scan_type`, `x_units`, `mass`,
+#'   and an `intensity.*` column
 #' @param scan_type which scan type to plot (e.g. `"high voltage"`). Required
 #'   when the data contains more than one scan type; an error lists the
 #'   available types. If the data contains only one scan type, the parameter
 #'   must either be `NULL` or match that type exactly.
 #' @param species optional vector to filter the displayed data to specific
 #'   species (e.g. `"CO2"` or `c("N2", "CO2")`); default `NULL` shows all species.
-#' @param mass optional vector to filter the displayed data to specific masses
-#'   (e.g. `44` or `c(44, 45)`); default `NULL` shows all masses.
-#' @param facet column or expression to facet by (default: `file_name`). A
-#'   plain column or expression (e.g. `file_name` or `paste(species, mass)`) is
-#'   faceted with [ggplot2::facet_wrap()]; a two-sided formula (e.g.
-#'   `species ~ mass`) is faceted with [ggplot2::facet_grid()]. Set to `NULL`
-#'   to suppress faceting.
+#' @param mass which masses to include as intensity traces: `NULL` (default)
+#'   shows all masses, a vector (e.g. `44` or `c(44, 45)`) shows specific masses,
+#'   and a zero-length vector (`numeric(0)`/`character(0)`) shows none. Note that
+#'   `c()` is `NULL` in R (i.e. all masses).
+#' @param ratio which ratios to additionally include (computed with
+#'   [ir_calculate_ratios()]): `NULL` (default) shows all available ratios, a
+#'   character vector of ratio names (e.g. `c("45/44", "46/44")`) shows specific
+#'   ones, and `character(0)` shows none. Requesting specific ratio names when
+#'   ratios have not been calculated is an error pointing to
+#'   [ir_calculate_ratios()] (with `ratio = NULL` and no ratios present, none are
+#'   simply added). Ratio rows are plotted on the same `value` axis with
+#'   `data_type = "ratios"`; the default `facet = data_type` (with free scales)
+#'   separates them from the intensities.
+#' @param ratio_fold_range length-2 numeric `c(min, max)` to clamp ratio values
+#'   into before plotting (values below `min` become `min`, above `max` become
+#'   `max`); default `c(0.1, 10)`. Set to `NULL` to leave ratios unclamped. Most
+#'   useful with the default normalized ratios from [ir_calculate_ratios()]
+#'   (centered around 1, so `c(0.1, 10)` keeps within a 10-fold band).
+#' @param facet column or expression to facet by (default: `data_type`, which
+#'   separates intensities from ratios). A plain column or expression (e.g.
+#'   `file_name` or `paste(species, mass)`) is faceted with
+#'   [ggplot2::facet_wrap()]; a two-sided formula (e.g. `data_type ~ file_name`)
+#'   is faceted with [ggplot2::facet_grid()]. Set to `NULL` to suppress faceting.
 #' @param scales whether facet scales should be `"free"` (default), `"fixed"`,
 #'   `"free_x"`, or `"free_y"`; passed on to [ggplot2::facet_wrap()] /
 #'   [ggplot2::facet_grid()].
@@ -309,17 +734,20 @@ filter_plot_data <- function(plot_data, species, mass, .env = caller_env()) {
 #'   formula (faceted with [ggplot2::facet_grid()]), with a warning if you set
 #'   them explicitly.
 #' @param color column or expression for the colour aesthetic (default:
-#'   `trace`, the per-species/mass trace identifier, e.g. `"CO2: 44"`)
+#'   `trace`, the per-species/mass trace identifier, e.g. `"CO2: 44"`). When
+#'   colouring by `trace`, traces that share the same species and (numerator)
+#'   mass are given the same colour, so an intensity trace (`"N2: 29"`) and its
+#'   ratio traces (`"N2: 29/28"`) match.
 #' @param linetype column or expression for the linetype aesthetic (default:
 #'   `NULL`, i.e. no linetype aesthetic)
 #' @param color_values named or unnamed character vector of colours passed to
 #'   [ggplot2::scale_color_manual()], or `NULL` to use the ggplot2 default
 #'   colour palette (default: [palette.colors()])
-#' @param drop_unused_levels whether to drop unused factor levels (e.g. masses or
-#'   traces that are absent after filtering by `species`/`mass` or zooming to a
-#'   window) from the colour scale and legend. Default `FALSE` keeps every level
-#'   so the colour mapping stays stable across subsets of the same dataset; set
-#'   to `TRUE` to show only the levels actually present in the plotted data.
+#' @param drop_unused_levels whether to drop unused `trace` factor levels (e.g.
+#'   traces that are absent after zooming to a window) from the colour scale and
+#'   legend. Default `FALSE` keeps every level so the colour mapping stays stable
+#'   across subsets of the same dataset; set to `TRUE` to show only the levels
+#'   actually present in the plotted data.
 #' @param scientific whether to format y axis labels in scientific notation
 #'   (default: `FALSE`)
 #' @param ... additional arguments passed on to [ggplot2::facet_wrap()] or
@@ -342,7 +770,9 @@ ir_plot_scans <- function(
   scan_type = NULL,
   species = NULL,
   mass = NULL,
-  facet = file_name,
+  ratio = NULL,
+  ratio_fold_range = c(0.1, 10),
+  facet = data_type,
   scales = "free",
   nrow = NULL,
   ncol = 1,
@@ -356,35 +786,12 @@ ir_plot_scans <- function(
   n_y_breaks = 5,
   ...
 ) {
-  # safety checks
-  if (!missing(dataset) && is(dataset, "ir_isofiles")) {
-    cli_abort(
-      c(
-        "{.field dataset} contains raw isofiles object and cannot be plotted directly",
-        "i" = "aggregate the data first with {.code ir_aggregate_isofiles(dataset)}"
-      )
-    )
-  }
-  check_arg(
-    dataset,
-    !missing(dataset) &&
-      (is.data.frame(dataset) || is(dataset, "ir_aggregated_data")),
-    "must be a data frame or a set of aggregated isofiles"
-  )
+  # plot-specific argument checks (dataset / species / mass / ratio /
+  # ratio_fold_range are checked by ir_generate_scans_tibble() below)
   check_arg(
     scan_type,
     is.null(scan_type) || rlang::is_scalar_character(scan_type),
     "must be NULL or a single string"
-  )
-  check_arg(
-    species,
-    is.null(species) || is.character(species) || is.numeric(species),
-    "must be NULL or a character/numeric vector"
-  )
-  check_arg(
-    mass,
-    is.null(mass) || is.character(mass) || is.numeric(mass),
-    "must be NULL or a character/numeric vector"
   )
   check_arg(
     color_values,
@@ -422,52 +829,14 @@ ir_plot_scans <- function(
   color_quo <- rlang::enquo(color)
   linetype_quo <- rlang::enquo(linetype)
 
-  # prepare plot data
-  if (is(dataset, "ir_aggregated_data")) {
-    if (
-      !"scans" %in% names(dataset) ||
-        ncol(dataset$scans) == 0 ||
-        nrow(dataset$scans) == 0
-    ) {
-      cli_abort(
-        c(
-          "no scans available in the provided {.field dataset}",
-          "i" = "make sure you are reading scan isofiles and the aggregator includes columns from {.field scans}"
-        )
-      )
-    }
-    # join in metadata columns not already in scans
-    meta_extra_cols <- setdiff(names(dataset$metadata), names(dataset$scans))
-    plot_data <- dplyr::inner_join(
-      dataset$scans,
-      dplyr::select(
-        dataset$metadata,
-        dplyr::any_of(c("uidx", "analysis", meta_extra_cols))
-      ),
-      by = c("uidx", "analysis")
-    )
-  } else {
-    plot_data <- dataset
-  }
-
-  if (nrow(plot_data) == 0) {
-    cli_abort("no data to plot (0 rows)")
-  }
-
-  # require scan_type, x_units, x, and mass columns
-  required_cols <- c("scan_type", "x_units", "x", "mass")
-  missing_cols <- setdiff(required_cols, names(plot_data))
-  if (length(missing_cols) > 0) {
-    cli_abort(
-      c(
-        "scan data is missing required {qty(length(missing_cols))}column{?s}: {.field {missing_cols}}",
-        "i" = "make sure the aggregator includes {.field scan_type}, {.field x_units}, {.field x}, and {.field mass}"
-      )
-    )
-  }
-
-  # filter to the requested species / mass
-  plot_data <- filter_plot_data(plot_data, species, mass)
+  # build the plotting tibble (join, filter, trace/data_type/value, ratios)
+  plot_data <- ir_generate_scans_tibble(
+    dataset,
+    species = species,
+    mass = mass,
+    ratio = ratio,
+    ratio_fold_range = ratio_fold_range
+  )
 
   # enforce a single scan type
   available_scan_types <- unique(plot_data$scan_type)
@@ -492,80 +861,52 @@ ir_plot_scans <- function(
     plot_data <- dplyr::filter(plot_data, .data$scan_type == !!scan_type)
   }
 
-  # require an intensity.UNITS column
-  intensity_cols <- grep("^intensity\\.", names(plot_data), value = TRUE)
-  if (length(intensity_cols) == 0) {
-    cli_abort(
-      c(
-        "no intensity column found in scan data",
-        "i" = "expected a column whose name matches {.code intensity.*}"
-      )
-    )
-  }
-  intensity_col <- intensity_cols[1]
-  intensity_units <- sub("^intensity\\.", "", intensity_col)
-
-  # derive axis labels
+  # derive axis labels: y from the data_type when unique (e.g. "intensity [mV]"),
+  # otherwise the generic "value" since intensities and ratios are mixed
   x_lab <- paste0(
     unique(plot_data$scan_type)[1],
     " [",
     unique(plot_data$x_units)[1],
     "]"
   )
-  y_lab <- paste0("intensity [", intensity_units, "]")
-
-  # sort mass as a factor in numerical order
-  if (!is.factor(plot_data$mass)) {
-    mass_levels <- plot_data$mass |>
-      unique() |>
-      as.numeric() |>
-      sort(na.last = TRUE) |>
-      as.character()
-    plot_data <- plot_data |>
-      dplyr::mutate(mass = factor(.data$mass, levels = mass_levels))
+  y_lab <- if (dplyr::n_distinct(plot_data$data_type) == 1L) {
+    plot_data$data_type[1]
+  } else {
+    "value"
   }
 
-  # sort trace as a factor in numerical order of the trailing mass number
-  plot_data <- sort_trace_factor(plot_data)
+  # one line per trace (incl. ratio traces); group on the trace identifier
+  group_cols <- intersect(
+    c("uidx", "analysis", "channel", "trace"),
+    names(plot_data)
+  )
 
-  # x window: applied after the mass/trace factors are built (above) so they keep
-  # their full levels and the colour mapping stays stable when zoomed. An empty
+  # x window: applied after the trace factor is built (in the tibble) so it keeps
+  # its full levels and the colour mapping stays stable when zoomed. An empty
   # window (no data points inside it) is fine - the line still interpolates from
   # the bracketing points just outside the window (see apply_plot_window()).
   if (!is.null(x_window)) {
-    plot_data <- apply_plot_window(
-      plot_data,
-      "x",
-      x_window,
-      c("uidx", "analysis", "species", "channel", "mass")
-    )
+    plot_data <- apply_plot_window(plot_data, "x", x_window, group_cols)
   }
 
-  # optionally drop factor levels (e.g. masses/traces outside the window) that
-  # are not visible in the plotted data
+  # optionally drop trace factor levels (e.g. outside the window) not visible
   plot_data <- apply_drop_unused_levels(
     plot_data,
     drop_unused_levels,
     "x",
     x_window,
-    c("uidx", "analysis", "species", "channel", "mass")
+    group_cols
   )
 
   # validate aesthetic expressions against the actual plot data
   check_aes_expr(color_quo, "color", plot_data)
   check_aes_expr(linetype_quo, "linetype", plot_data)
 
-  # group aesthetic: always set to ensure one line per scan trace
-  group_cols <- intersect(
-    c("uidx", "analysis", "species", "mass", "channel"),
-    names(plot_data)
-  )
-
   # base plot
   p <- ggplot2::ggplot(plot_data) +
     ggplot2::aes(
       x = !!sym("x"),
-      y = !!sym(intensity_col),
+      y = !!sym("value"),
       group = paste(!!!rlang::syms(group_cols))
     ) +
     ggplot2::geom_line() +
@@ -590,7 +931,11 @@ ir_plot_scans <- function(
     p <- p + ggplot2::expand_limits(y = 0)
   }
 
-  # additional aesthetics
+  # additional aesthetics; when colouring by trace, share a colour across traces
+  # of the same species/mass (e.g. "N2: 29" and "N2: 29/28")
+  if (rlang::quo_is_symbol(color_quo, "trace")) {
+    color_values <- build_trace_color_values(plot_data, color_values)
+  }
   p <- add_color_aes(p, color_quo, color_values, plot_data, drop_unused_levels)
   if (!rlang::quo_is_null(linetype_quo)) {
     p <- p + ggplot2::aes(linetype = !!linetype_quo)
@@ -621,25 +966,42 @@ ir_plot_scans <- function(
 #' Plot continuous flow data
 #'
 #' Plots chromatographic trace data from an [ir_aggregate_isofiles()] result or
-#' a plain data frame. When `dataset` is an `ir_aggregated_data` object, the
-#' `$traces` dataset is inner-joined with `$metadata` (bringing in all metadata
-#' columns not already present in `$traces`) before plotting. The plot data must
-#' contain `time.s`, `mass`, and an `intensity.*` column — an error is thrown if
-#' any are missing. The intensity unit suffix becomes the y axis label. If
-#' `mass` is not already a factor it is converted to one with levels sorted in
-#' numerical order.
+#' a plain data frame. The data is prepared with [ir_generate_traces_tibble()]
+#' (which, for an `ir_aggregated_data` object, inner-joins the `$traces` dataset
+#' with `$metadata`). The plot data must contain `species`, `time.s`, `mass`, and
+#' an `intensity.*` column — an error is thrown if any are missing. A `trace`
+#' identifier (`"<species>: <mass>"`) is always regenerated and the plotted
+#' `value` together with a `data_type` label (`"intensity [UNITS]"`, or
+#' `"ratios"` for ratio rows) are added.
 #'
 #' @param dataset an `ir_aggregated_data` object from [ir_aggregate_isofiles()]
-#'   or a plain data frame with `time.s`, `mass`, and an `intensity.*` column
+#'   or a plain data frame with `species`, `time.s`, `mass`, and an
+#'   `intensity.*` column
 #' @param species optional vector to filter the displayed data to specific
 #'   species (e.g. `"CO2"` or `c("N2", "CO2")`); default `NULL` shows all species.
-#' @param mass optional vector to filter the displayed data to specific masses
-#'   (e.g. `44` or `c(44, 45)`); default `NULL` shows all masses.
-#' @param facet column or expression to facet by (default: `file_name`). A
-#'   plain column or expression (e.g. `file_name` or `paste(species, mass)`) is
-#'   faceted with [ggplot2::facet_wrap()]; a two-sided formula (e.g.
-#'   `species ~ mass`) is faceted with [ggplot2::facet_grid()]. Set to `NULL`
-#'   to suppress faceting.
+#' @param mass which masses to include as intensity traces: `NULL` (default)
+#'   shows all masses, a vector (e.g. `44` or `c(44, 45)`) shows specific masses,
+#'   and a zero-length vector (`numeric(0)`/`character(0)`) shows none. Note that
+#'   `c()` is `NULL` in R (i.e. all masses).
+#' @param ratio which ratios to additionally include (computed with
+#'   [ir_calculate_ratios()]): `NULL` (default) shows all available ratios, a
+#'   character vector of ratio names (e.g. `c("45/44", "46/44")`) shows specific
+#'   ones, and `character(0)` shows none. Requesting specific ratio names when
+#'   ratios have not been calculated is an error pointing to
+#'   [ir_calculate_ratios()] (with `ratio = NULL` and no ratios present, none are
+#'   simply added). Ratio rows are plotted on the same `value` axis with
+#'   `data_type = "ratios"`; the default `facet = data_type` (with free scales)
+#'   separates them from the intensities.
+#' @param ratio_fold_range length-2 numeric `c(min, max)` to clamp ratio values
+#'   into before plotting (values below `min` become `min`, above `max` become
+#'   `max`); default `c(0.1, 10)`. Set to `NULL` to leave ratios unclamped. Most
+#'   useful with the default normalized ratios from [ir_calculate_ratios()]
+#'   (centered around 1, so `c(0.1, 10)` keeps within a 10-fold band).
+#' @param facet column or expression to facet by (default: `data_type`, which
+#'   separates intensities from ratios). A plain column or expression (e.g.
+#'   `file_name` or `paste(species, mass)`) is faceted with
+#'   [ggplot2::facet_wrap()]; a two-sided formula (e.g. `data_type ~ file_name`)
+#'   is faceted with [ggplot2::facet_grid()]. Set to `NULL` to suppress faceting.
 #' @param scales whether facet scales should be `"free"` (default), `"fixed"`,
 #'   `"free_x"`, or `"free_y"`; passed on to [ggplot2::facet_wrap()] /
 #'   [ggplot2::facet_grid()].
@@ -650,17 +1012,20 @@ ir_plot_scans <- function(
 #'   formula (faceted with [ggplot2::facet_grid()]), with a warning if you set
 #'   them explicitly.
 #' @param color column or expression for the colour aesthetic (default:
-#'   `trace`, the per-species/mass trace identifier, e.g. `"CO2: 44"`)
+#'   `trace`, the per-species/mass trace identifier, e.g. `"CO2: 44"`). When
+#'   colouring by `trace`, traces that share the same species and (numerator)
+#'   mass are given the same colour, so an intensity trace (`"N2: 29"`) and its
+#'   ratio traces (`"N2: 29/28"`) match.
 #' @param linetype column or expression for the linetype aesthetic (default:
 #'   `NULL`, i.e. no linetype aesthetic)
 #' @param color_values named or unnamed character vector of colours passed to
 #'   [ggplot2::scale_color_manual()], or `NULL` to use the ggplot2 default
 #'   colour palette (default: [palette.colors()])
-#' @param drop_unused_levels whether to drop unused factor levels (e.g. masses or
-#'   traces that are absent after filtering by `species`/`mass` or zooming to a
-#'   window) from the colour scale and legend. Default `FALSE` keeps every level
-#'   so the colour mapping stays stable across subsets of the same dataset; set
-#'   to `TRUE` to show only the levels actually present in the plotted data.
+#' @param drop_unused_levels whether to drop unused `trace` factor levels (e.g.
+#'   traces that are absent after zooming to a window) from the colour scale and
+#'   legend. Default `FALSE` keeps every level so the colour mapping stays stable
+#'   across subsets of the same dataset; set to `TRUE` to show only the levels
+#'   actually present in the plotted data.
 #' @param scientific whether to format y axis labels in scientific notation
 #'   (default: `FALSE`)
 #' @param ... additional arguments passed on to [ggplot2::facet_wrap()] or
@@ -685,7 +1050,9 @@ ir_plot_continuous_flow <- function(
   dataset,
   species = NULL,
   mass = NULL,
-  facet = file_name,
+  ratio = NULL,
+  ratio_fold_range = c(0.1, 10),
+  facet = data_type,
   scales = "free",
   nrow = NULL,
   ncol = 1,
@@ -700,31 +1067,8 @@ ir_plot_continuous_flow <- function(
   n_y_breaks = 5,
   ...
 ) {
-  # safety checks
-  if (!missing(dataset) && is(dataset, "ir_isofiles")) {
-    cli_abort(
-      c(
-        "{.arg dataset} is a raw isofiles object and cannot be plotted directly",
-        "i" = "aggregate it first with {.code ir_aggregate_isofiles(dataset)}"
-      )
-    )
-  }
-  check_arg(
-    dataset,
-    !missing(dataset) &&
-      (is.data.frame(dataset) || is(dataset, "ir_aggregated_data")),
-    "must be a data frame or a set of aggregated isofiles"
-  )
-  check_arg(
-    species,
-    is.null(species) || is.character(species) || is.numeric(species),
-    "must be NULL or a character/numeric vector"
-  )
-  check_arg(
-    mass,
-    is.null(mass) || is.character(mass) || is.numeric(mass),
-    "must be NULL or a character/numeric vector"
-  )
+  # plot-specific argument checks (dataset / species / mass / ratio are checked
+  # by ir_generate_traces_tibble() below)
   check_arg(
     color_values,
     is.null(color_values) || is.character(color_values),
@@ -766,122 +1110,57 @@ ir_plot_continuous_flow <- function(
   color_quo <- rlang::enquo(color)
   linetype_quo <- rlang::enquo(linetype)
 
-  # prepare plot data
-  if (is(dataset, "ir_aggregated_data")) {
-    if (
-      !"traces" %in% names(dataset) ||
-        ncol(dataset$traces) == 0 ||
-        nrow(dataset$traces) == 0
-    ) {
-      cli_abort(
-        c(
-          "no traces available in the provided {.field dataset}",
-          "i" = "make sure you are reading continuous flow isofiles and the aggregator includes columns from {.field traces}"
-        )
-      )
-    }
-    meta_extra_cols <- setdiff(names(dataset$metadata), names(dataset$traces))
-    plot_data <- dplyr::inner_join(
-      dataset$traces,
-      dplyr::select(
-        dataset$metadata,
-        dplyr::any_of(c("uidx", "analysis", meta_extra_cols))
-      ),
-      by = c("uidx", "analysis")
-    )
-  } else {
-    plot_data <- dataset
-  }
-
-  if (nrow(plot_data) == 0) {
-    cli_abort("no data to plot (0 rows)")
-  }
-
-  # require time.s and mass columns
-  missing_cols <- setdiff(c("time.s", "mass"), names(plot_data))
-  if (length(missing_cols) > 0) {
-    cli_abort(
-      c(
-        "trace data is missing required {qty(length(missing_cols))}column{?s}: {.field {missing_cols}}",
-        "i" = "make sure the aggregator includes {.field time.s} and {.field mass}"
-      )
-    )
-  }
+  # build the plotting tibble (join, filter, trace/data_type/value, ratios)
+  plot_data <- ir_generate_traces_tibble(
+    dataset,
+    species = species,
+    mass = mass,
+    ratio = ratio,
+    ratio_fold_range = ratio_fold_range
+  )
   time_col <- "time.s"
 
-  # filter to the requested species / mass
-  plot_data <- filter_plot_data(plot_data, species, mass)
+  # one line per trace (incl. ratio traces); group on the trace identifier
+  group_cols <- intersect(
+    c("uidx", "analysis", "channel", "trace"),
+    names(plot_data)
+  )
 
-  # detect intensity column
-  intensity_cols <- grep("^intensity\\.", names(plot_data), value = TRUE)
-  if (length(intensity_cols) == 0) {
-    cli_abort(
-      c(
-        "no intensity column found in trace data",
-        "i" = "expected a column whose name matches {.code intensity.*}"
-      )
-    )
-  }
-  intensity_col <- intensity_cols[1]
-  intensity_units <- sub("^intensity\\.", "", intensity_col)
-
-  # sort mass as a factor in numerical order
-  if (!is.factor(plot_data$mass)) {
-    mass_levels <- as.character(sort(
-      unique(as.numeric(plot_data$mass)),
-      na.last = TRUE
-    ))
-    plot_data <- dplyr::mutate(
-      plot_data,
-      mass = factor(.data$mass, levels = mass_levels)
-    )
-  }
-
-  # sort trace as a factor in numerical order of the trailing mass number
-  plot_data <- sort_trace_factor(plot_data)
-
-  # time window: applied after the mass/trace factors are built (above) so they
-  # keep their full levels and the colour mapping stays stable when zoomed. An
+  # time window: applied after the trace factor is built (in the tibble) so it
+  # keeps its full levels and the colour mapping stays stable when zoomed. An
   # empty window (no data points inside it) is fine - the line still interpolates
   # from the bracketing points just outside the window (see apply_plot_window()).
   if (!is.null(time_window)) {
-    plot_data <- apply_plot_window(
-      plot_data,
-      time_col,
-      time_window,
-      c("uidx", "analysis", "species", "channel", "mass")
-    )
+    plot_data <- apply_plot_window(plot_data, time_col, time_window, group_cols)
   }
 
-  # optionally drop factor levels (e.g. masses/traces outside the window) that
-  # are not visible in the plotted data
+  # optionally drop trace factor levels (e.g. outside the window) not visible
   plot_data <- apply_drop_unused_levels(
     plot_data,
     drop_unused_levels,
     time_col,
     time_window,
-    c("uidx", "analysis", "species", "channel", "mass")
+    group_cols
   )
 
   # validate aesthetic expressions against the actual plot data
   check_aes_expr(color_quo, "color", plot_data)
   check_aes_expr(linetype_quo, "linetype", plot_data)
 
-  # group aesthetic: always set to ensure one line per trace
-  group_cols <- intersect(
-    c("uidx", "analysis", "species", "mass", "channel"),
-    names(plot_data)
-  )
-
-  # axis labels
+  # axis labels: y from the data_type when unique (e.g. "intensity [mV]"),
+  # otherwise the generic "value" since intensities and ratios are mixed
   x_lab <- "time"
-  y_lab <- paste0("intensity [", intensity_units, "]")
+  y_lab <- if (dplyr::n_distinct(plot_data$data_type) == 1L) {
+    plot_data$data_type[1]
+  } else {
+    "value"
+  }
 
   # base plot
   p <- ggplot2::ggplot(plot_data) +
     ggplot2::aes(
       x = !!sym(time_col),
-      y = !!sym(intensity_col),
+      y = !!sym("value"),
       group = paste(!!!rlang::syms(group_cols))
     ) +
     ggplot2::geom_line() +
@@ -907,7 +1186,11 @@ ir_plot_continuous_flow <- function(
     p <- p + ggplot2::expand_limits(y = 0)
   }
 
-  # additional aesthetics
+  # additional aesthetics; when colouring by trace, share a colour across traces
+  # of the same species/mass (e.g. "N2: 29" and "N2: 29/28")
+  if (rlang::quo_is_symbol(color_quo, "trace")) {
+    color_values <- build_trace_color_values(plot_data, color_values)
+  }
   p <- add_color_aes(p, color_quo, color_values, plot_data, drop_unused_levels)
   if (!rlang::quo_is_null(linetype_quo)) {
     p <- p + ggplot2::aes(linetype = !!linetype_quo)
@@ -938,26 +1221,42 @@ ir_plot_continuous_flow <- function(
 #' Plot dual inlet cycle data
 #'
 #' Plots cycle data from an [ir_aggregate_isofiles()] result or a plain data
-#' frame. When `dataset` is an `ir_aggregated_data` object, the `$cycles`
-#' dataset is inner-joined with `$metadata` (bringing in all metadata columns
-#' not already present in `$cycles`) before plotting. The plot data must contain
-#' `cycle`, `type`, `mass`, and an `intensity.*` column — an error is thrown if
-#' any are missing. The intensity unit suffix becomes the y axis label. If
-#' `mass` is not already a factor it is converted to one with levels sorted in
-#' numerical order.
+#' frame. The data is prepared with [ir_generate_cycles_tibble()] (which, for an
+#' `ir_aggregated_data` object, inner-joins the `$cycles` dataset with
+#' `$metadata`). The plot data must contain `species`, `cycle`, `type`, `mass`,
+#' and an `intensity.*` column — an error is thrown if any are missing. A `trace`
+#' identifier (`"<species>: <mass>"`) is always regenerated and the plotted
+#' `value` together with a `data_type` label (`"intensity [UNITS]"`, or
+#' `"ratios"` for ratio rows) are added.
 #'
 #' @param dataset an `ir_aggregated_data` object from [ir_aggregate_isofiles()]
-#'   or a plain data frame with `cycle`, `type`, `mass`, and an
+#'   or a plain data frame with `species`, `cycle`, `type`, `mass`, and an
 #'   `intensity.*` column
 #' @param species optional vector to filter the displayed data to specific
 #'   species (e.g. `"CO2"` or `c("N2", "CO2")`); default `NULL` shows all species.
-#' @param mass optional vector to filter the displayed data to specific masses
-#'   (e.g. `44` or `c(44, 45)`); default `NULL` shows all masses.
-#' @param facet column or expression to facet by (default: `file_name`). A
-#'   plain column or expression (e.g. `file_name` or `paste(species, mass)`) is
-#'   faceted with [ggplot2::facet_wrap()]; a two-sided formula (e.g.
-#'   `species ~ mass`) is faceted with [ggplot2::facet_grid()]. Set to `NULL`
-#'   to suppress faceting.
+#' @param mass which masses to include as intensity traces: `NULL` (default)
+#'   shows all masses, a vector (e.g. `44` or `c(44, 45)`) shows specific masses,
+#'   and a zero-length vector (`numeric(0)`/`character(0)`) shows none. Note that
+#'   `c()` is `NULL` in R (i.e. all masses).
+#' @param ratio which ratios to additionally include (computed with
+#'   [ir_calculate_ratios()]): `NULL` (default) shows all available ratios, a
+#'   character vector of ratio names (e.g. `c("45/44", "46/44")`) shows specific
+#'   ones, and `character(0)` shows none. Requesting specific ratio names when
+#'   ratios have not been calculated is an error pointing to
+#'   [ir_calculate_ratios()] (with `ratio = NULL` and no ratios present, none are
+#'   simply added). Ratio rows are plotted on the same `value` axis with
+#'   `data_type = "ratios"`; the default `facet = data_type` (with free scales)
+#'   separates them from the intensities.
+#' @param ratio_fold_range length-2 numeric `c(min, max)` to clamp ratio values
+#'   into before plotting (values below `min` become `min`, above `max` become
+#'   `max`); default `c(0.1, 10)`. Set to `NULL` to leave ratios unclamped. Most
+#'   useful with the default normalized ratios from [ir_calculate_ratios()]
+#'   (centered around 1, so `c(0.1, 10)` keeps within a 10-fold band).
+#' @param facet column or expression to facet by (default: `data_type`, which
+#'   separates intensities from ratios). A plain column or expression (e.g.
+#'   `file_name` or `paste(species, mass)`) is faceted with
+#'   [ggplot2::facet_wrap()]; a two-sided formula (e.g. `data_type ~ file_name`)
+#'   is faceted with [ggplot2::facet_grid()]. Set to `NULL` to suppress faceting.
 #' @param scales whether facet scales should be `"free"` (default), `"fixed"`,
 #'   `"free_x"`, or `"free_y"`; passed on to [ggplot2::facet_wrap()] /
 #'   [ggplot2::facet_grid()].
@@ -967,19 +1266,23 @@ ir_plot_continuous_flow <- function(
 #'   expression (faceted with [ggplot2::facet_wrap()]); ignored when `facet` is a
 #'   formula (faceted with [ggplot2::facet_grid()]), with a warning if you set
 #'   them explicitly.
-#' @param color column or expression for the colour aesthetic (default: `mass`)
+#' @param color column or expression for the colour aesthetic (default:
+#'   `trace`, the per-species/mass trace identifier, e.g. `"CO2: 44"`). When
+#'   colouring by `trace`, traces that share the same species and (numerator)
+#'   mass are given the same colour, so an intensity trace (`"CO2: 45"`) and its
+#'   ratio traces (`"CO2: 45/44"`) match.
 #' @param shape column or expression for the point shape aesthetic (default:
 #'   `type`, distinguishing `"standard"` from `"sample"` cycles)
 #' @param linetype column or expression for the linetype aesthetic (default:
-#'   `species`)
+#'   `NULL`, i.e. no linetype aesthetic)
 #' @param color_values named or unnamed character vector of colours passed to
 #'   [ggplot2::scale_color_manual()], or `NULL` to use the ggplot2 default
 #'   colour palette (default: [palette.colors()])
-#' @param drop_unused_levels whether to drop unused factor levels (e.g. masses or
-#'   traces that are absent after filtering by `species`/`mass` or zooming to a
-#'   window) from the colour scale and legend. Default `FALSE` keeps every level
-#'   so the colour mapping stays stable across subsets of the same dataset; set
-#'   to `TRUE` to show only the levels actually present in the plotted data.
+#' @param drop_unused_levels whether to drop unused `trace` factor levels (e.g.
+#'   traces that are absent after zooming to a window) from the colour scale and
+#'   legend. Default `FALSE` keeps every level so the colour mapping stays stable
+#'   across subsets of the same dataset; set to `TRUE` to show only the levels
+#'   actually present in the plotted data.
 #' @param scientific whether to format y axis labels in scientific notation
 #'   (default: `FALSE`)
 #' @param cycle_window optional numeric vector of length 2 giving the cycle axis
@@ -1000,7 +1303,9 @@ ir_plot_dual_inlet <- function(
   dataset,
   species = NULL,
   mass = NULL,
-  facet = file_name,
+  ratio = NULL,
+  ratio_fold_range = c(0.1, 10),
+  facet = data_type,
   scales = "free",
   nrow = NULL,
   ncol = 1,
@@ -1014,31 +1319,8 @@ ir_plot_dual_inlet <- function(
   n_y_breaks = 5,
   ...
 ) {
-  # safety checks
-  if (!missing(dataset) && is(dataset, "ir_isofiles")) {
-    cli_abort(
-      c(
-        "{.arg dataset} is a raw isofiles object and cannot be plotted directly",
-        "i" = "aggregate it first with {.code ir_aggregate_isofiles(dataset)}"
-      )
-    )
-  }
-  check_arg(
-    dataset,
-    !missing(dataset) &&
-      (is.data.frame(dataset) || is(dataset, "ir_aggregated_data")),
-    "must be a data frame or a set of aggregated isofiles"
-  )
-  check_arg(
-    species,
-    is.null(species) || is.character(species) || is.numeric(species),
-    "must be NULL or a character/numeric vector"
-  )
-  check_arg(
-    mass,
-    is.null(mass) || is.character(mass) || is.numeric(mass),
-    "must be NULL or a character/numeric vector"
-  )
+  # plot-specific argument checks (dataset / species / mass / ratio are checked
+  # by ir_generate_cycles_tibble() below)
   check_arg(
     color_values,
     is.null(color_values) || is.character(color_values),
@@ -1071,83 +1353,31 @@ ir_plot_dual_inlet <- function(
   shape_quo <- rlang::enquo(shape)
   linetype_quo <- rlang::enquo(linetype)
 
-  # prepare plot data
-  if (is(dataset, "ir_aggregated_data")) {
-    if (
-      !"cycles" %in% names(dataset) ||
-        ncol(dataset$cycles) == 0 ||
-        nrow(dataset$cycles) == 0
-    ) {
-      cli_abort(
-        c(
-          "no cycles available in the provided {.field dataset}",
-          "i" = "make sure you are reading dual inlet isofiles and the aggregator includes columns from {.field cycles}"
-        )
-      )
-    }
-    meta_extra_cols <- setdiff(names(dataset$metadata), names(dataset$cycles))
-    plot_data <- dplyr::inner_join(
-      dataset$cycles,
-      dplyr::select(
-        dataset$metadata,
-        dplyr::any_of(c("uidx", "analysis", meta_extra_cols))
-      ),
-      by = c("uidx", "analysis")
-    )
+  # build the plotting tibble (join, filter, trace/data_type/value, ratios)
+  plot_data <- ir_generate_cycles_tibble(
+    dataset,
+    species = species,
+    mass = mass,
+    ratio = ratio,
+    ratio_fold_range = ratio_fold_range
+  )
+
+  # y axis label: the data_type when unique (e.g. "intensity [mV]"), otherwise
+  # the generic "value" since intensities and ratios are mixed
+  y_lab <- if (dplyr::n_distinct(plot_data$data_type) == 1L) {
+    plot_data$data_type[1]
   } else {
-    plot_data <- dataset
+    "value"
   }
 
-  if (nrow(plot_data) == 0) {
-    cli_abort("no data to plot (0 rows)")
-  }
+  # one line per cycle trace (incl. ratio traces); standard/sample are separate
+  group_cols <- intersect(
+    c("uidx", "analysis", "channel", "type", "trace"),
+    names(plot_data)
+  )
 
-  # require cycle, type, and mass columns
-  missing_cols <- setdiff(c("cycle", "type", "mass"), names(plot_data))
-  if (length(missing_cols) > 0) {
-    cli_abort(
-      c(
-        "cycle data is missing required {qty(length(missing_cols))}column{?s}: {.field {missing_cols}}",
-        "i" = "make sure the aggregator includes {.field cycle}, {.field type}, and {.field mass}"
-      )
-    )
-  }
-
-  # filter to the requested species / mass
-  plot_data <- filter_plot_data(plot_data, species, mass)
-
-  # require an intensity.UNITS column
-  intensity_cols <- grep("^intensity\\.", names(plot_data), value = TRUE)
-  if (length(intensity_cols) == 0) {
-    cli_abort(
-      c(
-        "no intensity column found in cycle data",
-        "i" = "expected a column whose name matches {.code intensity.*}"
-      )
-    )
-  }
-  intensity_col <- intensity_cols[1]
-  intensity_units <- sub("^intensity\\.", "", intensity_col)
-
-  y_lab <- paste0("intensity [", intensity_units, "]")
-
-  # sort mass as a factor in numerical order
-  if (!is.factor(plot_data$mass)) {
-    mass_levels <- as.character(sort(
-      unique(as.numeric(plot_data$mass)),
-      na.last = TRUE
-    ))
-    plot_data <- dplyr::mutate(
-      plot_data,
-      mass = factor(.data$mass, levels = mass_levels)
-    )
-  }
-
-  # sort trace as a factor in numerical order of the trailing mass number
-  plot_data <- sort_trace_factor(plot_data)
-
-  # cycle window: applied after the mass/trace factors are built (above) so they
-  # keep their full levels and the colour mapping stays stable when zoomed. An
+  # cycle window: applied after the trace factor is built (in the tibble) so it
+  # keeps its full levels and the colour mapping stays stable when zoomed. An
   # empty window (no data points inside it) is fine - the line still interpolates
   # from the bracketing points just outside the window (see apply_plot_window()).
   if (!is.null(cycle_window)) {
@@ -1155,18 +1385,17 @@ ir_plot_dual_inlet <- function(
       plot_data,
       "cycle",
       cycle_window,
-      c("uidx", "analysis", "species", "channel", "mass", "type")
+      group_cols
     )
   }
 
-  # optionally drop factor levels (e.g. masses/traces outside the window) that
-  # are not visible in the plotted data
+  # optionally drop trace factor levels (e.g. outside the window) not visible
   plot_data <- apply_drop_unused_levels(
     plot_data,
     drop_unused_levels,
     "cycle",
     cycle_window,
-    c("uidx", "analysis", "species", "channel", "mass", "type")
+    group_cols
   )
 
   # validate aesthetic expressions against the actual plot data
@@ -1174,17 +1403,11 @@ ir_plot_dual_inlet <- function(
   check_aes_expr(shape_quo, "shape", plot_data)
   check_aes_expr(linetype_quo, "linetype", plot_data)
 
-  # group aesthetic: always set to ensure one line per cycle trace
-  group_cols <- intersect(
-    c("uidx", "analysis", "species", "mass", "type", "channel"),
-    names(plot_data)
-  )
-
   # base plot
   p <- ggplot2::ggplot(plot_data) +
     ggplot2::aes(
       x = !!sym("cycle"),
-      y = !!sym(intensity_col),
+      y = !!sym("value"),
       group = paste(!!!rlang::syms(group_cols))
     ) +
     ggplot2::geom_line() +
@@ -1210,19 +1433,12 @@ ir_plot_dual_inlet <- function(
     p <- p + ggplot2::expand_limits(y = 0)
   }
 
-  # additional aesthetics
-  if (!rlang::quo_is_null(color_quo)) {
-    p <- p + ggplot2::aes(color = !!color_quo)
-    if (!is.null(color_values)) {
-      # only apply the manual palette if it provides enough colours for the
-      # number of distinct colour groups; otherwise fall back to the default
-      # ggplot2 colour scale (which generates as many distinct hues as needed)
-      n_colors <- dplyr::n_distinct(rlang::eval_tidy(color_quo, plot_data))
-      if (length(color_values) >= n_colors) {
-        p <- p + scale_color_manual(values = color_values)
-      }
-    }
+  # additional aesthetics; when colouring by trace, share a colour across traces
+  # of the same species/mass (e.g. "CO2: 45" and "CO2: 45/44")
+  if (rlang::quo_is_symbol(color_quo, "trace")) {
+    color_values <- build_trace_color_values(plot_data, color_values)
   }
+  p <- add_color_aes(p, color_quo, color_values, plot_data, drop_unused_levels)
   if (!rlang::quo_is_null(shape_quo)) {
     p <- p + ggplot2::aes(shape = !!shape_quo)
   }

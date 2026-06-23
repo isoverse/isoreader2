@@ -8,7 +8,9 @@ ir_plot_dual_inlet(
   dataset,
   species = NULL,
   mass = NULL,
-  facet = file_name,
+  ratio = NULL,
+  ratio_fold_range = c(0.1, 10),
+  facet = data_type,
   scales = "free",
   nrow = NULL,
   ncol = 1,
@@ -25,20 +27,38 @@ ir_plot_dual_inlet(
 }
 \arguments{
 \item{dataset}{an \code{ir_aggregated_data} object from \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}}
-or a plain data frame with \code{cycle}, \code{type}, \code{mass}, and an
+or a plain data frame with \code{species}, \code{cycle}, \code{type}, \code{mass}, and an
 \verb{intensity.*} column}
 
 \item{species}{optional vector to filter the displayed data to specific
 species (e.g. \code{"CO2"} or \code{c("N2", "CO2")}); default \code{NULL} shows all species.}
 
-\item{mass}{optional vector to filter the displayed data to specific masses
-(e.g. \code{44} or \code{c(44, 45)}); default \code{NULL} shows all masses.}
+\item{mass}{which masses to include as intensity traces: \code{NULL} (default)
+shows all masses, a vector (e.g. \code{44} or \code{c(44, 45)}) shows specific masses,
+and a zero-length vector (\code{numeric(0)}/\code{character(0)}) shows none. Note that
+\code{c()} is \code{NULL} in R (i.e. all masses).}
 
-\item{facet}{column or expression to facet by (default: \code{file_name}). A
-plain column or expression (e.g. \code{file_name} or \code{paste(species, mass)}) is
-faceted with \code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}; a two-sided formula (e.g.
-\code{species ~ mass}) is faceted with \code{\link[ggplot2:facet_grid]{ggplot2::facet_grid()}}. Set to \code{NULL}
-to suppress faceting.}
+\item{ratio}{which ratios to additionally include (computed with
+\code{\link[=ir_calculate_ratios]{ir_calculate_ratios()}}): \code{NULL} (default) shows all available ratios, a
+character vector of ratio names (e.g. \code{c("45/44", "46/44")}) shows specific
+ones, and \code{character(0)} shows none. Requesting specific ratio names when
+ratios have not been calculated is an error pointing to
+\code{\link[=ir_calculate_ratios]{ir_calculate_ratios()}} (with \code{ratio = NULL} and no ratios present, none are
+simply added). Ratio rows are plotted on the same \code{value} axis with
+\code{data_type = "ratios"}; the default \code{facet = data_type} (with free scales)
+separates them from the intensities.}
+
+\item{ratio_fold_range}{length-2 numeric \code{c(min, max)} to clamp ratio values
+into before plotting (values below \code{min} become \code{min}, above \code{max} become
+\code{max}); default \code{c(0.1, 10)}. Set to \code{NULL} to leave ratios unclamped. Most
+useful with the default normalized ratios from \code{\link[=ir_calculate_ratios]{ir_calculate_ratios()}}
+(centered around 1, so \code{c(0.1, 10)} keeps within a 10-fold band).}
+
+\item{facet}{column or expression to facet by (default: \code{data_type}, which
+separates intensities from ratios). A plain column or expression (e.g.
+\code{file_name} or \code{paste(species, mass)}) is faceted with
+\code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}; a two-sided formula (e.g. \code{data_type ~ file_name})
+is faceted with \code{\link[ggplot2:facet_grid]{ggplot2::facet_grid()}}. Set to \code{NULL} to suppress faceting.}
 
 \item{scales}{whether facet scales should be \code{"free"} (default), \code{"fixed"},
 \code{"free_x"}, or \code{"free_y"}; passed on to \code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}} /
@@ -51,23 +71,27 @@ expression (faceted with \code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}
 formula (faceted with \code{\link[ggplot2:facet_grid]{ggplot2::facet_grid()}}), with a warning if you set
 them explicitly.}
 
-\item{color}{column or expression for the colour aesthetic (default: \code{mass})}
+\item{color}{column or expression for the colour aesthetic (default:
+\code{trace}, the per-species/mass trace identifier, e.g. \code{"CO2: 44"}). When
+colouring by \code{trace}, traces that share the same species and (numerator)
+mass are given the same colour, so an intensity trace (\code{"CO2: 45"}) and its
+ratio traces (\code{"CO2: 45/44"}) match.}
 
 \item{shape}{column or expression for the point shape aesthetic (default:
 \code{type}, distinguishing \code{"standard"} from \code{"sample"} cycles)}
 
 \item{linetype}{column or expression for the linetype aesthetic (default:
-\code{species})}
+\code{NULL}, i.e. no linetype aesthetic)}
 
 \item{color_values}{named or unnamed character vector of colours passed to
 \code{\link[ggplot2:scale_color_manual]{ggplot2::scale_color_manual()}}, or \code{NULL} to use the ggplot2 default
 colour palette (default: \code{\link[=palette.colors]{palette.colors()}})}
 
-\item{drop_unused_levels}{whether to drop unused factor levels (e.g. masses or
-traces that are absent after filtering by \code{species}/\code{mass} or zooming to a
-window) from the colour scale and legend. Default \code{FALSE} keeps every level
-so the colour mapping stays stable across subsets of the same dataset; set
-to \code{TRUE} to show only the levels actually present in the plotted data.}
+\item{drop_unused_levels}{whether to drop unused \code{trace} factor levels (e.g.
+traces that are absent after zooming to a window) from the colour scale and
+legend. Default \code{FALSE} keeps every level so the colour mapping stays stable
+across subsets of the same dataset; set to \code{TRUE} to show only the levels
+actually present in the plotted data.}
 
 \item{scientific}{whether to format y axis labels in scientific notation
 (default: \code{FALSE})}
@@ -92,11 +116,11 @@ plot, add ggplot2 layers on top (e.g. \code{+ ggplot2::theme(...)} or
 }
 \description{
 Plots cycle data from an \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}} result or a plain data
-frame. When \code{dataset} is an \code{ir_aggregated_data} object, the \verb{$cycles}
-dataset is inner-joined with \verb{$metadata} (bringing in all metadata columns
-not already present in \verb{$cycles}) before plotting. The plot data must contain
-\code{cycle}, \code{type}, \code{mass}, and an \verb{intensity.*} column — an error is thrown if
-any are missing. The intensity unit suffix becomes the y axis label. If
-\code{mass} is not already a factor it is converted to one with levels sorted in
-numerical order.
+frame. The data is prepared with \code{\link[=ir_generate_cycles_tibble]{ir_generate_cycles_tibble()}} (which, for an
+\code{ir_aggregated_data} object, inner-joins the \verb{$cycles} dataset with
+\verb{$metadata}). The plot data must contain \code{species}, \code{cycle}, \code{type}, \code{mass},
+and an \verb{intensity.*} column — an error is thrown if any are missing. A \code{trace}
+identifier (\code{"<species>: <mass>"}) is always regenerated and the plotted
+\code{value} together with a \code{data_type} label (\code{"intensity [UNITS]"}, or
+\code{"ratios"} for ratio rows) are added.
 }

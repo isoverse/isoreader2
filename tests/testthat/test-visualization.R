@@ -247,60 +247,29 @@ test_that("zooming preserves trace/mass factor levels and colours", {
   expect_equal(sz$map(sz$get_breaks()), sf$map(sf$get_breaks()))
 })
 
-test_that("drop_unused_levels controls whether unused factor levels are shown", {
+test_that("drop_unused_levels is validated and trace colouring scales past palette", {
   breaks <- function(p) {
     as.character(
       ggplot2::ggplot_build(p)$plot$scales$get_scales("colour")$get_breaks()
     )
   }
 
-  # trace is already a factor carrying a level ("CO2: 46") with no data
-  d <- tibble(
-    file_name = "a",
-    species = "CO2",
-    mass = c(44, 45),
-    trace = factor(
-      c("CO2: 44", "CO2: 45"),
-      levels = c("CO2: 44", "CO2: 45", "CO2: 46")
-    ),
-    time.s = 0,
-    intensity.mV = 1:2
-  )
+  # the flag is validated
   expect_error(
-    ir_plot_continuous_flow(d, drop_unused_levels = "yes"),
+    ir_plot_continuous_flow(cf_data(), drop_unused_levels = "yes"),
     "TRUE OR FALSE|TRUE or FALSE"
   )
 
-  # default keeps the unused level in the legend; TRUE drops it
-  expect_equal(
-    breaks(ir_plot_continuous_flow(d) |> suppressMessages()),
-    c("CO2: 44", "CO2: 45", "CO2: 46")
-  )
-  expect_equal(
-    breaks(
-      ir_plot_continuous_flow(d, drop_unused_levels = TRUE) |>
-        suppressMessages()
-    ),
-    c("CO2: 44", "CO2: 45")
-  )
-
-  # also works on the discrete-fallback path (more levels than palette colours)
+  # more traces than the default colour palette still get one colour break per
+  # trace (the trace colour path falls back to generated hues)
   many <- tibble(
     file_name = "a",
     species = "CO2",
-    mass = 1:3,
-    trace = factor(paste0("m", 1:3), levels = paste0("m", 1:15)),
+    mass = as.character(40:54),
     time.s = 0,
-    intensity.mV = 1:3
+    intensity.mV = 1:15
   )
   expect_length(breaks(ir_plot_continuous_flow(many) |> suppressMessages()), 15)
-  expect_length(
-    breaks(
-      ir_plot_continuous_flow(many, drop_unused_levels = TRUE) |>
-        suppressMessages()
-    ),
-    3
-  )
 })
 
 test_that("drop_unused_levels drops traces that are outside the zoom window", {
@@ -372,5 +341,173 @@ test_that("ir_plot_scans() builds a ggplot and handles scan_type", {
   expect_s3_class(
     ir_plot_scans(multi, scan_type = "high voltage"),
     "ggplot"
+  )
+})
+
+# trace data with pre-computed ratios (as ir_calculate_ratios() would add them)
+cf_ratio_data <- function() {
+  tibble(
+    file_name = "a",
+    species = "N2",
+    mass = c("28", "29", "30"),
+    time.s = 0,
+    intensity.mV = c(100, 40, 10),
+    ratio_name = c(NA, "29/28", "30/28"),
+    ratio = c(NA, 0.4, 0.1)
+  )
+}
+
+test_that("ir_generate_*_tibble() add trace, data_type and value", {
+  tb <- ir_generate_traces_tibble(cf_data())
+  expect_true(all(c("trace", "data_type", "value") %in% names(tb)))
+  expect_s3_class(tb$trace, "factor")
+  expect_equal(as.character(unique(tb$trace)), "CO2: 44")
+  expect_equal(unique(tb$data_type), "intensity [mV]")
+  expect_equal(tb$value, c(1, 2, 3))
+
+  # cycles and scans variants work too
+  expect_true(all(
+    c("trace", "data_type", "value") %in%
+      names(ir_generate_cycles_tibble(di_data()))
+  ))
+  expect_true(all(
+    c("trace", "data_type", "value") %in%
+      names(ir_generate_scans_tibble(scn_data()))
+  ))
+})
+
+test_that("trace is always (re)generated from species + mass", {
+  # a bogus incoming trace column is overwritten
+  d <- cf_data() |> dplyr::mutate(trace = "WRONG")
+  expect_equal(
+    as.character(unique(ir_generate_traces_tibble(d)$trace)),
+    "CO2: 44"
+  )
+})
+
+test_that("ir_generate_traces_tibble() includes requested ratios", {
+  tb <- ir_generate_traces_tibble(cf_ratio_data(), ratio = "29/28")
+  # 3 intensity rows + 1 ratio row
+  expect_equal(nrow(tb), 4L)
+
+  ratio_rows <- tb[tb$data_type == "ratios", ]
+  expect_equal(nrow(ratio_rows), 1L)
+  expect_equal(as.character(ratio_rows$trace), "N2: 29/28")
+  expect_equal(ratio_rows$value, 0.4)
+
+  int_rows <- tb[tb$data_type == "intensity [mV]", ]
+  expect_setequal(as.character(int_rows$trace), c("N2: 28", "N2: 29", "N2: 30"))
+  expect_setequal(int_rows$value, c(100, 40, 10))
+
+  # the ratio trace sorts right after its intensity trace (species + numerator)
+  expect_equal(
+    levels(tb$trace),
+    c("N2: 28", "N2: 29", "N2: 29/28", "N2: 30")
+  )
+})
+
+test_that("requesting ratios errors when not calculated or not present", {
+  # ratio columns absent -> point at ir_calculate_ratios()
+  ir_generate_traces_tibble(cf_data(), ratio = "45/44") |>
+    expect_error("ir_calculate_ratios")
+  # ratio columns present but the requested name is absent
+  ir_generate_traces_tibble(cf_ratio_data(), ratio = "99/98") |>
+    expect_error("no data left after filtering ratios")
+  # the plotting function surfaces the same error
+  ir_plot_continuous_flow(cf_data(), ratio = "45/44") |>
+    expect_error("ir_calculate_ratios")
+})
+
+test_that("colouring by trace shares a colour across species + (numerator) mass", {
+  p <- ir_plot_continuous_flow(
+    cf_ratio_data(),
+    ratio = c("29/28", "30/28")
+  ) |>
+    suppressMessages()
+  sc <- ggplot2::ggplot_build(p)$plot$scales$get_scales("colour")
+  cols <- stats::setNames(
+    sc$map(sc$get_breaks()),
+    as.character(sc$get_breaks())
+  )
+
+  # the intensity trace and the ratio trace with the same numerator mass match
+  expect_equal(unname(cols["N2: 29"]), unname(cols["N2: 29/28"]))
+  expect_equal(unname(cols["N2: 30"]), unname(cols["N2: 30/28"]))
+  # different numerator masses get different colours
+  expect_false(unname(cols["N2: 28"]) == unname(cols["N2: 29"]))
+  expect_false(unname(cols["N2: 29"]) == unname(cols["N2: 30"]))
+})
+
+test_that("ratio rows carry a 'ratios' data_type and the plot uses value as y", {
+  p <- ir_plot_continuous_flow(cf_ratio_data(), ratio = "29/28") |>
+    suppressMessages()
+  expect_no_error(ggplot2::ggplot_build(p))
+  # both data types are present in the plotted data
+  expect_setequal(
+    unique(p$data$data_type),
+    c("intensity [mV]", "ratios")
+  )
+  # the ratio value (0.4) is plotted as `value`
+  expect_true(0.4 %in% p$data$value)
+})
+
+test_that("ratio = NULL shows all ratios, character(0) shows none", {
+  # NULL (default) includes every available ratio
+  tb_all <- ir_generate_traces_tibble(cf_ratio_data())
+  expect_setequal(
+    unique(as.character(tb_all$trace[tb_all$data_type == "ratios"])),
+    c("N2: 29/28", "N2: 30/28")
+  )
+  # character(0) includes no ratios
+  tb_none <- ir_generate_traces_tibble(cf_ratio_data(), ratio = character(0))
+  expect_false("ratios" %in% tb_none$data_type)
+  # data without ratio columns + ratio = NULL -> no ratios, no error
+  expect_no_error(ir_generate_traces_tibble(cf_data()))
+  expect_false("ratios" %in% ir_generate_traces_tibble(cf_data())$data_type)
+})
+
+test_that("mass = character(0) drops intensities (e.g. to plot only ratios)", {
+  tb <- ir_generate_traces_tibble(cf_ratio_data(), mass = character(0))
+  expect_true(all(tb$data_type == "ratios"))
+  # dropping both masses and ratios leaves nothing -> error
+  expect_error(
+    ir_generate_traces_tibble(
+      cf_ratio_data(),
+      mass = character(0),
+      ratio = character(0)
+    ),
+    "no data to plot"
+  )
+})
+
+test_that("the default facet is data_type", {
+  p <- ir_plot_continuous_flow(cf_data())
+  expect_s3_class(p$facet, "FacetWrap")
+  expect_equal(names(p$facet$params$facets), "data_type")
+})
+
+test_that("ratio_fold_range clamps ratio values before plotting", {
+  # a tighter range clamps the 30/28 ratio (0.1) up to the lower bound
+  tb <- ir_generate_traces_tibble(
+    cf_ratio_data(),
+    ratio_fold_range = c(0.2, 10)
+  )
+  val <- function(t, d = tb) {
+    d$value[d$data_type == "ratios" & as.character(d$trace) == t]
+  }
+  expect_equal(unique(val("N2: 30/28")), 0.2) # 0.1 clamped up to 0.2
+  expect_equal(unique(val("N2: 29/28")), 0.4) # within range, unchanged
+
+  # NULL leaves ratios unclamped
+  tb_raw <- ir_generate_traces_tibble(cf_ratio_data(), ratio_fold_range = NULL)
+  expect_equal(unique(val("N2: 30/28", tb_raw)), 0.1)
+
+  # intensities are never clamped
+  expect_setequal(tb$value[grepl("^intensity", tb$data_type)], c(100, 40, 10))
+
+  # invalid ranges are rejected
+  expect_error(
+    ir_generate_traces_tibble(cf_ratio_data(), ratio_fold_range = c(10, 1)),
+    "min < max"
   )
 })
