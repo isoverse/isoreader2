@@ -101,12 +101,31 @@ read_liarc_h3_factor <- function(json_path) {
   vals[1]
 }
 
+# Reads /tasks and orders the rows by the integer `id` field, so that the derived
+# `analysis` numbering (seq_len() after ordering) and the row order follow the Id
+# order rather than the order tasks happen to appear in the archive. Tasks without
+# an `id` keep their original relative order (order() is stable for integers).
+# Returns the (possibly empty) tasks tibble unchanged when there is nothing to
+# order. Used by both read_liarc_metadata() and read_liarc_traces() so the
+# analysis<->task mapping stays consistent between them.
+read_liarc_tasks <- function(json_path) {
+  tasks <- query_json(json_path, "/tasks", list_as_tibble = TRUE)
+  if (is_empty(tasks) || nrow(tasks) == 0) {
+    return(tasks)
+  }
+  id <- as.integer(tasks[["id"]] %||% NA)
+  if (length(id) == nrow(tasks)) {
+    tasks <- tasks[order(id), , drop = FALSE]
+  }
+  tasks
+}
+
 # Reads per-task sequence metadata from /tasks. sample_type and system_description
 # are included when present. Key/value pairs from tasks/values are widened between
 # Method and the timing columns.
 read_liarc_metadata <- function(json_path) {
-  # pull out tasks
-  tasks <- query_json(json_path, "/tasks", list_as_tibble = TRUE)
+  # pull out tasks (ordered by Id so analysis numbering follows the Id order)
+  tasks <- read_liarc_tasks(json_path)
   if (is_empty(tasks) || nrow(tasks) == 0) {
     cli::cli_abort("no analyses (tasks) found")
   }
@@ -233,7 +252,8 @@ read_liarc_method_species <- function(json_path) {
 # columns are included. time.s is computed from Scan index scaled by the
 # dataset's (end - start) duration.
 read_liarc_traces <- function(json_path, global_species, method_species) {
-  tasks <- query_json(json_path, "/tasks", list_as_tibble = TRUE)
+  # ordered by Id so analysis numbering matches read_liarc_metadata()
+  tasks <- read_liarc_tasks(json_path)
   traces <- tibble(
     analysis = seq_len(nrow(tasks)),
     method_id = (tasks[["method_id"]] %||% NA) |> as.integer(),
