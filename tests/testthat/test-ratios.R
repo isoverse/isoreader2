@@ -64,7 +64,8 @@ test_that("ir_calculate_ratios() validates its input", {
 })
 
 test_that("ir_calculate_ratios() adds ratio columns to the source series", {
-  res <- ir_calculate_ratios(agg_traces(), normalize_ratios = FALSE) |>
+  # num_add.V = 0 gives the plain intensity ratio (no additive offset)
+  res <- ir_calculate_ratios(agg_traces(), num_add.V = 0) |>
     suppressMessages()
   expect_s3_class(res, "ir_aggregated_data")
   # no new datasets are created; columns are added to `traces` instead
@@ -104,33 +105,84 @@ test_that("ir_calculate_ratios() adds ratio columns to the source series", {
   )
 })
 
-test_that("ir_calculate_ratios() normalizes ratios by the group mean by default", {
+test_that("ir_calculate_ratios() default offsets are scaled to the data unit", {
+  # default num_add.V = 100 V; data is mV -> 100 * 1000 = 100000 mV added to both
   res <- ir_calculate_ratios(agg_traces()) |> suppressMessages()
   tr <- res$traces
-
-  # within each uidx/analysis/ratio_name group the normalized ratios average to 1
-  norm_means <- tapply(
-    tr$ratio[!is.na(tr$ratio_name)],
-    tr$ratio_name[!is.na(tr$ratio_name)],
-    mean
-  )
-  expect_true(all(abs(norm_means - 1) < 1e-9))
-
-  # N2 29/28: raw 0.4 (t=0) and 0.5 (t=1), mean 0.45 -> normalized 0.4/0.45, 0.5/0.45
+  # N2 29/28 at t=0: (40 + 100000) / (100 + 100000)
   expect_equal(
     tr$ratio[tr$species == "N2" & tr$mass == "29" & tr$time.s == 0],
-    0.4 / 0.45
+    (40 + 100000) / (100 + 100000)
   )
-  expect_equal(
-    tr$ratio[tr$species == "N2" & tr$mass == "29" & tr$time.s == 1],
-    0.5 / 0.45
-  )
-  # base mass rows stay NA after normalization
-  expect_true(all(is.na(tr$ratio[tr$mass == "28"])))
-
-  # normalize_ratios = FALSE keeps the raw intensity ratios
-  raw <- ir_calculate_ratios(agg_traces(), normalize_ratios = FALSE) |>
+  # custom, asymmetric offsets: 1 V -> 1000 mV (num), 2 V -> 2000 mV (denom)
+  res2 <- ir_calculate_ratios(agg_traces(), num_add.V = 1, denom_add.V = 2) |>
     suppressMessages()
+  expect_equal(
+    res2$traces$ratio[
+      res2$traces$species == "N2" &
+        res2$traces$mass == "29" &
+        res2$traces$time.s == 0
+    ],
+    (40 + 1000) / (100 + 2000)
+  )
+  # the .nA/.cps offsets are ignored for voltage data
+  res3 <- ir_calculate_ratios(agg_traces(), num_add.V = 0, num_add.nA = 999) |>
+    suppressMessages()
+  expect_equal(
+    res3$traces$ratio[
+      res3$traces$species == "N2" &
+        res3$traces$mass == "29" &
+        res3$traces$time.s == 0
+    ],
+    0.4
+  )
+})
+
+test_that("ir_calculate_ratios() offset family + scaling depends on the unit", {
+  agg_current <- function(unit, vals) {
+    structure(
+      list(
+        metadata = tibble(uidx = 1L, analysis = 1L, file_name = "a"),
+        traces = tibble(
+          uidx = 1L,
+          analysis = 1L,
+          species = "Ar",
+          mass = c("36", "40"),
+          time.s = 0,
+          !!paste0("intensity.", unit) := vals
+        )
+      ),
+      class = "ir_aggregated_data"
+    )
+  }
+
+  # nA data, default num_add.nA = 0 -> plain ratio 40/36 = 100/10 = 10
+  r_nA <- ir_calculate_ratios(agg_current("nA", c(10, 100))) |>
+    suppressMessages()
+  expect_equal(r_nA$traces$ratio[r_nA$traces$mass == "40"], 10)
+  # nA data, num_add.nA = 5 (scale 1 for nA): (100+5)/(10+5)
+  r_nA2 <- ir_calculate_ratios(agg_current("nA", c(10, 100)), num_add.nA = 5) |>
+    suppressMessages()
+  expect_equal(
+    r_nA2$traces$ratio[r_nA2$traces$mass == "40"],
+    (100 + 5) / (10 + 5)
+  )
+  # pA data, num_add.nA = 1 nA -> 1000 pA added: (100+1000)/(10+1000)
+  r_pA <- ir_calculate_ratios(agg_current("pA", c(10, 100)), num_add.nA = 1) |>
+    suppressMessages()
+  expect_equal(
+    r_pA$traces$ratio[r_pA$traces$mass == "40"],
+    (100 + 1000) / (10 + 1000)
+  )
+  # cps data uses num_add.cps (default 0) -> plain ratio
+  r_cps <- ir_calculate_ratios(agg_current("cps", c(10, 100))) |>
+    suppressMessages()
+  expect_equal(r_cps$traces$ratio[r_cps$traces$mass == "40"], 10)
+})
+
+test_that("ir_calculate_ratios() normalize_ratios accepts a function (or NULL)", {
+  # NULL (default) does not normalize
+  raw <- ir_calculate_ratios(agg_traces(), num_add.V = 0) |> suppressMessages()
   expect_equal(
     raw$traces$ratio[
       raw$traces$species == "N2" &
@@ -138,6 +190,44 @@ test_that("ir_calculate_ratios() normalizes ratios by the group mean by default"
         raw$traces$time.s == 0
     ],
     0.4
+  )
+  # mean: N2 29/28 raw 0.4 (t0), 0.5 (t1), mean 0.45 -> 0.4/0.45
+  m <- ir_calculate_ratios(
+    agg_traces(),
+    num_add.V = 0,
+    normalize_ratios = mean
+  ) |>
+    suppressMessages()
+  expect_equal(
+    m$traces$ratio[
+      m$traces$species == "N2" & m$traces$mass == "29" & m$traces$time.s == 0
+    ],
+    0.4 / 0.45
+  )
+  grp_29_28 <- function(res) {
+    tr <- res$traces
+    tr$ratio[!is.na(tr$ratio_name) & tr$ratio_name == "29/28"]
+  }
+  # max: the largest ratio in each group becomes 1
+  mx <- ir_calculate_ratios(
+    agg_traces(),
+    num_add.V = 0,
+    normalize_ratios = max
+  ) |>
+    suppressMessages()
+  expect_equal(max(grp_29_28(mx)), 1)
+  # min normalizes the smallest to 1
+  mn <- ir_calculate_ratios(
+    agg_traces(),
+    num_add.V = 0,
+    normalize_ratios = min
+  ) |>
+    suppressMessages()
+  expect_equal(min(grp_29_28(mn)), 1)
+  # a non-function, non-NULL value errors
+  expect_error(
+    ir_calculate_ratios(agg_traces(), normalize_ratios = TRUE),
+    "NULL or a function"
   )
 })
 
@@ -152,7 +242,7 @@ test_that("ir_calculate_ratios() is idempotent (overwrites prior columns)", {
 })
 
 test_that("ir_calculate_ratios() honors per-species base mass overrides", {
-  res <- ir_calculate_ratios(agg_traces(), N2 = 29, normalize_ratios = FALSE) |>
+  res <- ir_calculate_ratios(agg_traces(), N2 = 29, num_add.V = 0) |>
     suppressMessages()
   tr <- res$traces
 
@@ -208,7 +298,7 @@ test_that("ir_calculate_ratios() handles cycles per type", {
     ),
     class = "ir_aggregated_data"
   )
-  cy <- (ir_calculate_ratios(agg, normalize_ratios = FALSE) |>
+  cy <- (ir_calculate_ratios(agg, num_add.V = 0) |>
     suppressMessages())$cycles
 
   expect_equal(nrow(cy), 4L) # all rows kept
@@ -242,7 +332,7 @@ test_that("ir_calculate_ratios() adds columns to each present series", {
     ),
     class = "ir_aggregated_data"
   )
-  r <- ir_calculate_ratios(agg, normalize_ratios = FALSE) |> suppressMessages()
+  r <- ir_calculate_ratios(agg, num_add.V = 0) |> suppressMessages()
 
   # both series gain the ratio columns; no new datasets are created
   expect_true(all(c("ratio_name", "ratio") %in% names(r$traces)))
@@ -264,7 +354,8 @@ test_that("ir_calculate_ratios() works end-to-end on the bundled examples", {
     ir_aggregate_isofiles("mV") |>
     suppressMessages()
 
-  res <- ir_calculate_ratios(agg, normalize_ratios = FALSE) |>
+  # num_add.V = 0 -> plain intensity ratio, to match the manual check below
+  res <- ir_calculate_ratios(agg, num_add.V = 0) |>
     suppressMessages()
   # ratio columns are added to all three present series
   for (ds in c("traces", "cycles", "scans")) {

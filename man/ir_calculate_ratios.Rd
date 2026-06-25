@@ -4,7 +4,17 @@
 \alias{ir_calculate_ratios}
 \title{Calculate isotope ratios}
 \usage{
-ir_calculate_ratios(aggregated_data, ..., normalize_ratios = TRUE)
+ir_calculate_ratios(
+  aggregated_data,
+  ...,
+  num_add.V = 100,
+  denom_add.V = num_add.V,
+  num_add.nA = 0,
+  denom_add.nA = num_add.nA,
+  num_add.cps = 0,
+  denom_add.cps = num_add.cps,
+  normalize_ratios = NULL
+)
 }
 \arguments{
 \item{aggregated_data}{datasets aggregated from \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}}
@@ -14,9 +24,23 @@ ir_calculate_ratios(aggregated_data, ..., normalize_ratios = TRUE)
 Species not listed here use their numerically lowest measured mass as the
 base mass.}
 
-\item{normalize_ratios}{whether to normalize each ratio by the mean ratio of
-its \code{uidx}/\code{analysis}/\code{ratio_name} group (so ratios are centered around 1).
-Default \code{TRUE}.}
+\item{num_add.V, denom_add.V}{additive offset (in volts) for the numerator and
+denominator intensities of voltage-unit data (\code{V}/\code{mV}). Default
+\code{num_add.V = 100}, \code{denom_add.V = num_add.V}.}
+
+\item{num_add.nA, denom_add.nA}{additive offset (in nanoamperes) for the
+numerator and denominator intensities of current-unit data
+(\code{A}/\code{mA}/\code{µA}/\code{nA}/\code{pA}/\code{fA}). Default \code{num_add.nA = 0},
+\code{denom_add.nA = num_add.nA}.}
+
+\item{num_add.cps, denom_add.cps}{additive offset (in cps) for the numerator and
+denominator intensities of count-unit data (\code{cps}). Default
+\code{num_add.cps = 0}, \code{denom_add.cps = num_add.cps}.}
+
+\item{normalize_ratios}{\code{NULL} (default) for no normalization, or a function
+(e.g. \code{mean}, \code{median}, \code{min}, \code{max}) applied per
+\code{uidx}/\code{analysis}/\code{ratio_name} group; each ratio is divided by the value the
+function returns for its group's non-\code{NA} ratios.}
 }
 \value{
 the \code{aggregated_data} with \code{ratio_name} and \code{ratio} columns added to
@@ -29,20 +53,40 @@ Calculate intensity ratios of each mass relative to a base mass for every
 measurement in an \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}} result. Ratios are added directly
 to the \code{traces} (continuous flow), \code{cycles} (dual inlet), and/or \code{scans} data
 present in the aggregated data as two extra columns: \code{ratio_name} (e.g.
-\code{"29/28"}) and \code{ratio} (the intensity of that mass divided by the intensity of
-the base mass of the same species at the same \code{time.s}/\code{cycle}/\code{x} position
-within every \code{uidx} and \code{analysis}). Base mass rows are kept and have \code{NA} in
-both columns. Calling this function again recomputes (overwrites) the
-\code{ratio_name}/\code{ratio} columns.
+\code{"29/28"}) and \code{ratio}. The ratio at each \code{time.s}/\code{cycle}/\code{x} position
+(within every \code{uidx} and \code{analysis}) is
 }
 \details{
+\deqn{ratio = (I_{mass} + num\_add) / (I_{base} + denom\_add)}
+
+i.e. the intensity of the mass divided by the intensity of the base mass of
+the same species, after adding an additive offset to numerator and denominator
+(see below). Base mass rows are kept and have \code{NA} in both columns. Calling
+this function again recomputes (overwrites) the \code{ratio_name}/\code{ratio} columns.
+The resulting ratios are not constrained in any way (they can be any value).
+
 The base mass for a species is, by default, the numerically lowest mass
 measured for that species. Override it for individual species via \code{...} (e.g.
 \code{SO2 = 64}, \code{N2 = 28}).
-
-With \code{normalize_ratios = TRUE} (the default) each ratio is additionally
-divided by the mean ratio of its \code{uidx}/\code{analysis}/\code{ratio_name} group, so the
-stored ratios are centered around 1 (a value of 2 then means twice the
-file's average ratio). Set \code{normalize_ratios = FALSE} to keep the raw
-intensity ratios.
 }
+\section{Additive offsets}{
+Which pair of additive offsets is used depends on the intensity unit family of
+the data: voltage (\code{V}, \code{mV}) uses \code{num_add.V}/\code{denom_add.V}, current (\code{A},
+\code{mA}, \code{µA}, \code{nA}, \code{pA}, \code{fA}) uses \code{num_add.nA}/\code{denom_add.nA}, and counts
+(\code{cps}) uses \code{num_add.cps}/\code{denom_add.cps}. The offsets are specified in their
+family's reference unit (volts, nanoamperes, cps) and are automatically scaled
+to the data's actual intensity unit before being added. For example, with
+\code{intensity.mV} data the default \code{num_add.V = 100} (volts) is multiplied by
+1000 and 100000 mV are added; with \code{intensity.pA} data the default
+\code{num_add.nA = 0} would be multiplied by 1000 (1 nA = 1000 pA).
+}
+
+\section{Normalization}{
+\code{normalize_ratios} is \code{NULL} by default (no normalization). Pass a function to
+divide every ratio by the value that function returns for its
+\code{uidx}/\code{analysis}/\code{ratio_name} group (the function receives the group's
+non-\code{NA} ratios). For example \code{normalize_ratios = mean} centers each ratio
+around 1, while \code{median}, \code{min}, or \code{max} normalize to the group median,
+minimum, or maximum, respectively.
+}
+
