@@ -149,12 +149,12 @@ as_aggregator <- function(x, name = attr(x, "name")) {
   return(x)
 }
 
-#' Dynamic data agreggator
+#' Dynamic data aggregator
 #'
 #' These functions allow definition of custom data aggregators for processing data extracted from isofiles. An aggregator is run on each imported file and pulls together the relevant data users are interested in while making sure data formats are correct so that the aggregated data can be merged across several imported files for fast downstream processing.
 #'
 #' @param name a descriptive name for the aggregator. This name is automatically used as the default name when registering the aggregator via [ir_register_aggregator()].
-#' @return an orbi aggregator tibble
+#' @return an aggregator tibble
 #' @describeIn ir_aggregator starts the aggregator
 #' @export
 ir_start_aggregator <- function(name) {
@@ -181,11 +181,11 @@ ir_start_aggregator <- function(name) {
 #' @param dataset the name of the dataset to aggregate from, by default "metadata" which is by far the most common aggregator to work with
 #' @param column the name of the column in which data should be stored
 #' @param source single character column name or vector of column names (if alternatives could be the source) where in the `dataset` to find data for the `column`. If a vector of multiple column names is provided (e.g. `source = c("a1", "a2")`), the first column name that's found during processing of a dataset will be used and passed to the function defined in `func` (if any) and then the one defined in `cast`. To provide multiple parameters from the data to `func`, define a list instead of a vector `source = list("a", "b", "c")` or if multiple alternative columns can be the source for any of the arguments, define as `source = list(c("a1", "a2"), "b", c("c1", "c2", "c3"))`
-#' @param default the default value if no `source` columns can be found or another error is encountered during aggregatio. Note that the `default` value will also be processed with the function in `cast` to make sure it has the correct data type.
+#' @param default the default value if no `source` columns can be found or another error is encountered during aggregation. Note that the `default` value will also be processed with the function in `cast` to make sure it has the correct data type.
 #' @param cast what to cast the values of the resulting column to, most commonly `"as.character"`, `"as.integer"`, `"as.numeric"`, or `"as.factor"`. This is required to ensure all aggregated values have the correct data type.
-#' @param regexp whether source columm names should be interpreted as a regular expressions for the purpose of finding the relevant column(s). Note if `regexp = TRUE`, the search for the source column always becomes case-insensitive so this can also be used for a direct match of a source column whose upper/lower casing can be unreliable. If a column is matched by a regexp and also by a direct aggregator rule, the direct aggregator rule takes precedence.
+#' @param regexp whether source column names should be interpreted as a regular expressions for the purpose of finding the relevant column(s). Note if `regexp = TRUE`, the search for the source column always becomes case-insensitive so this can also be used for a direct match of a source column whose upper/lower casing can be unreliable. If a column is matched by a regexp and also by a direct aggregator rule, the direct aggregator rule takes precedence.
 #' @param func name of a processing function to apply before casting the value with the `cast` function. This is optional and can be used to conduct more elaborate preprocessing of a data or combining data from multiple source columns in the correct way (e.g. pasting together from multiple columns).
-#' @param args an optional list of arguments to pass to the `func` in addition to the values coming from the source colummn(s)
+#' @param args an optional list of arguments to pass to the `func` in addition to the values coming from the source column(s)
 #' @describeIn ir_aggregator add additional column to aggregate data for. Overwrites an existing aggregator entry for the same dataset and column if it already exists.
 #' @export
 ir_add_to_aggregator <- function(

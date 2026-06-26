@@ -5,7 +5,7 @@
 \alias{ir_add_to_aggregator}
 \alias{ir_register_aggregator}
 \alias{ir_get_aggregator}
-\title{Dynamic data agreggator}
+\title{Dynamic data aggregator}
 \usage{
 ir_start_aggregator(name)
 
@@ -36,18 +36,18 @@ ir_get_aggregator(name)
 
 \item{source}{single character column name or vector of column names (if alternatives could be the source) where in the \code{dataset} to find data for the \code{column}. If a vector of multiple column names is provided (e.g. \code{source = c("a1", "a2")}), the first column name that's found during processing of a dataset will be used and passed to the function defined in \code{func} (if any) and then the one defined in \code{cast}. To provide multiple parameters from the data to \code{func}, define a list instead of a vector \code{source = list("a", "b", "c")} or if multiple alternative columns can be the source for any of the arguments, define as \code{source = list(c("a1", "a2"), "b", c("c1", "c2", "c3"))}}
 
-\item{default}{the default value if no \code{source} columns can be found or another error is encountered during aggregatio. Note that the \code{default} value will also be processed with the function in \code{cast} to make sure it has the correct data type.}
+\item{default}{the default value if no \code{source} columns can be found or another error is encountered during aggregation. Note that the \code{default} value will also be processed with the function in \code{cast} to make sure it has the correct data type.}
 
 \item{cast}{what to cast the values of the resulting column to, most commonly \code{"as.character"}, \code{"as.integer"}, \code{"as.numeric"}, or \code{"as.factor"}. This is required to ensure all aggregated values have the correct data type.}
 
-\item{regexp}{whether source columm names should be interpreted as a regular expressions for the purpose of finding the relevant column(s). Note if \code{regexp = TRUE}, the search for the source column always becomes case-insensitive so this can also be used for a direct match of a source column whose upper/lower casing can be unreliable. If a column is matched by a regexp and also by a direct aggregator rule, the direct aggregator rule takes precedence.}
+\item{regexp}{whether source column names should be interpreted as a regular expressions for the purpose of finding the relevant column(s). Note if \code{regexp = TRUE}, the search for the source column always becomes case-insensitive so this can also be used for a direct match of a source column whose upper/lower casing can be unreliable. If a column is matched by a regexp and also by a direct aggregator rule, the direct aggregator rule takes precedence.}
 
 \item{func}{name of a processing function to apply before casting the value with the \code{cast} function. This is optional and can be used to conduct more elaborate preprocessing of a data or combining data from multiple source columns in the correct way (e.g. pasting together from multiple columns).}
 
-\item{args}{an optional list of arguments to pass to the \code{func} in addition to the values coming from the source colummn(s)}
+\item{args}{an optional list of arguments to pass to the \code{func} in addition to the values coming from the source column(s)}
 }
 \value{
-an orbi aggregator tibble
+an aggregator tibble
 }
 \description{
 These functions allow definition of custom data aggregators for processing data extracted from isofiles. An aggregator is run on each imported file and pulls together the relevant data users are interested in while making sure data formats are correct so that the aggregated data can be merged across several imported files for fast downstream processing.

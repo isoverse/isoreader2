@@ -24,7 +24,7 @@ data reduction.
 new architecture built around the
 [isoextract](https://github.com/isoverse/IsofileExtractor) command-line
 tool. This makes [isoreader2](https://isoreader2.isoverse.org/)
-signifcantely faster, and more versatile with support for the following
+significantly faster, and more versatile with support for the following
 file formats:
 
 | Extension | Measurement type | Produced by |
@@ -137,9 +137,9 @@ file_paths <- data_folder |> ir_find_dual_inlet()
 isofiles <- file_paths |> ir_read_isofiles()
 ```
 
-    > ✔ [110ms] ir_extract_isofiles() finished extracting 1 file/archive
+    > ✔ [107ms] ir_extract_isofiles() finished extracting 1 file/archive
 
-    > ✔ [265ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+    > ✔ [196ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 
 ``` r
 # show information about the files
@@ -160,7 +160,7 @@ isofiles
 dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
-    > ✔ [45ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+    > ✔ [42ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
     > intensity in V) from 1 file using the standard aggregator
 
 ``` r
@@ -195,7 +195,7 @@ dataset |>
   theme(strip.text = element_text(size = 30))
 ```
 
-    > ✔ [3ms] ir_calculate_ratios() calculated 85 ratio and added ratio_name/ratio
+    > ✔ [4ms] ir_calculate_ratios() calculated 85 ratio and added ratio_name/ratio
     > columns to cycles
 
 <div class="figure">
@@ -225,7 +225,7 @@ ir_export_to_excel(
     > ✔ [3ms] ir_get_data() retrieved 102 records from the combination of metadata
     > (1) and cycles (102) via uidx and analysis
 
-    > ✔ [179ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
+    > ✔ [202ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
     > cycles to 'my_export.xlsx'
 
 ### Bonus: explore isofiles interactively
@@ -267,7 +267,7 @@ please help us spread the word and include an isoverse or individual
 package logo on one of your posters or slides. All logos are posted in
 high resolution in [this repository](https://github.com/isoverse/logos).
 If you have suggestions for new features or other constructive feedback,
-please let us know on this short [feeback
+please let us know on this short [feedback
 form](https://www.isoverse.org/feedback/).
 
 ## Funding <a href='https://www.nsf.gov/'><img src='man/figures/NSF_logo.svg' align="right" width="100" alt="NSF logo"/></a>

@@ -48,7 +48,7 @@ ir_get_option <- function(x) {
 #' @section Options for the isoreader2 package:
 get_pkg_options <- function() {
   list(
-    #' - `aggregators`: data aggregators for pulling data out of raw files. The list of available aggregators is accessible via `ir_get_option("aggregators")`. Individiual aggregators are available via the shortcut helper function `ir_get_aggregator("standard")`. Register new/overwrite existing aggregators via `ir_register_aggregator()`.
+    #' - `aggregators`: data aggregators for pulling data out of raw files. The list of available aggregators is accessible via `ir_get_option("aggregators")`. Individual aggregators are available via the shortcut helper function `ir_get_aggregator("standard")`. Register new/overwrite existing aggregators via `ir_register_aggregator()`.
     aggregators = define_pkg_option(
       default = list(), # default aggregators are registered in zzz.R
       check_fn = function(x) {
