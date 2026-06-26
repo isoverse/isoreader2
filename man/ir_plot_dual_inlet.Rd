@@ -9,7 +9,6 @@ ir_plot_dual_inlet(
   species = NULL,
   mass = NULL,
   ratio = NULL,
-  ratio_fold_range = c(0.1, 10),
   facet = data_type,
   scales = "free",
   nrow = NULL,
@@ -47,12 +46,6 @@ ratios have not been calculated is an error pointing to
 simply added). Ratio rows are plotted on the same \code{value} axis with
 \code{data_type = "ratios"}; the default \code{facet = data_type} (with free scales)
 separates them from the intensities.}
-
-\item{ratio_fold_range}{length-2 numeric \code{c(min, max)} to clamp ratio values
-into before plotting (values below \code{min} become \code{min}, above \code{max} become
-\code{max}); default \code{c(0.1, 10)}. Set to \code{NULL} to leave ratios unclamped. Most
-useful with the default normalized ratios from \code{\link[=ir_calculate_ratios]{ir_calculate_ratios()}}
-(centered around 1, so \code{c(0.1, 10)} keeps within a 10-fold band).}
 
 \item{facet}{column or expression to facet by (default: \code{data_type}, which
 separates intensities from ratios). A plain column or expression (e.g.

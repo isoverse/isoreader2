@@ -7,29 +7,11 @@
 \alias{ir_generate_scans_tibble}
 \title{Generate the tibble used by the plotting functions}
 \usage{
-ir_generate_traces_tibble(
-  dataset,
-  species = NULL,
-  mass = NULL,
-  ratio = NULL,
-  ratio_fold_range = c(0.1, 10)
-)
+ir_generate_traces_tibble(dataset, species = NULL, mass = NULL, ratio = NULL)
 
-ir_generate_cycles_tibble(
-  dataset,
-  species = NULL,
-  mass = NULL,
-  ratio = NULL,
-  ratio_fold_range = c(0.1, 10)
-)
+ir_generate_cycles_tibble(dataset, species = NULL, mass = NULL, ratio = NULL)
 
-ir_generate_scans_tibble(
-  dataset,
-  species = NULL,
-  mass = NULL,
-  ratio = NULL,
-  ratio_fold_range = c(0.1, 10)
-)
+ir_generate_scans_tibble(dataset, species = NULL, mass = NULL, ratio = NULL)
 }
 \arguments{
 \item{dataset}{an \code{ir_aggregated_data} object from \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}}
@@ -50,12 +32,6 @@ is \code{NULL} in R, i.e. all masses.}
 Requesting specific ratio names when ratios have not been calculated is an
 error pointing to \code{\link[=ir_calculate_ratios]{ir_calculate_ratios()}}; with \code{ratio = NULL} and no ratios
 present none are simply added.}
-
-\item{ratio_fold_range}{length-2 numeric \code{c(min, max)} to clamp ratio \code{value}s
-into before plotting (ratios below \code{min} become \code{min}, above \code{max} become
-\code{max}); default \code{c(0.1, 10)}. Set to \code{NULL} to leave ratios unclamped. Most
-useful together with the default normalized ratios from
-\code{\link[=ir_calculate_ratios]{ir_calculate_ratios()}} (centered around 1).}
 }
 \value{
 a tibble with the prepared data plus the \code{trace}, \code{data_type}, and

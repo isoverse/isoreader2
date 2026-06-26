@@ -25,17 +25,19 @@ Species not listed here use their numerically lowest measured mass as the
 base mass.}
 
 \item{num_add.V, denom_add.V}{additive offset (in volts) for the numerator and
-denominator intensities of voltage-unit data (\code{V}/\code{mV}). Default
-\code{num_add.V = 100}, \code{denom_add.V = num_add.V}.}
+denominator intensities of voltage-unit data (\code{V}/\code{mV}). Applies to \code{traces}
+and \code{scans} only, not to \code{cycles} (dual inlet). Default \code{num_add.V = 100},
+\code{denom_add.V = num_add.V}.}
 
 \item{num_add.nA, denom_add.nA}{additive offset (in nanoamperes) for the
 numerator and denominator intensities of current-unit data
-(\code{A}/\code{mA}/\code{µA}/\code{nA}/\code{pA}/\code{fA}). Default \code{num_add.nA = 0},
-\code{denom_add.nA = num_add.nA}.}
+(\code{A}/\code{mA}/\code{µA}/\code{nA}/\code{pA}/\code{fA}). Applies to \code{traces} and \code{scans} only, not to
+\code{cycles} (dual inlet). Default \code{num_add.nA = 0}, \code{denom_add.nA = num_add.nA}.}
 
 \item{num_add.cps, denom_add.cps}{additive offset (in cps) for the numerator and
-denominator intensities of count-unit data (\code{cps}). Default
-\code{num_add.cps = 0}, \code{denom_add.cps = num_add.cps}.}
+denominator intensities of count-unit data (\code{cps}). Applies to \code{traces} and
+\code{scans} only, not to \code{cycles} (dual inlet). Default \code{num_add.cps = 0},
+\code{denom_add.cps = num_add.cps}.}
 
 \item{normalize_ratios}{\code{NULL} (default) for no normalization, or a function
 (e.g. \code{mean}, \code{median}, \code{min}, \code{max}) applied per
@@ -70,12 +72,18 @@ measured for that species. Override it for individual species via \code{...} (e.
 \code{SO2 = 64}, \code{N2 = 28}).
 }
 \section{Additive offsets}{
-Which pair of additive offsets is used depends on the intensity unit family of
-the data: voltage (\code{V}, \code{mV}) uses \code{num_add.V}/\code{denom_add.V}, current (\code{A},
-\code{mA}, \code{µA}, \code{nA}, \code{pA}, \code{fA}) uses \code{num_add.nA}/\code{denom_add.nA}, and counts
-(\code{cps}) uses \code{num_add.cps}/\code{denom_add.cps}. The offsets are specified in their
-family's reference unit (volts, nanoamperes, cps) and are automatically scaled
-to the data's actual intensity unit before being added. For example, with
+The additive offsets apply to continuous-flow (\code{traces}) and \code{scans} data
+\strong{only}. Dual inlet (\code{cycles}) data is \strong{not} offset and always uses the
+plain ratio \code{I_mass / I_base} regardless of the \verb{num_add.*}/\verb{denom_add.*}
+settings.
+
+For traces and scans, which pair of additive offsets is used depends on the
+intensity unit family of the data: voltage (\code{V}, \code{mV}) uses
+\code{num_add.V}/\code{denom_add.V}, current (\code{A}, \code{mA}, \code{µA}, \code{nA}, \code{pA}, \code{fA}) uses
+\code{num_add.nA}/\code{denom_add.nA}, and counts (\code{cps}) uses
+\code{num_add.cps}/\code{denom_add.cps}. The offsets are specified in their family's
+reference unit (volts, nanoamperes, cps) and are automatically scaled to the
+data's actual intensity unit before being added. For example, with
 \code{intensity.mV} data the default \code{num_add.V = 100} (volts) is multiplied by
 1000 and 100000 mV are added; with \code{intensity.pA} data the default
 \code{num_add.nA = 0} would be multiplied by 1000 (1 nA = 1000 pA).
