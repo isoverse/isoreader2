@@ -18,7 +18,8 @@ ir_plot_continuous_flow(
   color_values = palette.colors(),
   drop_unused_levels = FALSE,
   scientific = FALSE,
-  time_window = NULL,
+  time_window.s = if (is.null(time_window.min)) NULL else 60 * time_window.min,
+  time_window.min = NULL,
   short_time_labels = FALSE,
   n_time_breaks = 5,
   n_y_breaks = 5,
@@ -87,13 +88,16 @@ actually present in the plotted data.}
 \item{scientific}{whether to format y axis labels in scientific notation
 (default: \code{FALSE})}
 
-\item{time_window}{optional numeric vector of length 2 giving the time axis
-display window \code{c(min, max)} in seconds (must have \code{min < max}). The data
+\item{time_window.s, time_window.min}{optional numeric vector of length 2
+giving the time axis display window \code{c(min, max)}, either in seconds
+(\code{time_window.s}) or in minutes (\code{time_window.min}, converted to seconds
+internally — the function always works in seconds). Provide at most one; if
+both are given, \code{time_window.s} is used. Must have \code{min < max}. The data
 point just outside each edge of the window is retained so the clipped lines
 interpolate correctly across the window boundaries and y autoscales correctly
 at the edges; \code{\link[ggplot2:coord_cartesian]{ggplot2::coord_cartesian()}} clips the display. A window that
 contains no data points of its own is allowed (the line is drawn between the
-bracketing points). Default \code{NULL} shows the full time range.}
+bracketing points). Default \code{NULL} (both) shows the full time range.}
 
 \item{short_time_labels}{whether to use compact time axis labels with no
 space between value and unit and abbreviated units (\code{hr}, \code{m}, \code{s})

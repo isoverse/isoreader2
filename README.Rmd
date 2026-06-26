@@ -116,7 +116,7 @@ dataset |>
   ir_calculate_ratios() |>
   ir_plot_continuous_flow(
     facet = data_type,
-    time_window = c(250, 600)
+    time_window.s = c(250, 600)
   )
 ```
 

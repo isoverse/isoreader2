@@ -992,13 +992,16 @@ ir_plot_scans <- function(
 #'   (default: `FALSE`)
 #' @param ... additional arguments passed on to [ggplot2::facet_wrap()] or
 #'   [ggplot2::facet_grid()] (e.g. `labeller`)
-#' @param time_window optional numeric vector of length 2 giving the time axis
-#'   display window `c(min, max)` in seconds (must have `min < max`). The data
+#' @param time_window.s,time_window.min optional numeric vector of length 2
+#'   giving the time axis display window `c(min, max)`, either in seconds
+#'   (`time_window.s`) or in minutes (`time_window.min`, converted to seconds
+#'   internally — the function always works in seconds). Provide at most one; if
+#'   both are given, `time_window.s` is used. Must have `min < max`. The data
 #'   point just outside each edge of the window is retained so the clipped lines
 #'   interpolate correctly across the window boundaries and y autoscales correctly
 #'   at the edges; [ggplot2::coord_cartesian()] clips the display. A window that
 #'   contains no data points of its own is allowed (the line is drawn between the
-#'   bracketing points). Default `NULL` shows the full time range.
+#'   bracketing points). Default `NULL` (both) shows the full time range.
 #' @param short_time_labels whether to use compact time axis labels with no
 #'   space between value and unit and abbreviated units (`hr`, `m`, `s`)
 #'   (default: `FALSE`)
@@ -1022,7 +1025,8 @@ ir_plot_continuous_flow <- function(
   color_values = palette.colors(),
   drop_unused_levels = FALSE,
   scientific = FALSE,
-  time_window = NULL,
+  time_window.s = if (is.null(time_window.min)) NULL else 60 * time_window.min,
+  time_window.min = NULL,
   short_time_labels = FALSE,
   n_time_breaks = 5,
   n_y_breaks = 5,
@@ -1047,13 +1051,23 @@ ir_plot_continuous_flow <- function(
     "must be TRUE or FALSE"
   )
   check_arg(
-    time_window,
-    is.null(time_window) ||
-      (is.numeric(time_window) &&
-        length(time_window) == 2 &&
-        time_window[1] < time_window[2]),
+    time_window.min,
+    is.null(time_window.min) ||
+      (is.numeric(time_window.min) &&
+        length(time_window.min) == 2 &&
+        time_window.min[1] < time_window.min[2]),
     "must be NULL or a numeric vector of length 2 with min < max"
   )
+  check_arg(
+    time_window.s,
+    is.null(time_window.s) ||
+      (is.numeric(time_window.s) &&
+        length(time_window.s) == 2 &&
+        time_window.s[1] < time_window.s[2]),
+    "must be NULL or a numeric vector of length 2 with min < max"
+  )
+  # the rest of the function works in seconds
+  time_window <- time_window.s
   check_arg(
     n_time_breaks,
     rlang::is_scalar_integerish(n_time_breaks) && n_time_breaks > 0,

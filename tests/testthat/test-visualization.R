@@ -171,22 +171,22 @@ test_that("windows without data points of their own are allowed", {
 
   # a window that falls *between* two data points still plots: the bracketing
   # points on either side are kept so the line interpolates across the window
-  p <- ir_plot_continuous_flow(cf, time_window = c(12, 18)) |>
+  p <- ir_plot_continuous_flow(cf, time_window.s = c(12, 18)) |>
     suppressMessages()
   expect_no_error(ggplot2::ggplot_build(p))
   expect_equal(sort(p$data$time.s), c(10, 20))
   expect_equal(p$coordinates$limits$x, c(12, 18))
 
   # a window beyond the data range keeps the nearest bracketing point, no error
-  p_past <- ir_plot_continuous_flow(cf, time_window = c(100, 200)) |>
+  p_past <- ir_plot_continuous_flow(cf, time_window.s = c(100, 200)) |>
     suppressMessages()
   expect_no_error(ggplot2::ggplot_build(p_past))
   expect_equal(p_past$data$time.s, 40)
 
   # an impossible window (min >= max) is the only window error
-  ir_plot_continuous_flow(cf, time_window = c(20, 10)) |>
+  ir_plot_continuous_flow(cf, time_window.s = c(20, 10)) |>
     expect_error("min < max")
-  ir_plot_continuous_flow(cf, time_window = c(20, 20)) |>
+  ir_plot_continuous_flow(cf, time_window.s = c(20, 20)) |>
     expect_error("min < max")
 
   # same empty-window tolerance for scans and dual inlet
@@ -219,6 +219,34 @@ test_that("windows without data points of their own are allowed", {
   expect_equal(sort(p_di$data$cycle), c(2, 3))
 })
 
+test_that("ir_plot_continuous_flow() accepts the time window in seconds or minutes", {
+  cf <- tibble(
+    file_name = "a",
+    species = "CO2",
+    mass = 44,
+    trace = "CO2: 44",
+    time.s = c(0, 60, 120, 180, 240),
+    intensity.mV = c(1, 2, 3, 4, 5)
+  )
+  # 1-3 minutes == 60-180 seconds: identical clipping
+  p_min <- ir_plot_continuous_flow(cf, time_window.min = c(1, 3)) |>
+    suppressMessages()
+  p_sec <- ir_plot_continuous_flow(cf, time_window.s = c(60, 180)) |>
+    suppressMessages()
+  expect_equal(p_min$coordinates$limits$x, c(60, 180))
+  expect_equal(p_min$coordinates$limits$x, p_sec$coordinates$limits$x)
+  expect_equal(sort(p_min$data$time.s), sort(p_sec$data$time.s))
+
+  # both NULL (default) -> no window, all points shown
+  p_none <- ir_plot_continuous_flow(cf)
+  expect_null(p_none$coordinates$limits$x)
+  expect_equal(sort(p_none$data$time.s), cf$time.s)
+
+  # an invalid minutes window is validated too
+  ir_plot_continuous_flow(cf, time_window.min = c(3, 1)) |>
+    expect_error("min < max")
+})
+
 test_that("zooming preserves trace/mass factor levels and colours", {
   # two traces, the second only has data outside the zoom window
   d <- tibble(
@@ -231,7 +259,7 @@ test_that("zooming preserves trace/mass factor levels and colours", {
   )
 
   full <- ir_plot_continuous_flow(d) |> suppressMessages()
-  zoom <- ir_plot_continuous_flow(d, time_window = c(0, 20)) |>
+  zoom <- ir_plot_continuous_flow(d, time_window.s = c(0, 20)) |>
     suppressMessages()
   expect_no_error(ggplot2::ggplot_build(zoom))
 
@@ -313,14 +341,18 @@ test_that("drop_unused_levels drops traces that are outside the zoom window", {
   # default keeps every trace even though only the bracketing points of some
   # remain in the window (stable colour mapping)
   expect_equal(
-    breaks(ir_plot_continuous_flow(d, time_window = w) |> suppressMessages()),
+    breaks(ir_plot_continuous_flow(d, time_window.s = w) |> suppressMessages()),
     c("CO2: 44", "CO2: 45", "CO2: 46")
   )
   # drop_unused_levels = TRUE drops the trace that is entirely outside the window
   # but keeps the one inside it and the one whose line crosses it
   expect_equal(
     breaks(
-      ir_plot_continuous_flow(d, time_window = w, drop_unused_levels = TRUE) |>
+      ir_plot_continuous_flow(
+        d,
+        time_window.s = w,
+        drop_unused_levels = TRUE
+      ) |>
         suppressMessages()
     ),
     c("CO2: 44", "CO2: 46")
