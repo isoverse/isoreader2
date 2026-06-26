@@ -298,14 +298,52 @@ test_that("ir_calculate_ratios() handles cycles per type", {
     ),
     class = "ir_aggregated_data"
   )
-  cy <- (ir_calculate_ratios(agg, num_add.V = 0) |>
+  # cycles ALWAYS use plain ratios; the additive offsets are ignored for them, so
+  # passing a (large) num_add.V must not change the dual inlet ratios
+  cy <- (ir_calculate_ratios(agg, num_add.V = 100) |>
     suppressMessages())$cycles
 
   expect_equal(nrow(cy), 4L) # all rows kept
-  # the base mass (44) is NA in both types; 45 gets the per-type ratio
+  # the base mass (44) is NA in both types; 45 gets the plain per-type ratio
   expect_true(all(is.na(cy$ratio[cy$mass == "44"])))
   expect_equal(cy$ratio[cy$type == "standard" & cy$mass == "45"], 0.1)
   expect_equal(cy$ratio[cy$type == "sample" & cy$mass == "45"], 0.2)
+})
+
+test_that("ir_calculate_ratios() ignores additive offsets for cycles only", {
+  # a dataset with both traces and cycles in mV; a non-zero num_add.V must offset
+  # the traces ratio but leave the cycles ratio plain
+  agg <- structure(
+    list(
+      metadata = tibble(uidx = 1L, analysis = 1L, file_name = "a"),
+      traces = tibble(
+        uidx = 1L,
+        analysis = 1L,
+        species = "N2",
+        mass = c("28", "29"),
+        time.s = 0,
+        intensity.mV = c(100, 40)
+      ),
+      cycles = tibble(
+        uidx = 1L,
+        analysis = 1L,
+        species = "CO2",
+        cycle = 1L,
+        type = "sample",
+        mass = c("44", "45"),
+        intensity.mV = c(1000, 100)
+      )
+    ),
+    class = "ir_aggregated_data"
+  )
+  res <- ir_calculate_ratios(agg, num_add.V = 100) |> suppressMessages()
+  # traces: (40 + 100000) / (100 + 100000)  (offset applied)
+  expect_equal(
+    res$traces$ratio[res$traces$mass == "29"],
+    (40 + 100000) / (100 + 100000)
+  )
+  # cycles: plain 100 / 1000 = 0.1  (offset ignored)
+  expect_equal(res$cycles$ratio[res$cycles$mass == "45"], 0.1)
 })
 
 test_that("ir_calculate_ratios() adds columns to each present series", {
