@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="index.html">isoreader2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -158,16 +158,24 @@
 <span>  <span class="fu"><a href="reference/ir_read_isofiles.html">ir_read_isofiles</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles</a></span><span class="op">(</span><span class="st">"mV"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># visualize data (intensities together with a calculated isotope ratio)</span></span>
-<span><span class="va">dataset</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="reference/ir_calculate_ratios.html">ir_calculate_ratios</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="reference/ir_plot_continuous_flow.html">ir_plot_continuous_flow</a></span><span class="op">(</span></span>
-<span>    facet <span class="op">=</span> <span class="va">data_type</span>,</span>
-<span>    time_window <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">250</span>, <span class="fl">600</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span><span class="co"># visualize data for each file</span></span>
+<span><span class="va">dataset</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/ir_plot_continuous_flow.html">ir_plot_continuous_flow</a></span><span class="op">(</span>facet <span class="op">=</span> <span class="va">file_name</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
 <img src="reference/figures/README-continuous_flow_example-1.png" alt="Plot of continuous flow examples" width="100%"><p class="caption">
 Plot of continuous flow examples
+</p>
+</div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># visualize CO2 with ratios and a specific time window</span></span>
+<span><span class="va">dataset</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/ir_calculate_ratios.html">ir_calculate_ratios</a></span><span class="op">(</span>normalize_ratios <span class="op">=</span> <span class="va">median</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/ir_plot_continuous_flow.html">ir_plot_continuous_flow</a></span><span class="op">(</span></span>
+<span>    species <span class="op">=</span> <span class="st">"CO2"</span>,</span>
+<span>    time_window.min <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4.5</span>, <span class="fl">8.5</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
+<div class="figure">
+<img src="reference/figures/README-continuous_flow_example_w_ratios-1.png" alt="Time slice of continuous flow examples with ratios" width="100%"><p class="caption">
+Time slice of continuous flow examples with ratios
 </p>
 </div>
 </div>
@@ -177,7 +185,7 @@ Plot of continuous flow examples
 <div class="section level3">
 <h3 id="read-isotope-data-files">Read isotope data files<a class="anchor" aria-label="anchor" href="#read-isotope-data-files"></a>
 </h3>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># load library</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://isoreader2.isoverse.org/">isoreader2</a></span><span class="op">)</span></span>
 <span></span>
@@ -190,11 +198,11 @@ Plot of continuous flow examples
 <span></span>
 <span><span class="co"># read the files</span></span>
 <span><span class="va">isofiles</span> <span class="op">&lt;-</span> <span class="va">file_paths</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/ir_read_isofiles.html">ir_read_isofiles</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[87ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> finished extracting 1 file/archive
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[103ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> finished extracting 1 file/archive
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[204ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 1 isotope data file/archive
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[239ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 1 isotope data file/archive
 </code></pre>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># show information about the files</span></span>
 <span><span class="va">isofiles</span></span></code></pre></div>
 <pre class="fansi fansi-message"><code>─────── <span style="font-weight: bold;">1 isofile with 1 analysis - process with ir_aggregate_isofiles()</span> ───────
@@ -207,14 +215,14 @@ Plot of continuous flow examples
 <div class="section level3">
 <h3 id="aggregate-the-data">Aggregate the data<a class="anchor" aria-label="anchor" href="#aggregate-the-data"></a>
 </h3>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># aggregate the data from the read files specifying which units to use</span></span>
 <span><span class="co"># (mV, V, nA, A, cps, etc.), conversion via resistor values happens automatically</span></span>
 <span><span class="va">dataset</span> <span class="op">&lt;-</span> <span class="va">isofiles</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles</a></span><span class="op">(</span><span class="st">"V"</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[46ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (1) and <span style="color: #0000BB;">cycles</span> (102,
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[41ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (1) and <span style="color: #0000BB;">cycles</span> (102,
 <span style="color: #00BB00;">intensity</span> in <span style="color: #BB00BB;">V</span>) from 1 file using the <span style="font-weight: bold; font-style: italic;">standard</span> aggregator
 </code></pre>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># show the available data that was aggregated  metadata is all the available</span></span>
 <span><span class="co"># sequence information from the different file types</span></span>
 <span><span class="va">dataset</span></span></code></pre></div>
@@ -234,15 +242,19 @@ Plot of continuous flow examples
 <div class="section level3">
 <h3 id="visualize-the-data">Visualize the data<a class="anchor" aria-label="anchor" href="#visualize-the-data"></a>
 </h3>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># filter the data by a metadata field and mass range and plot it</span></span>
 <span><span class="co"># (use ir_plot_continuous_flow() and ir_plot_scans(), respectively)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="va">dataset</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/ir_metadata.html">ir_filter_metadata</a></span><span class="op">(</span><span class="va">file_name</span> <span class="op">==</span> <span class="st">"caf_dual_inlet_example"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/ir_calculate_ratios.html">ir_calculate_ratios</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/ir_plot_dual_inlet.html">ir_plot_dual_inlet</a></span><span class="op">(</span>mass <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">44</span><span class="op">:</span><span class="fl">48</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="co"># use ggplot2 to modify with custom theming (or any other ggplot elements)</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>strip.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">30</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[3ms]</span> <span style="font-weight: bold;">ir_calculate_ratios()</span> calculated 85 ratio and added <span style="color: #00BB00;">ratio_name</span>/<span style="color: #00BB00;">ratio</span>
+columns to <span style="color: #00BB00;">cycles</span>
+</code></pre>
 <div class="figure">
 <img src="reference/figures/README-dual_inlet_example-1.png" alt="Plot of dual inlet examples" width="100%"><p class="caption">
 Plot of dual inlet examples
@@ -252,7 +264,7 @@ Plot of dual inlet examples
 <div class="section level3">
 <h3 id="export-the-data">Export the data<a class="anchor" aria-label="anchor" href="#export-the-data"></a>
 </h3>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get the data of interest (here, metadata and dual inlet cycles data)</span></span>
 <span><span class="co"># and export both into one excel file (one sheet per data set)</span></span>
 <span><span class="fu"><a href="reference/ir_export_to_excel.html">ir_export_to_excel</a></span><span class="op">(</span></span>
@@ -265,14 +277,14 @@ Plot of dual inlet examples
 <pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[3ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 102 records from the combination of <span style="color: #0000BB;">metadata</span>
 (1) and <span style="color: #0000BB;">cycles</span> (102) via <span style="color: #00BB00;">uidx</span> and <span style="color: #00BB00;">analysis</span>
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[205ms]</span> <span style="font-weight: bold;">ir_export_to_excel()</span> exported 1 row of <span style="color: #00BB00;">metadata</span> and 102 rows of
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[179ms]</span> <span style="font-weight: bold;">ir_export_to_excel()</span> exported 1 row of <span style="color: #00BB00;">metadata</span> and 102 rows of
 <span style="color: #00BB00;">cycles</span> to <span style="color: #0000BB;">my_export.xlsx</span>
 </code></pre>
 </div>
 <div class="section level3">
 <h3 id="bonus-explore-isofiles-interactively">Bonus: explore isofiles interactively<a class="anchor" aria-label="anchor" href="#bonus-explore-isofiles-interactively"></a>
 </h3>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># you can also use the isoexplorer package to explore isofiles</span></span>
 <span><span class="co"># interactively and generate visualization code from the GUI</span></span>
 <span><span class="co"># (use ie_explore_continuous_flow/dual_inlet/scans)</span></span>

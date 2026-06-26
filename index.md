@@ -76,19 +76,30 @@ dataset <-
   ir_read_isofiles() |>
   ir_aggregate_isofiles("mV")
 
-# visualize data (intensities together with a calculated isotope ratio)
-dataset |>
-  ir_calculate_ratios() |>
-  ir_plot_continuous_flow(
-    facet = data_type,
-    time_window = c(250, 600)
-  )
+# visualize data for each file
+dataset |> ir_plot_continuous_flow(facet = file_name)
 ```
 
 ![Plot of continuous flow
 examples](reference/figures/README-continuous_flow_example-1.png)
 
 Plot of continuous flow examples
+
+``` r
+
+# visualize CO2 with ratios and a specific time window
+dataset |>
+  ir_calculate_ratios(normalize_ratios = median) |>
+  ir_plot_continuous_flow(
+    species = "CO2",
+    time_window.min = c(4.5, 8.5)
+  )
+```
+
+![Time slice of continuous flow examples with
+ratios](reference/figures/README-continuous_flow_example_w_ratios-1.png)
+
+Time slice of continuous flow examples with ratios
 
 ## Show me more details
 
@@ -111,11 +122,11 @@ isofiles <- file_paths |> ir_read_isofiles()
 ```
 
 ``` fansi
-✔ [87ms] ir_extract_isofiles() finished extracting 1 file/archive
+✔ [103ms] ir_extract_isofiles() finished extracting 1 file/archive
 ```
 
 ``` fansi
-✔ [204ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+✔ [239ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 ```
 
 ``` r
@@ -144,7 +155,7 @@ dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
 ``` fansi
-✔ [46ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+✔ [41ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
 intensity in V) from 1 file using the standard aggregator
 ```
 
@@ -184,9 +195,15 @@ aggregated: channel)
 library(ggplot2)
 dataset |>
   ir_filter_metadata(file_name == "caf_dual_inlet_example") |>
+  ir_calculate_ratios() |>
   ir_plot_dual_inlet(mass = c(44:48)) +
   # use ggplot2 to modify with custom theming (or any other ggplot elements)
   theme(strip.text = element_text(size = 30))
+```
+
+``` fansi
+✔ [3ms] ir_calculate_ratios() calculated 85 ratio and added ratio_name/ratio
+columns to cycles
 ```
 
 ![Plot of dual inlet
@@ -217,7 +234,7 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [205ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
+✔ [179ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
 cycles to my_export.xlsx
 ```
 

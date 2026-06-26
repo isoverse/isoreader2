@@ -85,6 +85,8 @@ These functions plot aggregated isofiles data.
   [`ir_generate_cycles_tibble()`](https://isoreader2.isoverse.org/reference/ir_generate_tibble.md)
   [`ir_generate_scans_tibble()`](https://isoreader2.isoverse.org/reference/ir_generate_tibble.md)
   : Generate the tibble used by the plotting functions
+- [`auto()`](https://isoreader2.isoverse.org/reference/auto.md) :
+  Automatic / default behavior
 
 ## Export & storage
 

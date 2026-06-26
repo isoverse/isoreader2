@@ -21,7 +21,7 @@ value together with a data_type label ("intensity [UNITS]", or
 
     <a class="navbar-brand me-2" href="../index.html">isoreader2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,8 +63,8 @@ identifier (<code>"&lt;species&gt;: &lt;mass&gt;"</code>) is always regenerated 
 <span>  species <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mass <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ratio <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  ratio_fold_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">10</span><span class="op">)</span>,</span>
-<span>  facet <span class="op">=</span> <span class="va">data_type</span>,</span>
+<span>  facet <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  data_type_as_facet <span class="op">=</span> <span class="fu"><a href="auto.html">auto</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  scales <span class="op">=</span> <span class="st">"free"</span>,</span>
 <span>  nrow <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ncol <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -114,20 +114,27 @@ simply added). Ratio rows are plotted on the same <code>value</code> axis with
 separates them from the intensities.</p></dd>
 
 
-<dt id="arg-ratio-fold-range">ratio_fold_range<a class="anchor" aria-label="anchor" href="#arg-ratio-fold-range"></a></dt>
-<dd><p>length-2 numeric <code>c(min, max)</code> to clamp ratio values
-into before plotting (values below <code>min</code> become <code>min</code>, above <code>max</code> become
-<code>max</code>); default <code>c(0.1, 10)</code>. Set to <code>NULL</code> to leave ratios unclamped. Most
-useful with the default normalized ratios from <code><a href="ir_calculate_ratios.html">ir_calculate_ratios()</a></code>
-(centered around 1, so <code>c(0.1, 10)</code> keeps within a 10-fold band).</p></dd>
-
-
 <dt id="arg-facet">facet<a class="anchor" aria-label="anchor" href="#arg-facet"></a></dt>
-<dd><p>column or expression to facet by (default: <code>data_type</code>, which
-separates intensities from ratios). A plain column or expression (e.g.
-<code>file_name</code> or <code>paste(species, mass)</code>) is faceted with
-<code><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">ggplot2::facet_wrap()</a></code>; a two-sided formula (e.g. <code>data_type ~ file_name</code>)
-is faceted with <code><a href="https://ggplot2.tidyverse.org/reference/facet_grid.html" class="external-link">ggplot2::facet_grid()</a></code>. Set to <code>NULL</code> to suppress faceting.</p></dd>
+<dd><p>column or expression to facet by (default: <code>NULL</code>, no extra
+faceting). When
+<code>data_type</code> is used as a facet row (see <code>data_type_as_facet</code>), a single
+<code>facet</code> variable becomes the facet_grid column (<code>data_type ~ facet</code>) and a
+<code>NULL</code> facet gives <code>data_type ~ .</code>. Otherwise a plain column or expression
+(e.g. <code>file_name</code> or <code>paste(species, mass)</code>) is faceted with
+<code><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">ggplot2::facet_wrap()</a></code>, and a two-sided formula (e.g. <code>species ~ mass</code>) is
+faceted with <code><a href="https://ggplot2.tidyverse.org/reference/facet_grid.html" class="external-link">ggplot2::facet_grid()</a></code>. Set to <code>NULL</code> to suppress faceting.</p></dd>
+
+
+<dt id="arg-data-type-as-facet">data_type_as_facet<a class="anchor" aria-label="anchor" href="#arg-data-type-as-facet"></a></dt>
+<dd><p>whether the <code>data_type</code> column (intensities vs
+ratios) is used as the <code><a href="https://ggplot2.tidyverse.org/reference/facet_grid.html" class="external-link">ggplot2::facet_grid()</a></code> row variable: <code><a href="auto.html">auto()</a></code>
+(default) uses it only when more than one data type is present; <code>TRUE</code>
+always uses it; <code>FALSE</code> never does. When used, the y axis label is dropped
+(the facet strip provides it) and the facet becomes <code>data_type ~ .</code> (a <code>NULL</code>
+<code>facet</code>) or <code>data_type ~ facet</code> (a single-variable <code>facet</code>). It is ignored
+when <code>facet</code> is a two-sided formula (a warning is issued if
+<code>data_type_as_facet = TRUE</code> is combined with a formula <code>facet</code>, since the two
+are mutually exclusive).</p></dd>
 
 
 <dt id="arg-scales">scales<a class="anchor" aria-label="anchor" href="#arg-scales"></a></dt>

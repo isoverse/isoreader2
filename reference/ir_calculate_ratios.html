@@ -17,7 +17,7 @@ present in the aggregated data as two extra columns: ratio_name (e.g.
 
     <a class="navbar-brand me-2" href="../index.html">isoreader2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -82,21 +82,23 @@ base mass.</p></dd>
 
 <dt id="arg-num-add-v-denom-add-v">num_add.V, denom_add.V<a class="anchor" aria-label="anchor" href="#arg-num-add-v-denom-add-v"></a></dt>
 <dd><p>additive offset (in volts) for the numerator and
-denominator intensities of voltage-unit data (<code>V</code>/<code>mV</code>). Default
-<code>num_add.V = 100</code>, <code>denom_add.V = num_add.V</code>.</p></dd>
+denominator intensities of voltage-unit data (<code>V</code>/<code>mV</code>). Applies to <code>traces</code>
+and <code>scans</code> only, not to <code>cycles</code> (dual inlet). Default <code>num_add.V = 100</code>,
+<code>denom_add.V = num_add.V</code>.</p></dd>
 
 
 <dt id="arg-num-add-na-denom-add-na">num_add.nA, denom_add.nA<a class="anchor" aria-label="anchor" href="#arg-num-add-na-denom-add-na"></a></dt>
 <dd><p>additive offset (in nanoamperes) for the
 numerator and denominator intensities of current-unit data
-(<code>A</code>/<code>mA</code>/<code>µA</code>/<code>nA</code>/<code>pA</code>/<code>fA</code>). Default <code>num_add.nA = 0</code>,
-<code>denom_add.nA = num_add.nA</code>.</p></dd>
+(<code>A</code>/<code>mA</code>/<code>µA</code>/<code>nA</code>/<code>pA</code>/<code>fA</code>). Applies to <code>traces</code> and <code>scans</code> only, not to
+<code>cycles</code> (dual inlet). Default <code>num_add.nA = 0</code>, <code>denom_add.nA = num_add.nA</code>.</p></dd>
 
 
 <dt id="arg-num-add-cps-denom-add-cps">num_add.cps, denom_add.cps<a class="anchor" aria-label="anchor" href="#arg-num-add-cps-denom-add-cps"></a></dt>
 <dd><p>additive offset (in cps) for the numerator and
-denominator intensities of count-unit data (<code>cps</code>). Default
-<code>num_add.cps = 0</code>, <code>denom_add.cps = num_add.cps</code>.</p></dd>
+denominator intensities of count-unit data (<code>cps</code>). Applies to <code>traces</code> and
+<code>scans</code> only, not to <code>cycles</code> (dual inlet). Default <code>num_add.cps = 0</code>,
+<code>denom_add.cps = num_add.cps</code>.</p></dd>
 
 
 <dt id="arg-normalize-ratios">normalize_ratios<a class="anchor" aria-label="anchor" href="#arg-normalize-ratios"></a></dt>
@@ -127,12 +129,17 @@ measured for that species. Override it for individual species via <code>...</cod
     </div>
     <div class="section level2">
     <h2 id="additive-offsets">Additive offsets<a class="anchor" aria-label="anchor" href="#additive-offsets"></a></h2>
-    <p>Which pair of additive offsets is used depends on the intensity unit family of
-the data: voltage (<code>V</code>, <code>mV</code>) uses <code>num_add.V</code>/<code>denom_add.V</code>, current (<code>A</code>,
-<code>mA</code>, <code>µA</code>, <code>nA</code>, <code>pA</code>, <code>fA</code>) uses <code>num_add.nA</code>/<code>denom_add.nA</code>, and counts
-(<code>cps</code>) uses <code>num_add.cps</code>/<code>denom_add.cps</code>. The offsets are specified in their
-family's reference unit (volts, nanoamperes, cps) and are automatically scaled
-to the data's actual intensity unit before being added. For example, with
+    <p>The additive offsets apply to continuous-flow (<code>traces</code>) and <code>scans</code> data
+<strong>only</strong>. Dual inlet (<code>cycles</code>) data is <strong>not</strong> offset and always uses the
+plain ratio <code>I_mass / I_base</code> regardless of the <code>num_add.*</code>/<code>denom_add.*</code>
+settings.</p>
+<p>For traces and scans, which pair of additive offsets is used depends on the
+intensity unit family of the data: voltage (<code>V</code>, <code>mV</code>) uses
+<code>num_add.V</code>/<code>denom_add.V</code>, current (<code>A</code>, <code>mA</code>, <code>µA</code>, <code>nA</code>, <code>pA</code>, <code>fA</code>) uses
+<code>num_add.nA</code>/<code>denom_add.nA</code>, and counts (<code>cps</code>) uses
+<code>num_add.cps</code>/<code>denom_add.cps</code>. The offsets are specified in their family's
+reference unit (volts, nanoamperes, cps) and are automatically scaled to the
+data's actual intensity unit before being added. For example, with
 <code>intensity.mV</code> data the default <code>num_add.V = 100</code> (volts) is multiplied by
 1000 and 100000 mV are added; with <code>intensity.pA</code> data the default
 <code>num_add.nA = 0</code> would be multiplied by 1000 (1 nA = 1000 pA).</p>

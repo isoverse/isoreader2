@@ -19,8 +19,8 @@ ir_plot_continuous_flow(
   species = NULL,
   mass = NULL,
   ratio = NULL,
-  ratio_fold_range = c(0.1, 10),
-  facet = data_type,
+  facet = NULL,
+  data_type_as_facet = auto(),
   scales = "free",
   nrow = NULL,
   ncol = 1,
@@ -29,7 +29,8 @@ ir_plot_continuous_flow(
   color_values = palette.colors(),
   drop_unused_levels = FALSE,
   scientific = FALSE,
-  time_window = NULL,
+  time_window.s = if (is.null(time_window.min)) NULL else 60 * time_window.min,
+  time_window.min = NULL,
   short_time_labels = FALSE,
   n_time_breaks = 5,
   n_y_breaks = 5,
@@ -73,24 +74,33 @@ ir_plot_continuous_flow(
   `data_type = "ratios"`; the default `facet = data_type` (with free
   scales) separates them from the intensities.
 
-- ratio_fold_range:
-
-  length-2 numeric `c(min, max)` to clamp ratio values into before
-  plotting (values below `min` become `min`, above `max` become `max`);
-  default `c(0.1, 10)`. Set to `NULL` to leave ratios unclamped. Most
-  useful with the default normalized ratios from
-  [`ir_calculate_ratios()`](https://isoreader2.isoverse.org/reference/ir_calculate_ratios.md)
-  (centered around 1, so `c(0.1, 10)` keeps within a 10-fold band).
-
 - facet:
 
-  column or expression to facet by (default: `data_type`, which
-  separates intensities from ratios). A plain column or expression (e.g.
-  `file_name` or `paste(species, mass)`) is faceted with
-  [`ggplot2::facet_wrap()`](https://ggplot2.tidyverse.org/reference/facet_wrap.html);
-  a two-sided formula (e.g. `data_type ~ file_name`) is faceted with
+  column or expression to facet by (default: `NULL`, no extra faceting).
+  When `data_type` is used as a facet row (see `data_type_as_facet`), a
+  single `facet` variable becomes the facet_grid column
+  (`data_type ~ facet`) and a `NULL` facet gives `data_type ~ .`.
+  Otherwise a plain column or expression (e.g. `file_name` or
+  `paste(species, mass)`) is faceted with
+  [`ggplot2::facet_wrap()`](https://ggplot2.tidyverse.org/reference/facet_wrap.html),
+  and a two-sided formula (e.g. `species ~ mass`) is faceted with
   [`ggplot2::facet_grid()`](https://ggplot2.tidyverse.org/reference/facet_grid.html).
   Set to `NULL` to suppress faceting.
+
+- data_type_as_facet:
+
+  whether the `data_type` column (intensities vs ratios) is used as the
+  [`ggplot2::facet_grid()`](https://ggplot2.tidyverse.org/reference/facet_grid.html)
+  row variable:
+  [`auto()`](https://isoreader2.isoverse.org/reference/auto.md)
+  (default) uses it only when more than one data type is present; `TRUE`
+  always uses it; `FALSE` never does. When used, the y axis label is
+  dropped (the facet strip provides it) and the facet becomes
+  `data_type ~ .` (a `NULL` `facet`) or `data_type ~ facet` (a
+  single-variable `facet`). It is ignored when `facet` is a two-sided
+  formula (a warning is issued if `data_type_as_facet = TRUE` is
+  combined with a formula `facet`, since the two are mutually
+  exclusive).
 
 - scales:
 
@@ -144,17 +154,20 @@ ir_plot_continuous_flow(
   whether to format y axis labels in scientific notation (default:
   `FALSE`)
 
-- time_window:
+- time_window.s, time_window.min:
 
   optional numeric vector of length 2 giving the time axis display
-  window `c(min, max)` in seconds (must have `min < max`). The data
-  point just outside each edge of the window is retained so the clipped
-  lines interpolate correctly across the window boundaries and y
-  autoscales correctly at the edges;
+  window `c(min, max)`, either in seconds (`time_window.s`) or in
+  minutes (`time_window.min`, converted to seconds internally — the
+  function always works in seconds). Provide at most one; if both are
+  given, `time_window.s` is used. Must have `min < max`. The data point
+  just outside each edge of the window is retained so the clipped lines
+  interpolate correctly across the window boundaries and y autoscales
+  correctly at the edges;
   [`ggplot2::coord_cartesian()`](https://ggplot2.tidyverse.org/reference/coord_cartesian.html)
   clips the display. A window that contains no data points of its own is
   allowed (the line is drawn between the bracketing points). Default
-  `NULL` shows the full time range.
+  `NULL` (both) shows the full time range.
 
 - short_time_labels:
 

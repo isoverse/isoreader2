@@ -28,29 +28,11 @@ three columns:
 ## Usage
 
 ``` r
-ir_generate_traces_tibble(
-  dataset,
-  species = NULL,
-  mass = NULL,
-  ratio = NULL,
-  ratio_fold_range = c(0.1, 10)
-)
+ir_generate_traces_tibble(dataset, species = NULL, mass = NULL, ratio = NULL)
 
-ir_generate_cycles_tibble(
-  dataset,
-  species = NULL,
-  mass = NULL,
-  ratio = NULL,
-  ratio_fold_range = c(0.1, 10)
-)
+ir_generate_cycles_tibble(dataset, species = NULL, mass = NULL, ratio = NULL)
 
-ir_generate_scans_tibble(
-  dataset,
-  species = NULL,
-  mass = NULL,
-  ratio = NULL,
-  ratio_fold_range = c(0.1, 10)
-)
+ir_generate_scans_tibble(dataset, species = NULL, mass = NULL, ratio = NULL)
 ```
 
 ## Arguments
@@ -85,15 +67,6 @@ ir_generate_scans_tibble(
   have not been calculated is an error pointing to
   [`ir_calculate_ratios()`](https://isoreader2.isoverse.org/reference/ir_calculate_ratios.md);
   with `ratio = NULL` and no ratios present none are simply added.
-
-- ratio_fold_range:
-
-  length-2 numeric `c(min, max)` to clamp ratio `value`s into before
-  plotting (ratios below `min` become `min`, above `max` become `max`);
-  default `c(0.1, 10)`. Set to `NULL` to leave ratios unclamped. Most
-  useful together with the default normalized ratios from
-  [`ir_calculate_ratios()`](https://isoreader2.isoverse.org/reference/ir_calculate_ratios.md)
-  (centered around 1).
 
 ## Value
 

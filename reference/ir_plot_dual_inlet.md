@@ -20,8 +20,8 @@ ir_plot_dual_inlet(
   species = NULL,
   mass = NULL,
   ratio = NULL,
-  ratio_fold_range = c(0.1, 10),
-  facet = data_type,
+  facet = NULL,
+  data_type_as_facet = auto(),
   scales = "free",
   nrow = NULL,
   ncol = 1,
@@ -73,24 +73,33 @@ ir_plot_dual_inlet(
   `data_type = "ratios"`; the default `facet = data_type` (with free
   scales) separates them from the intensities.
 
-- ratio_fold_range:
-
-  length-2 numeric `c(min, max)` to clamp ratio values into before
-  plotting (values below `min` become `min`, above `max` become `max`);
-  default `c(0.1, 10)`. Set to `NULL` to leave ratios unclamped. Most
-  useful with the default normalized ratios from
-  [`ir_calculate_ratios()`](https://isoreader2.isoverse.org/reference/ir_calculate_ratios.md)
-  (centered around 1, so `c(0.1, 10)` keeps within a 10-fold band).
-
 - facet:
 
-  column or expression to facet by (default: `data_type`, which
-  separates intensities from ratios). A plain column or expression (e.g.
-  `file_name` or `paste(species, mass)`) is faceted with
-  [`ggplot2::facet_wrap()`](https://ggplot2.tidyverse.org/reference/facet_wrap.html);
-  a two-sided formula (e.g. `data_type ~ file_name`) is faceted with
+  column or expression to facet by (default: `NULL`, no extra faceting).
+  When `data_type` is used as a facet row (see `data_type_as_facet`), a
+  single `facet` variable becomes the facet_grid column
+  (`data_type ~ facet`) and a `NULL` facet gives `data_type ~ .`.
+  Otherwise a plain column or expression (e.g. `file_name` or
+  `paste(species, mass)`) is faceted with
+  [`ggplot2::facet_wrap()`](https://ggplot2.tidyverse.org/reference/facet_wrap.html),
+  and a two-sided formula (e.g. `species ~ mass`) is faceted with
   [`ggplot2::facet_grid()`](https://ggplot2.tidyverse.org/reference/facet_grid.html).
   Set to `NULL` to suppress faceting.
+
+- data_type_as_facet:
+
+  whether the `data_type` column (intensities vs ratios) is used as the
+  [`ggplot2::facet_grid()`](https://ggplot2.tidyverse.org/reference/facet_grid.html)
+  row variable:
+  [`auto()`](https://isoreader2.isoverse.org/reference/auto.md)
+  (default) uses it only when more than one data type is present; `TRUE`
+  always uses it; `FALSE` never does. When used, the y axis label is
+  dropped (the facet strip provides it) and the facet becomes
+  `data_type ~ .` (a `NULL` `facet`) or `data_type ~ facet` (a
+  single-variable `facet`). It is ignored when `facet` is a two-sided
+  formula (a warning is issued if `data_type_as_facet = TRUE` is
+  combined with a formula `facet`, since the two are mutually
+  exclusive).
 
 - scales:
 

@@ -42,19 +42,22 @@ ir_calculate_ratios(
 - num_add.V, denom_add.V:
 
   additive offset (in volts) for the numerator and denominator
-  intensities of voltage-unit data (`V`/`mV`). Default
-  `num_add.V = 100`, `denom_add.V = num_add.V`.
+  intensities of voltage-unit data (`V`/`mV`). Applies to `traces` and
+  `scans` only, not to `cycles` (dual inlet). Default `num_add.V = 100`,
+  `denom_add.V = num_add.V`.
 
 - num_add.nA, denom_add.nA:
 
   additive offset (in nanoamperes) for the numerator and denominator
   intensities of current-unit data (`A`/`mA`/`µA`/`nA`/`pA`/`fA`).
+  Applies to `traces` and `scans` only, not to `cycles` (dual inlet).
   Default `num_add.nA = 0`, `denom_add.nA = num_add.nA`.
 
 - num_add.cps, denom_add.cps:
 
   additive offset (in cps) for the numerator and denominator intensities
-  of count-unit data (`cps`). Default `num_add.cps = 0`,
+  of count-unit data (`cps`). Applies to `traces` and `scans` only, not
+  to `cycles` (dual inlet). Default `num_add.cps = 0`,
   `denom_add.cps = num_add.cps`.
 
 - normalize_ratios:
@@ -88,10 +91,15 @@ measured for that species. Override it for individual species via `...`
 
 ## Additive offsets
 
-Which pair of additive offsets is used depends on the intensity unit
-family of the data: voltage (`V`, `mV`) uses `num_add.V`/`denom_add.V`,
-current (`A`, `mA`, `µA`, `nA`, `pA`, `fA`) uses
-`num_add.nA`/`denom_add.nA`, and counts (`cps`) uses
+The additive offsets apply to continuous-flow (`traces`) and `scans`
+data **only**. Dual inlet (`cycles`) data is **not** offset and always
+uses the plain ratio `I_mass / I_base` regardless of the
+`num_add.*`/`denom_add.*` settings.
+
+For traces and scans, which pair of additive offsets is used depends on
+the intensity unit family of the data: voltage (`V`, `mV`) uses
+`num_add.V`/`denom_add.V`, current (`A`, `mA`, `µA`, `nA`, `pA`, `fA`)
+uses `num_add.nA`/`denom_add.nA`, and counts (`cps`) uses
 `num_add.cps`/`denom_add.cps`. The offsets are specified in their
 family's reference unit (volts, nanoamperes, cps) and are automatically
 scaled to the data's actual intensity unit before being added. For
