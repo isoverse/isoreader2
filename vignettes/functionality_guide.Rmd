@@ -11,7 +11,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-> This step-by-step functionality guide is still in development. Eventually all functions in the [package structure flowchart](https://isoreader2.isoverse.org/index.html#package-structure) will be covered with detailed examples. All functions below labelled with an `*` are required steps of the standard data reading flow. Everything else is optional. Rarely used additional features that are mentioned here but not part of the standard flowchart are labeled as `bonus`.
+> This step-by-step functionality guide explores the functions in the [package structure flowchart](https://isoreader2.isoverse.org/index.html#package-structure). All functions below labelled with an `*` are required steps of the standard data reading flow. Everything else is optional. Rarely used additional features that are mentioned here but not part of the standard flowchart are labeled as `bonus`.
 
 ```{r, include=FALSE}
 # default chunk options
@@ -27,12 +27,12 @@ library(dplyr) # for select syntax and mutating data frames
 ```{r, include=FALSE}
 # copy the bundled example files (and any extraction cache) to a local
 # folder so reading does not write into the installed package directory
-if (!dir.exists("tmp")) {
-  dir.create("tmp")
+if (!dir.exists("tmp_examples")) {
+  dir.create("tmp_examples")
 }
 ir_examples_folder() |>
   list.files(full.names = TRUE) |>
-  file.copy(to = "tmp", overwrite = TRUE)
+  file.copy(to = "tmp_examples", overwrite = TRUE)
 ```
 
 # Reading isotope files
@@ -49,8 +49,8 @@ ir_get_supported_file_types()
 Point isoreader2 at a folder to discover the data files inside it. The generic `ir_find_isofiles()` finds all supported types, while `ir_find_continuous_flow()`, `ir_find_dual_inlet()`, and `ir_find_scans()` narrow the search to specific measurement types. The bundled example files are available via `ir_examples_folder()`.
 
 ```{r}
-# path to your data folder (here the local copy of the example files)
-data_folder <- file.path("tmp")
+# path to your data folder (here a local copy of the example files)
+data_folder <- file.path("tmp_examples")
 
 # find continuous flow files (.dxf/.cf) in the folder
 file_paths <- data_folder |> ir_find_continuous_flow()
@@ -86,8 +86,8 @@ You can store an entire `ir_isofiles` collection to disk (as an RDS file) and re
 
 ```{r}
 # save and reload the read isofiles
-isofiles |> ir_save_isofiles(file.path("tmp", "my_isofiles"))
-reloaded <- ir_load_isofiles(file.path("tmp", "my_isofiles"))
+isofiles |> ir_save_isofiles(file.path("tmp_examples", "my_isofiles"))
+reloaded <- ir_load_isofiles(file.path("tmp_examples", "my_isofiles"))
 ```
 
 # Aggregating data
@@ -217,8 +217,8 @@ Aggregated data can be stored to (and loaded from) a parquet file for fast, lang
 
 ```{r, eval=FALSE}
 # save and reload the aggregated data
-dataset |> ir_save_aggregated_data(file.path("tmp", "my_dataset"))
-reloaded <- ir_load_aggregated_data(file.path("tmp", "my_dataset"))
+dataset |> ir_save_aggregated_data(file.path("tmp_examples", "my_dataset"))
+reloaded <- ir_load_aggregated_data(file.path("tmp_examples", "my_dataset"))
 ```
 
 # Visualizing data
@@ -229,20 +229,21 @@ isoreader2 provides quick-look plotting functions for each measurement type. The
 
 ```{r}
 #| fig.width: 8
-#| fig.height: 4
-dataset |> ir_plot_continuous_flow()
+#| fig.height: 5
+dataset |> ir_plot_continuous_flow(facet = file_name)
 ```
 
 ## `ir_plot_dual_inlet()`
 
 ```{r}
 #| fig.width: 8
-#| fig.height: 6
+#| fig.height: 7
 data_folder |>
   ir_find_dual_inlet() |>
   ir_read_isofiles() |>
   ir_aggregate_isofiles("V") |>
-  ir_plot_dual_inlet()
+  ir_calculate_ratios() |>
+  ir_plot_dual_inlet(facet = file_name)
 ```
 
 ## `ir_plot_scans()`
@@ -275,5 +276,5 @@ ir_export_to_excel(
 
 ```{r, include=FALSE}
 # clean up the local data folder created for this vignette
-unlink("tmp", recursive = TRUE)
+unlink("tmp_examples", recursive = TRUE)
 ```
