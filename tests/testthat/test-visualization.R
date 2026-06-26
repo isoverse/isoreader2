@@ -466,6 +466,28 @@ test_that("ratio = NULL shows all ratios, character(0) shows none", {
   expect_false("ratios" %in% ir_generate_traces_tibble(cf_data())$data_type)
 })
 
+test_that("a ratio plots even when its numerator mass is excluded by `mass`", {
+  # mass = "28" excludes mass 29, but ratio "29/28" (numerator 29) must still plot
+  # because the mass filter only drops intensity rows, never ratio rows
+  tb <- ir_generate_traces_tibble(cf_ratio_data(), mass = "28", ratio = "29/28")
+  expect_setequal(
+    as.character(unique(tb$trace)),
+    c("N2: 28", "N2: 29/28")
+  )
+  expect_true("ratios" %in% tb$data_type)
+  expect_equal(tb$value[tb$data_type == "ratios"], 0.4)
+  # the same holds in the plotting function
+  p <- ir_plot_continuous_flow(
+    cf_ratio_data(),
+    mass = "28",
+    ratio = "29/28"
+  ) |>
+    suppressMessages()
+  expect_true(
+    "N2: 29/28" %in% as.character(ggplot2::ggplot_build(p)$plot$data$trace)
+  )
+})
+
 test_that("mass = character(0) drops intensities (e.g. to plot only ratios)", {
   tb <- ir_generate_traces_tibble(cf_ratio_data(), mass = character(0))
   expect_true(all(tb$data_type == "ratios"))
@@ -484,30 +506,4 @@ test_that("the default facet is data_type", {
   p <- ir_plot_continuous_flow(cf_data())
   expect_s3_class(p$facet, "FacetWrap")
   expect_equal(names(p$facet$params$facets), "data_type")
-})
-
-test_that("ratio_fold_range clamps ratio values before plotting", {
-  # a tighter range clamps the 30/28 ratio (0.1) up to the lower bound
-  tb <- ir_generate_traces_tibble(
-    cf_ratio_data(),
-    ratio_fold_range = c(0.2, 10)
-  )
-  val <- function(t, d = tb) {
-    d$value[d$data_type == "ratios" & as.character(d$trace) == t]
-  }
-  expect_equal(unique(val("N2: 30/28")), 0.2) # 0.1 clamped up to 0.2
-  expect_equal(unique(val("N2: 29/28")), 0.4) # within range, unchanged
-
-  # NULL leaves ratios unclamped
-  tb_raw <- ir_generate_traces_tibble(cf_ratio_data(), ratio_fold_range = NULL)
-  expect_equal(unique(val("N2: 30/28", tb_raw)), 0.1)
-
-  # intensities are never clamped
-  expect_setequal(tb$value[grepl("^intensity", tb$data_type)], c(100, 40, 10))
-
-  # invalid ranges are rejected
-  expect_error(
-    ir_generate_traces_tibble(cf_ratio_data(), ratio_fold_range = c(10, 1)),
-    "min < max"
-  )
 })

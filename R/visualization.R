@@ -340,16 +340,6 @@ selection_mode <- function(x) {
   }
 }
 
-# internal: clamp `x` into the closed interval `range` (length-2 c(min, max));
-# a `NULL` range leaves `x` unchanged. Used to fold extreme ratios into a
-# plotting window (e.g. c(0.1, 10)).
-clamp_to_range <- function(x, range) {
-  if (is.null(range)) {
-    return(x)
-  }
-  pmin(pmax(x, range[1]), range[2])
-}
-
 # internal: turn the `dataset` argument (an `ir_aggregated_data` object or a
 # plain data frame) into the flat data frame the tibble/plotting functions work
 # on. For an `ir_aggregated_data` the named `dataset_name` ("traces"/"cycles"/
@@ -421,13 +411,11 @@ prepare_plot_data <- function(dataset, dataset_name, .env = caller_env()) {
 #    selected by `mass`: NULL = all masses, character(0)/numeric(0) = none, a
 #    vector = those masses.
 #  - ratio rows carry `trace` = "<species>: <ratio_name>", `data_type` =
-#    "ratios", and `value` = the (optionally fold-clamped) ratio. They are
-#    selected by `ratio`: NULL = all available ratios, character(0) = none, a
-#    vector = those ratio names. Requesting specific ratios when the
-#    `ratio_name`/`ratio` columns are absent errors (pointing to
-#    ir_calculate_ratios()); with `ratio = NULL` and no ratio columns, no ratios
-#    are simply added.
-# `ratio_fold_range` (length-2 c(min, max), or NULL) clamps the ratio `value`s.
+#    "ratios", and `value` = the ratio. They are selected by `ratio`: NULL = all
+#    available ratios, character(0) = none, a vector = those ratio names.
+#    Requesting specific ratios when the `ratio_name`/`ratio` columns are absent
+#    errors (pointing to ir_calculate_ratios()); with `ratio = NULL` and no ratio
+#    columns, no ratios are simply added.
 # Finally `trace` is turned into a sorted factor.
 generate_plot_tibble <- function(
   dataset,
@@ -436,7 +424,6 @@ generate_plot_tibble <- function(
   species = NULL,
   mass = NULL,
   ratio = NULL,
-  ratio_fold_range = c(0.1, 10),
   .env = caller_env()
 ) {
   # validate filters
@@ -456,15 +443,6 @@ generate_plot_tibble <- function(
     ratio,
     is.null(ratio) || is.character(ratio),
     "must be NULL or a character vector of ratio names (e.g. c(\"45/44\"))",
-    .env = .env
-  )
-  check_arg(
-    ratio_fold_range,
-    is.null(ratio_fold_range) ||
-      (is.numeric(ratio_fold_range) &&
-        length(ratio_fold_range) == 2 &&
-        ratio_fold_range[1] < ratio_fold_range[2]),
-    "must be NULL or a numeric vector of length 2 with min < max",
     .env = .env
   )
 
@@ -500,68 +478,86 @@ generate_plot_tibble <- function(
   intensity_col <- intensity_cols[1]
   intensity_units <- sub("^intensity\\.", "", intensity_col)
 
-  # intensity rows: selected by `mass` (NULL = all, empty = none)
+  # Prepare the intensity (mass) data and the ratio data SEPARATELY and combine
+  # them with bind_rows BEFORE applying the mass/ratio selections, so that a ratio
+  # (e.g. "45/44") still plots when its numerator mass (45) is not in the `mass`
+  # selection - the mass filter only ever drops intensity rows, never ratio rows.
   mass_mode <- selection_mode(mass)
-  intensity_rows <- switch(
-    mass_mode,
-    all = plot_data,
-    none = plot_data[0, ],
-    some = filter_to_values(plot_data, "mass", mass, .env = .env)
-  )
-  # (re)generate the trace identifier and the data_type/value plotting columns
-  # from scratch, so `trace` is always "<species>: <mass>"
+  ratio_mode <- selection_mode(ratio)
+  has_ratio_cols <- all(c("ratio_name", "ratio") %in% names(plot_data))
+  # an explicit ratio request needs the ratio columns; `ratio = NULL` just adds
+  # no ratios when they are absent
+  if (ratio_mode == "some" && !has_ratio_cols) {
+    cli_abort(
+      c(
+        "cannot include ratios: the {.field ratio_name}/{.field ratio} columns are not present in the {dataset_name} data",
+        "i" = "calculate ratios first with {.code ir_calculate_ratios()}"
+      ),
+      call = .env
+    )
+  }
+
+  # intensity rows for every mass: (re)generate trace/data_type/value from scratch
+  # so `trace` is always "<species>: <mass>"
   intensity_rows <- dplyr::mutate(
-    intensity_rows,
+    plot_data,
     trace = sprintf("%s: %s", .data$species, .data$mass),
     data_type = paste0("intensity [", intensity_units, "]"),
     value = .data[[intensity_col]]
   )
-
-  # ratio rows: selected by `ratio` (NULL = all available, empty = none)
-  ratio_mode <- selection_mode(ratio)
-  has_ratio_cols <- all(c("ratio_name", "ratio") %in% names(plot_data))
-  ratio_rows <- plot_data[0, ]
-  if (ratio_mode != "none") {
-    if (!has_ratio_cols) {
-      # only an explicit ratio request errors; `ratio = NULL` just adds no ratios
-      if (ratio_mode == "some") {
-        cli_abort(
-          c(
-            "cannot include ratios: the {.field ratio_name}/{.field ratio} columns are not present in the {dataset_name} data",
-            "i" = "calculate ratios first with {.code ir_calculate_ratios()}"
-          ),
-          call = .env
-        )
-      }
-    } else {
-      ratio_rows <- dplyr::filter(plot_data, !is.na(.data$ratio_name))
-      if (ratio_mode == "some") {
-        keep <- ratio_rows$ratio_name %in% ratio
-        if (!any(keep)) {
-          available <- sort(unique(ratio_rows$ratio_name))
-          cli_abort(
-            c(
-              "no data left after filtering ratios to {.val {ratio}}",
-              "i" = "available ratio{?s}: {.val {available}}"
-            ),
-            call = .env
-          )
-        }
-        ratio_rows <- ratio_rows[keep, ]
-      }
-    }
+  # ratio rows for every available ratio (empty when no ratios were calculated)
+  ratio_rows <- if (has_ratio_cols) {
+    plot_data |>
+      dplyr::filter(!is.na(.data$ratio_name)) |>
+      dplyr::mutate(
+        trace = sprintf("%s: %s", .data$species, .data$ratio_name),
+        data_type = "ratios",
+        value = .data$ratio
+      )
+  } else {
+    intensity_rows[0, , drop = FALSE]
   }
-  if (nrow(ratio_rows) > 0) {
-    ratio_rows <- dplyr::mutate(
-      ratio_rows,
-      trace = sprintf("%s: %s", .data$species, .data$ratio_name),
-      data_type = "ratios",
-      value = clamp_to_range(.data$ratio, ratio_fold_range)
+
+  # combine BEFORE filtering, then select intensity rows by `mass` and ratio rows
+  # by `ratio` (NULL = all of that type, character(0) = none, a vector = those)
+  plot_data <- dplyr::bind_rows(intensity_rows, ratio_rows)
+  is_ratio <- plot_data$data_type == "ratios"
+
+  keep_mass <- switch(
+    mass_mode,
+    all = !is_ratio,
+    none = rep(FALSE, nrow(plot_data)),
+    some = !is_ratio & as.character(plot_data$mass) %in% as.character(mass)
+  )
+  if (mass_mode == "some" && !any(keep_mass)) {
+    available <- unique(as.character(plot_data$mass[!is_ratio]))
+    cli_abort(
+      c(
+        "no data left after filtering {.field mass} to {.val {mass}}",
+        "i" = "available mass: {.val {available}}"
+      ),
+      call = .env
     )
   }
 
-  # combine intensities + ratios
-  plot_data <- dplyr::bind_rows(intensity_rows, ratio_rows)
+  keep_ratio <- switch(
+    ratio_mode,
+    all = is_ratio,
+    none = rep(FALSE, nrow(plot_data)),
+    some = is_ratio & plot_data$ratio_name %in% ratio
+  )
+  if (ratio_mode == "some" && !any(keep_ratio)) {
+    available <- sort(unique(plot_data$ratio_name[is_ratio]))
+    cli_abort(
+      c(
+        "no data left after filtering ratios to {.val {ratio}}",
+        "i" = "available ratio{?s}: {.val {available}}"
+      ),
+      call = .env
+    )
+  }
+
+  plot_data <- plot_data[keep_mass | keep_ratio, ]
   if (nrow(plot_data) == 0) {
     cli_abort(
       c(
@@ -613,11 +609,6 @@ generate_plot_tibble <- function(
 #'   Requesting specific ratio names when ratios have not been calculated is an
 #'   error pointing to [ir_calculate_ratios()]; with `ratio = NULL` and no ratios
 #'   present none are simply added.
-#' @param ratio_fold_range length-2 numeric `c(min, max)` to clamp ratio `value`s
-#'   into before plotting (ratios below `min` become `min`, above `max` become
-#'   `max`); default `c(0.1, 10)`. Set to `NULL` to leave ratios unclamped. Most
-#'   useful together with the default normalized ratios from
-#'   [ir_calculate_ratios()] (centered around 1).
 #' @return a tibble with the prepared data plus the `trace`, `data_type`, and
 #'   `value` columns described above.
 #' @name ir_generate_tibble
@@ -626,8 +617,7 @@ ir_generate_traces_tibble <- function(
   dataset,
   species = NULL,
   mass = NULL,
-  ratio = NULL,
-  ratio_fold_range = c(0.1, 10)
+  ratio = NULL
 ) {
   generate_plot_tibble(
     dataset,
@@ -635,8 +625,7 @@ ir_generate_traces_tibble <- function(
     required_cols = c("species", "time.s", "mass"),
     species = species,
     mass = mass,
-    ratio = ratio,
-    ratio_fold_range = ratio_fold_range
+    ratio = ratio
   )
 }
 
@@ -646,8 +635,7 @@ ir_generate_cycles_tibble <- function(
   dataset,
   species = NULL,
   mass = NULL,
-  ratio = NULL,
-  ratio_fold_range = c(0.1, 10)
+  ratio = NULL
 ) {
   generate_plot_tibble(
     dataset,
@@ -655,8 +643,7 @@ ir_generate_cycles_tibble <- function(
     required_cols = c("species", "cycle", "type", "mass"),
     species = species,
     mass = mass,
-    ratio = ratio,
-    ratio_fold_range = ratio_fold_range
+    ratio = ratio
   )
 }
 
@@ -666,8 +653,7 @@ ir_generate_scans_tibble <- function(
   dataset,
   species = NULL,
   mass = NULL,
-  ratio = NULL,
-  ratio_fold_range = c(0.1, 10)
+  ratio = NULL
 ) {
   generate_plot_tibble(
     dataset,
@@ -675,8 +661,7 @@ ir_generate_scans_tibble <- function(
     required_cols = c("species", "scan_type", "x_units", "x", "mass"),
     species = species,
     mass = mass,
-    ratio = ratio,
-    ratio_fold_range = ratio_fold_range
+    ratio = ratio
   )
 }
 
@@ -714,11 +699,6 @@ ir_generate_scans_tibble <- function(
 #'   simply added). Ratio rows are plotted on the same `value` axis with
 #'   `data_type = "ratios"`; the default `facet = data_type` (with free scales)
 #'   separates them from the intensities.
-#' @param ratio_fold_range length-2 numeric `c(min, max)` to clamp ratio values
-#'   into before plotting (values below `min` become `min`, above `max` become
-#'   `max`); default `c(0.1, 10)`. Set to `NULL` to leave ratios unclamped. Most
-#'   useful with the default normalized ratios from [ir_calculate_ratios()]
-#'   (centered around 1, so `c(0.1, 10)` keeps within a 10-fold band).
 #' @param facet column or expression to facet by (default: `data_type`, which
 #'   separates intensities from ratios). A plain column or expression (e.g.
 #'   `file_name` or `paste(species, mass)`) is faceted with
@@ -771,7 +751,6 @@ ir_plot_scans <- function(
   species = NULL,
   mass = NULL,
   ratio = NULL,
-  ratio_fold_range = c(0.1, 10),
   facet = data_type,
   scales = "free",
   nrow = NULL,
@@ -786,8 +765,8 @@ ir_plot_scans <- function(
   n_y_breaks = 5,
   ...
 ) {
-  # plot-specific argument checks (dataset / species / mass / ratio /
-  # ratio_fold_range are checked by ir_generate_scans_tibble() below)
+  # plot-specific argument checks (dataset / species / mass / ratio are checked
+  # by ir_generate_scans_tibble() below)
   check_arg(
     scan_type,
     is.null(scan_type) || rlang::is_scalar_character(scan_type),
@@ -834,8 +813,7 @@ ir_plot_scans <- function(
     dataset,
     species = species,
     mass = mass,
-    ratio = ratio,
-    ratio_fold_range = ratio_fold_range
+    ratio = ratio
   )
 
   # enforce a single scan type
@@ -913,23 +891,12 @@ ir_plot_scans <- function(
     ggplot2::labs(x = x_lab, y = y_lab) +
     ggplot2::scale_x_continuous(
       breaks = scales::pretty_breaks(n_x_breaks),
-      expand = if (!is.null(x_window)) FALSE else c(0, 0)
+      expand = if (!is.null(x_window)) FALSE else ggplot2::waiver()
     ) +
     ggplot2::scale_y_continuous(
       breaks = scales::pretty_breaks(n_y_breaks),
-      labels = if (scientific) label_scientific() else ggplot2::waiver(),
-      # autoscaled to a window: headroom on both ends; otherwise the default
-      expand = if (!is.null(x_window)) {
-        ggplot2::expansion(mult = c(0.05, 0.05))
-      } else {
-        ggplot2::waiver()
-      }
+      labels = if (scientific) label_scientific() else ggplot2::waiver()
     )
-
-  # include 0 in the y range, unless an x window is set (then autoscale to it)
-  if (is.null(x_window)) {
-    p <- p + ggplot2::expand_limits(y = 0)
-  }
 
   # additional aesthetics; when colouring by trace, share a colour across traces
   # of the same species/mass (e.g. "N2: 29" and "N2: 29/28")
@@ -992,11 +959,6 @@ ir_plot_scans <- function(
 #'   simply added). Ratio rows are plotted on the same `value` axis with
 #'   `data_type = "ratios"`; the default `facet = data_type` (with free scales)
 #'   separates them from the intensities.
-#' @param ratio_fold_range length-2 numeric `c(min, max)` to clamp ratio values
-#'   into before plotting (values below `min` become `min`, above `max` become
-#'   `max`); default `c(0.1, 10)`. Set to `NULL` to leave ratios unclamped. Most
-#'   useful with the default normalized ratios from [ir_calculate_ratios()]
-#'   (centered around 1, so `c(0.1, 10)` keeps within a 10-fold band).
 #' @param facet column or expression to facet by (default: `data_type`, which
 #'   separates intensities from ratios). A plain column or expression (e.g.
 #'   `file_name` or `paste(species, mass)`) is faceted with
@@ -1051,7 +1013,6 @@ ir_plot_continuous_flow <- function(
   species = NULL,
   mass = NULL,
   ratio = NULL,
-  ratio_fold_range = c(0.1, 10),
   facet = data_type,
   scales = "free",
   nrow = NULL,
@@ -1115,8 +1076,7 @@ ir_plot_continuous_flow <- function(
     dataset,
     species = species,
     mass = mass,
-    ratio = ratio,
-    ratio_fold_range = ratio_fold_range
+    ratio = ratio
   )
   time_col <- "time.s"
 
@@ -1149,11 +1109,11 @@ ir_plot_continuous_flow <- function(
 
   # axis labels: y from the data_type when unique (e.g. "intensity [mV]"),
   # otherwise the generic "value" since intensities and ratios are mixed
-  x_lab <- "time"
+  x_lab <- NULL # the time is obvious from the units
   y_lab <- if (dplyr::n_distinct(plot_data$data_type) == 1L) {
     plot_data$data_type[1]
   } else {
-    "value"
+    NULL
   }
 
   # base plot
@@ -1172,19 +1132,8 @@ ir_plot_continuous_flow <- function(
     ) +
     ggplot2::scale_y_continuous(
       breaks = scales::pretty_breaks(n_y_breaks),
-      labels = if (scientific) label_scientific() else ggplot2::waiver(),
-      # 0 pinned to the bottom when included; both-ends headroom when zoomed in
-      expand = if (!is.null(time_window)) {
-        ggplot2::expansion(mult = c(0.05, 0.05))
-      } else {
-        ggplot2::expansion(mult = c(0, 0.05))
-      }
+      labels = if (scientific) label_scientific() else ggplot2::waiver()
     )
-
-  # include 0 in the y range, unless a time window is set (then autoscale to it)
-  if (is.null(time_window)) {
-    p <- p + ggplot2::expand_limits(y = 0)
-  }
 
   # additional aesthetics; when colouring by trace, share a colour across traces
   # of the same species/mass (e.g. "N2: 29" and "N2: 29/28")
@@ -1247,11 +1196,6 @@ ir_plot_continuous_flow <- function(
 #'   simply added). Ratio rows are plotted on the same `value` axis with
 #'   `data_type = "ratios"`; the default `facet = data_type` (with free scales)
 #'   separates them from the intensities.
-#' @param ratio_fold_range length-2 numeric `c(min, max)` to clamp ratio values
-#'   into before plotting (values below `min` become `min`, above `max` become
-#'   `max`); default `c(0.1, 10)`. Set to `NULL` to leave ratios unclamped. Most
-#'   useful with the default normalized ratios from [ir_calculate_ratios()]
-#'   (centered around 1, so `c(0.1, 10)` keeps within a 10-fold band).
 #' @param facet column or expression to facet by (default: `data_type`, which
 #'   separates intensities from ratios). A plain column or expression (e.g.
 #'   `file_name` or `paste(species, mass)`) is faceted with
@@ -1304,7 +1248,6 @@ ir_plot_dual_inlet <- function(
   species = NULL,
   mass = NULL,
   ratio = NULL,
-  ratio_fold_range = c(0.1, 10),
   facet = data_type,
   scales = "free",
   nrow = NULL,
@@ -1358,8 +1301,7 @@ ir_plot_dual_inlet <- function(
     dataset,
     species = species,
     mass = mass,
-    ratio = ratio,
-    ratio_fold_range = ratio_fold_range
+    ratio = ratio
   )
 
   # y axis label: the data_type when unique (e.g. "intensity [mV]"), otherwise
@@ -1419,19 +1361,8 @@ ir_plot_dual_inlet <- function(
     ) +
     ggplot2::scale_y_continuous(
       breaks = scales::pretty_breaks(n_y_breaks),
-      labels = if (scientific) label_scientific() else ggplot2::waiver(),
-      # 0 pinned to the bottom when included; both-ends headroom when zoomed in
-      expand = if (!is.null(cycle_window)) {
-        ggplot2::expansion(mult = c(0.05, 0.05))
-      } else {
-        ggplot2::expansion(mult = c(0, 0.05))
-      }
+      labels = if (scientific) label_scientific() else ggplot2::waiver()
     )
-
-  # include 0 in the y range, unless a cycle window is set (then autoscale to it)
-  if (is.null(cycle_window)) {
-    p <- p + ggplot2::expand_limits(y = 0)
-  }
 
   # additional aesthetics; when colouring by trace, share a colour across traces
   # of the same species/mass (e.g. "CO2: 45" and "CO2: 45/44")
