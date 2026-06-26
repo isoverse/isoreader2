@@ -111,12 +111,17 @@ dataset <-
   ir_read_isofiles() |>
   ir_aggregate_isofiles("mV")
 
-# visualize data (intensities together with a calculated isotope ratio)
+# visualize data for each file
+dataset |> ir_plot_continuous_flow(facet = file_name)
+```
+
+```{r "continuous_flow_example_w_ratios", message=FALSE, fig.width = 8, fig.height = 6, fig.cap = "Time slice of continuous flow examples with ratios"}
+# visualize CO2 with ratios and a specific time window
 dataset |>
-  ir_calculate_ratios() |>
+  ir_calculate_ratios(normalize_ratios = median) |>
   ir_plot_continuous_flow(
-    facet = data_type,
-    time_window.s = c(250, 600)
+    species = "CO2",
+    time_window.min = c(4.5, 8.5)
   )
 ```
 
@@ -160,12 +165,13 @@ dataset
 
 ### Visualize the data
 
-```{r "dual_inlet_example", fig.width = 8, fig.height = 5, fig.cap="Plot of dual inlet examples"}
+```{r "dual_inlet_example", fig.width = 8, fig.height = 7, fig.cap="Plot of dual inlet examples"}
 # filter the data by a metadata field and mass range and plot it
 # (use ir_plot_continuous_flow() and ir_plot_scans(), respectively)
 library(ggplot2)
 dataset |>
   ir_filter_metadata(file_name == "caf_dual_inlet_example") |>
+  ir_calculate_ratios() |>
   ir_plot_dual_inlet(mass = c(44:48)) +
   # use ggplot2 to modify with custom theming (or any other ggplot elements)
   theme(strip.text = element_text(size = 30))

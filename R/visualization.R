@@ -103,6 +103,120 @@ add_facets <- function(
     )
 }
 
+#' Automatic / default behavior
+#'
+#' A sentinel that requests automatic behavior for an argument (currently the
+#' `data_type_as_facet` argument of the plotting functions
+#' [ir_plot_continuous_flow()], [ir_plot_dual_inlet()], [ir_plot_scans()]). It is
+#' the default for those arguments; pass `TRUE`/`FALSE` to override the automatic
+#' choice.
+#'
+#' @return an opaque sentinel of class `ir_auto`
+#' @export
+auto <- function() {
+  structure(list(), class = "ir_auto")
+}
+
+# internal: TRUE when x is the auto() sentinel
+is_auto <- function(x) inherits(x, "ir_auto")
+
+# internal: decide whether the `data_type` column should become the row variable
+# of a facet_grid. `data_type_as_facet` is auto() (decide from the data: TRUE when
+# more than one data_type is present, e.g. intensities and ratios), TRUE (force),
+# or FALSE (never). When `facet` is a two-sided formula it fully specifies the
+# facet, so data_type is never used; if the user explicitly set
+# data_type_as_facet = TRUE alongside a formula facet, a warning is emitted
+# (the two are mutually exclusive and the formula wins).
+use_data_type_facet <- function(
+  facet_quo,
+  data_type_as_facet,
+  data,
+  .env = caller_env()
+) {
+  if (rlang::is_formula(rlang::quo_get_expr(facet_quo))) {
+    if (isTRUE(data_type_as_facet)) {
+      cli_warn(
+        c(
+          "{.arg data_type_as_facet = TRUE} is ignored because {.arg facet} is a formula",
+          "i" = "specifying both is mutually exclusive; the formula facet takes precedence"
+        ),
+        call = .env
+      )
+    }
+    return(FALSE)
+  }
+  if (is_auto(data_type_as_facet)) {
+    return(
+      "data_type" %in% names(data) && dplyr::n_distinct(data$data_type) > 1L
+    )
+  }
+  isTRUE(data_type_as_facet)
+}
+
+# internal: add faceting, using `data_type` as the facet_grid row variable when
+# `use_data_type` is TRUE - facet_grid(data_type ~ .) for a NULL facet, or
+# facet_grid(data_type ~ <facet>) for a single-variable facet. Otherwise delegate
+# to add_facets() (formula -> facet_grid, single var -> facet_wrap, NULL -> none).
+add_data_type_or_facets <- function(
+  p,
+  facet_quo,
+  use_data_type,
+  data,
+  scales,
+  nrow = NULL,
+  ncol = NULL,
+  ...,
+  geometry_set = FALSE,
+  .env = caller_env()
+) {
+  if (!use_data_type) {
+    return(add_facets(
+      p,
+      facet_quo,
+      data,
+      scales,
+      nrow,
+      ncol,
+      ...,
+      geometry_set = geometry_set,
+      .env = .env
+    ))
+  }
+  if (geometry_set && (!is.null(nrow) || !is.null(ncol))) {
+    cli_warn(
+      c(
+        "!" = "{.arg nrow}/{.arg ncol} only apply to {.fn facet_wrap} and are ignored when {.field data_type} is used as a {.fn facet_grid} row"
+      ),
+      call = .env
+    )
+  }
+  # `switch = "y"` moves the data_type row strips to the left of the plot; the
+  # matching `strip.placement = "outside"` (added after ir_default_theme() in the
+  # plotting functions, since that complete theme would otherwise reset it) puts
+  # them outside the y axis, right next to the per-row y-axis values, so the strip
+  # reads as that row's y-axis label.
+  if (rlang::quo_is_null(facet_quo)) {
+    return(
+      p +
+        ggplot2::facet_grid(
+          rows = ggplot2::vars(data_type),
+          scales = scales,
+          switch = "y",
+          ...
+        )
+    )
+  }
+  check_aes_expr(facet_quo, "facet", data, .env = .env)
+  p +
+    ggplot2::facet_grid(
+      rows = ggplot2::vars(data_type),
+      cols = ggplot2::vars(!!facet_quo),
+      scales = scales,
+      switch = "y",
+      ...
+    )
+}
+
 # internal: if a `trace` column is present and not already a factor, convert it
 # to a factor with levels sorted by species and then by the numerical (numerator)
 # mass number of the trace label. A trace label is either "<species>: <mass>"
@@ -699,11 +813,23 @@ ir_generate_scans_tibble <- function(
 #'   simply added). Ratio rows are plotted on the same `value` axis with
 #'   `data_type = "ratios"`; the default `facet = data_type` (with free scales)
 #'   separates them from the intensities.
-#' @param facet column or expression to facet by (default: `data_type`, which
-#'   separates intensities from ratios). A plain column or expression (e.g.
-#'   `file_name` or `paste(species, mass)`) is faceted with
-#'   [ggplot2::facet_wrap()]; a two-sided formula (e.g. `data_type ~ file_name`)
-#'   is faceted with [ggplot2::facet_grid()]. Set to `NULL` to suppress faceting.
+#' @param facet column or expression to facet by (default: `NULL`, no extra
+#'   faceting). When
+#'   `data_type` is used as a facet row (see `data_type_as_facet`), a single
+#'   `facet` variable becomes the facet_grid column (`data_type ~ facet`) and a
+#'   `NULL` facet gives `data_type ~ .`. Otherwise a plain column or expression
+#'   (e.g. `file_name` or `paste(species, mass)`) is faceted with
+#'   [ggplot2::facet_wrap()], and a two-sided formula (e.g. `species ~ mass`) is
+#'   faceted with [ggplot2::facet_grid()]. Set to `NULL` to suppress faceting.
+#' @param data_type_as_facet whether the `data_type` column (intensities vs
+#'   ratios) is used as the [ggplot2::facet_grid()] row variable: `auto()`
+#'   (default) uses it only when more than one data type is present; `TRUE`
+#'   always uses it; `FALSE` never does. When used, the y axis label is dropped
+#'   (the facet strip provides it) and the facet becomes `data_type ~ .` (a `NULL`
+#'   `facet`) or `data_type ~ facet` (a single-variable `facet`). It is ignored
+#'   when `facet` is a two-sided formula (a warning is issued if
+#'   `data_type_as_facet = TRUE` is combined with a formula `facet`, since the two
+#'   are mutually exclusive).
 #' @param scales whether facet scales should be `"free"` (default), `"fixed"`,
 #'   `"free_x"`, or `"free_y"`; passed on to [ggplot2::facet_wrap()] /
 #'   [ggplot2::facet_grid()].
@@ -751,7 +877,8 @@ ir_plot_scans <- function(
   species = NULL,
   mass = NULL,
   ratio = NULL,
-  facet = data_type,
+  facet = NULL,
+  data_type_as_facet = auto(),
   scales = "free",
   nrow = NULL,
   ncol = 1,
@@ -802,6 +929,11 @@ ir_plot_scans <- function(
     "must be a positive whole number"
   )
   check_arg(scales, rlang::is_scalar_character(scales), "must be a string")
+  check_arg(
+    data_type_as_facet,
+    is_auto(data_type_as_facet) || rlang::is_bool(data_type_as_facet),
+    "must be auto(), TRUE, or FALSE"
+  )
 
   # capture aesthetics before any data manipulation
   facet_quo <- rlang::enquo(facet)
@@ -847,10 +979,13 @@ ir_plot_scans <- function(
     unique(plot_data$x_units)[1],
     "]"
   )
-  y_lab <- if (dplyr::n_distinct(plot_data$data_type) == 1L) {
-    plot_data$data_type[1]
+  use_dt_facet <- use_data_type_facet(facet_quo, data_type_as_facet, plot_data)
+  # y axis label: NULL when data_type is shown via the facet strip, otherwise the
+  # data type(s) being plotted
+  y_lab <- if (use_dt_facet) {
+    NULL
   } else {
-    "value"
+    paste(unique(plot_data$data_type), collapse = " / ")
   }
 
   # one line per trace (incl. ratio traces); group on the trace identifier
@@ -909,9 +1044,10 @@ ir_plot_scans <- function(
   }
 
   # facets
-  p <- add_facets(
+  p <- add_data_type_or_facets(
     p,
     facet_quo,
+    use_dt_facet,
     plot_data,
     scales,
     nrow,
@@ -926,6 +1062,11 @@ ir_plot_scans <- function(
   }
 
   p <- p + ir_default_theme()
+  # place the data_type facet strip outside the y axis (on the left, next to the
+  # per-row y-axis values) when it is used as a facet row
+  if (use_dt_facet) {
+    p <- p + ggplot2::theme(strip.placement = "outside")
+  }
 
   return(p)
 }
@@ -959,11 +1100,23 @@ ir_plot_scans <- function(
 #'   simply added). Ratio rows are plotted on the same `value` axis with
 #'   `data_type = "ratios"`; the default `facet = data_type` (with free scales)
 #'   separates them from the intensities.
-#' @param facet column or expression to facet by (default: `data_type`, which
-#'   separates intensities from ratios). A plain column or expression (e.g.
-#'   `file_name` or `paste(species, mass)`) is faceted with
-#'   [ggplot2::facet_wrap()]; a two-sided formula (e.g. `data_type ~ file_name`)
-#'   is faceted with [ggplot2::facet_grid()]. Set to `NULL` to suppress faceting.
+#' @param facet column or expression to facet by (default: `NULL`, no extra
+#'   faceting). When
+#'   `data_type` is used as a facet row (see `data_type_as_facet`), a single
+#'   `facet` variable becomes the facet_grid column (`data_type ~ facet`) and a
+#'   `NULL` facet gives `data_type ~ .`. Otherwise a plain column or expression
+#'   (e.g. `file_name` or `paste(species, mass)`) is faceted with
+#'   [ggplot2::facet_wrap()], and a two-sided formula (e.g. `species ~ mass`) is
+#'   faceted with [ggplot2::facet_grid()]. Set to `NULL` to suppress faceting.
+#' @param data_type_as_facet whether the `data_type` column (intensities vs
+#'   ratios) is used as the [ggplot2::facet_grid()] row variable: `auto()`
+#'   (default) uses it only when more than one data type is present; `TRUE`
+#'   always uses it; `FALSE` never does. When used, the y axis label is dropped
+#'   (the facet strip provides it) and the facet becomes `data_type ~ .` (a `NULL`
+#'   `facet`) or `data_type ~ facet` (a single-variable `facet`). It is ignored
+#'   when `facet` is a two-sided formula (a warning is issued if
+#'   `data_type_as_facet = TRUE` is combined with a formula `facet`, since the two
+#'   are mutually exclusive).
 #' @param scales whether facet scales should be `"free"` (default), `"fixed"`,
 #'   `"free_x"`, or `"free_y"`; passed on to [ggplot2::facet_wrap()] /
 #'   [ggplot2::facet_grid()].
@@ -1016,7 +1169,8 @@ ir_plot_continuous_flow <- function(
   species = NULL,
   mass = NULL,
   ratio = NULL,
-  facet = data_type,
+  facet = NULL,
+  data_type_as_facet = auto(),
   scales = "free",
   nrow = NULL,
   ncol = 1,
@@ -1079,6 +1233,11 @@ ir_plot_continuous_flow <- function(
     "must be a positive whole number"
   )
   check_arg(scales, rlang::is_scalar_character(scales), "must be a string")
+  check_arg(
+    data_type_as_facet,
+    is_auto(data_type_as_facet) || rlang::is_bool(data_type_as_facet),
+    "must be auto(), TRUE, or FALSE"
+  )
 
   # capture aesthetics before any data manipulation
   facet_quo <- rlang::enquo(facet)
@@ -1124,10 +1283,13 @@ ir_plot_continuous_flow <- function(
   # axis labels: y from the data_type when unique (e.g. "intensity [mV]"),
   # otherwise the generic "value" since intensities and ratios are mixed
   x_lab <- NULL # the time is obvious from the units
-  y_lab <- if (dplyr::n_distinct(plot_data$data_type) == 1L) {
-    plot_data$data_type[1]
-  } else {
+  use_dt_facet <- use_data_type_facet(facet_quo, data_type_as_facet, plot_data)
+  # y axis label: NULL when data_type is shown via the facet strip, otherwise the
+  # data type(s) being plotted
+  y_lab <- if (use_dt_facet) {
     NULL
+  } else {
+    paste(unique(plot_data$data_type), collapse = " / ")
   }
 
   # base plot
@@ -1160,9 +1322,10 @@ ir_plot_continuous_flow <- function(
   }
 
   # facets
-  p <- add_facets(
+  p <- add_data_type_or_facets(
     p,
     facet_quo,
+    use_dt_facet,
     plot_data,
     scales,
     nrow,
@@ -1177,6 +1340,11 @@ ir_plot_continuous_flow <- function(
   }
 
   p <- p + ir_default_theme()
+  # place the data_type facet strip outside the y axis (on the left, next to the
+  # per-row y-axis values) when it is used as a facet row
+  if (use_dt_facet) {
+    p <- p + ggplot2::theme(strip.placement = "outside")
+  }
 
   return(p)
 }
@@ -1210,11 +1378,23 @@ ir_plot_continuous_flow <- function(
 #'   simply added). Ratio rows are plotted on the same `value` axis with
 #'   `data_type = "ratios"`; the default `facet = data_type` (with free scales)
 #'   separates them from the intensities.
-#' @param facet column or expression to facet by (default: `data_type`, which
-#'   separates intensities from ratios). A plain column or expression (e.g.
-#'   `file_name` or `paste(species, mass)`) is faceted with
-#'   [ggplot2::facet_wrap()]; a two-sided formula (e.g. `data_type ~ file_name`)
-#'   is faceted with [ggplot2::facet_grid()]. Set to `NULL` to suppress faceting.
+#' @param facet column or expression to facet by (default: `NULL`, no extra
+#'   faceting). When
+#'   `data_type` is used as a facet row (see `data_type_as_facet`), a single
+#'   `facet` variable becomes the facet_grid column (`data_type ~ facet`) and a
+#'   `NULL` facet gives `data_type ~ .`. Otherwise a plain column or expression
+#'   (e.g. `file_name` or `paste(species, mass)`) is faceted with
+#'   [ggplot2::facet_wrap()], and a two-sided formula (e.g. `species ~ mass`) is
+#'   faceted with [ggplot2::facet_grid()]. Set to `NULL` to suppress faceting.
+#' @param data_type_as_facet whether the `data_type` column (intensities vs
+#'   ratios) is used as the [ggplot2::facet_grid()] row variable: `auto()`
+#'   (default) uses it only when more than one data type is present; `TRUE`
+#'   always uses it; `FALSE` never does. When used, the y axis label is dropped
+#'   (the facet strip provides it) and the facet becomes `data_type ~ .` (a `NULL`
+#'   `facet`) or `data_type ~ facet` (a single-variable `facet`). It is ignored
+#'   when `facet` is a two-sided formula (a warning is issued if
+#'   `data_type_as_facet = TRUE` is combined with a formula `facet`, since the two
+#'   are mutually exclusive).
 #' @param scales whether facet scales should be `"free"` (default), `"fixed"`,
 #'   `"free_x"`, or `"free_y"`; passed on to [ggplot2::facet_wrap()] /
 #'   [ggplot2::facet_grid()].
@@ -1262,7 +1442,8 @@ ir_plot_dual_inlet <- function(
   species = NULL,
   mass = NULL,
   ratio = NULL,
-  facet = data_type,
+  facet = NULL,
+  data_type_as_facet = auto(),
   scales = "free",
   nrow = NULL,
   ncol = 1,
@@ -1296,6 +1477,11 @@ ir_plot_dual_inlet <- function(
   )
   check_arg(scales, rlang::is_scalar_character(scales), "must be a string")
   check_arg(
+    data_type_as_facet,
+    is_auto(data_type_as_facet) || rlang::is_bool(data_type_as_facet),
+    "must be auto(), TRUE, or FALSE"
+  )
+  check_arg(
     cycle_window,
     is.null(cycle_window) ||
       (is.numeric(cycle_window) &&
@@ -1318,12 +1504,13 @@ ir_plot_dual_inlet <- function(
     ratio = ratio
   )
 
-  # y axis label: the data_type when unique (e.g. "intensity [mV]"), otherwise
-  # the generic "value" since intensities and ratios are mixed
-  y_lab <- if (dplyr::n_distinct(plot_data$data_type) == 1L) {
-    plot_data$data_type[1]
+  use_dt_facet <- use_data_type_facet(facet_quo, data_type_as_facet, plot_data)
+  # y axis label: NULL when data_type is shown via the facet strip, otherwise the
+  # data type(s) being plotted
+  y_lab <- if (use_dt_facet) {
+    NULL
   } else {
-    "value"
+    paste(unique(plot_data$data_type), collapse = " / ")
   }
 
   # one line per cycle trace (incl. ratio traces); standard/sample are separate
@@ -1392,9 +1579,10 @@ ir_plot_dual_inlet <- function(
   }
 
   # facets
-  p <- add_facets(
+  p <- add_data_type_or_facets(
     p,
     facet_quo,
+    use_dt_facet,
     plot_data,
     scales,
     nrow,
@@ -1409,6 +1597,11 @@ ir_plot_dual_inlet <- function(
   }
 
   p <- p + ir_default_theme()
+  # place the data_type facet strip outside the y axis (on the left, next to the
+  # per-row y-axis values) when it is used as a facet row
+  if (use_dt_facet) {
+    p <- p + ggplot2::theme(strip.placement = "outside")
+  }
 
   return(p)
 }

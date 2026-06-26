@@ -113,12 +113,17 @@ test_that("ir_plot_continuous_flow() builds a ggplot", {
   expect_s3_class(p, "ggplot")
   expect_no_error(ggplot2::ggplot_build(p))
 
-  # formula facet -> facet_grid; plain expression -> facet_wrap
+  # formula facet -> facet_grid; plain expression -> facet_wrap; NULL -> none
   expect_s3_class(
     ir_plot_continuous_flow(cf_data(), facet = species ~ mass)$facet,
     "FacetGrid"
   )
-  expect_s3_class(ir_plot_continuous_flow(cf_data())$facet, "FacetWrap")
+  expect_s3_class(
+    ir_plot_continuous_flow(cf_data(), facet = file_name)$facet,
+    "FacetWrap"
+  )
+  # default facet is NULL (no faceting for single-data-type data)
+  expect_s3_class(ir_plot_continuous_flow(cf_data())$facet, "FacetNull")
 
   # nrow/ncol warn when used with a formula facet
   expect_warning(
@@ -534,8 +539,95 @@ test_that("mass = character(0) drops intensities (e.g. to plot only ratios)", {
   )
 })
 
-test_that("the default facet is data_type", {
+test_that("the default facet is NULL (single data type -> no faceting)", {
+  # cf_data has only intensities -> data_type not used as a facet row, and the
+  # default facet = NULL -> no faceting at all
   p <- ir_plot_continuous_flow(cf_data())
-  expect_s3_class(p$facet, "FacetWrap")
-  expect_equal(names(p$facet$params$facets), "data_type")
+  expect_s3_class(p$facet, "FacetNull")
+  # y label shows the (single) data type
+  expect_equal(p$labels$y, "intensity [mV]")
+})
+
+test_that("data_type_as_facet = auto() uses data_type when >1 type is present", {
+  fvars <- function(p) {
+    list(
+      rows = names(p$facet$params$rows),
+      cols = names(p$facet$params$cols)
+    )
+  }
+  # cf_ratio_data has both intensities and ratios -> auto() faceting on data_type;
+  # the default facet = NULL gives data_type ~ .
+  p <- ir_plot_continuous_flow(cf_ratio_data()) |> suppressMessages()
+  expect_s3_class(p$facet, "FacetGrid")
+  expect_equal(fvars(p)$rows, "data_type")
+  expect_length(fvars(p)$cols, 0)
+  expect_null(p$labels$y) # the strip provides the label
+
+  # a single facet variable becomes the column: data_type ~ file_name
+  p_col <- ir_plot_continuous_flow(cf_ratio_data(), facet = file_name) |>
+    suppressMessages()
+  expect_s3_class(p_col$facet, "FacetGrid")
+  expect_equal(fvars(p_col)$rows, "data_type")
+  expect_equal(fvars(p_col)$cols, "file_name")
+})
+
+test_that("the data_type facet strip sits on the left, outside the y axis", {
+  # data_type used as a facet row -> row strips switched to the left and placed
+  # outside the y axis (next to the per-row y-axis values)
+  p <- ir_plot_continuous_flow(cf_ratio_data()) |> suppressMessages()
+  expect_equal(p$facet$params$switch, "y")
+  expect_equal(p$theme$strip.placement, "outside")
+
+  # not applied when data_type is not used as a facet row
+  p_no <- ir_plot_continuous_flow(
+    cf_ratio_data(),
+    data_type_as_facet = FALSE
+  ) |>
+    suppressMessages()
+  expect_false(identical(p_no$facet$params$switch, "y"))
+  expect_false(identical(p_no$theme$strip.placement, "outside"))
+})
+
+test_that("data_type_as_facet TRUE/FALSE override the automatic choice", {
+  # FALSE with two data types: no data_type facet row; with the default facet
+  # (NULL) that means no faceting, and the y label shows both data types
+  p_false <- ir_plot_continuous_flow(
+    cf_ratio_data(),
+    data_type_as_facet = FALSE
+  ) |>
+    suppressMessages()
+  expect_s3_class(p_false$facet, "FacetNull")
+  expect_equal(p_false$labels$y, "intensity [mV] / ratios")
+
+  # TRUE with a single data type: forces the data_type facet row; y dropped
+  p_true <- ir_plot_continuous_flow(cf_data(), data_type_as_facet = TRUE)
+  expect_s3_class(p_true$facet, "FacetGrid")
+  expect_equal(names(p_true$facet$params$rows), "data_type")
+  expect_null(p_true$labels$y)
+
+  # validated
+  expect_error(
+    ir_plot_continuous_flow(cf_data(), data_type_as_facet = "yes"),
+    "auto\\(\\), TRUE, or FALSE"
+  )
+})
+
+test_that("a formula facet ignores data_type_as_facet (with a warning if TRUE)", {
+  # formula facet always wins; data_type is not used as a row, y shows the types
+  p <- ir_plot_continuous_flow(cf_ratio_data(), facet = species ~ mass) |>
+    suppressMessages()
+  expect_s3_class(p$facet, "FacetGrid")
+  expect_equal(names(p$facet$params$rows), "species")
+  expect_equal(p$labels$y, "intensity [mV] / ratios")
+
+  # explicitly combining TRUE with a formula warns (mutually exclusive)
+  expect_warning(
+    ir_plot_continuous_flow(
+      cf_ratio_data(),
+      facet = species ~ mass,
+      data_type_as_facet = TRUE
+    ) |>
+      suppressMessages(),
+    "mutually exclusive|ignored because"
+  )
 })

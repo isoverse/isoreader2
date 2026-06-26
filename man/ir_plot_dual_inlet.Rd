@@ -9,7 +9,8 @@ ir_plot_dual_inlet(
   species = NULL,
   mass = NULL,
   ratio = NULL,
-  facet = data_type,
+  facet = NULL,
+  data_type_as_facet = auto(),
   scales = "free",
   nrow = NULL,
   ncol = 1,
@@ -47,11 +48,24 @@ simply added). Ratio rows are plotted on the same \code{value} axis with
 \code{data_type = "ratios"}; the default \code{facet = data_type} (with free scales)
 separates them from the intensities.}
 
-\item{facet}{column or expression to facet by (default: \code{data_type}, which
-separates intensities from ratios). A plain column or expression (e.g.
-\code{file_name} or \code{paste(species, mass)}) is faceted with
-\code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}; a two-sided formula (e.g. \code{data_type ~ file_name})
-is faceted with \code{\link[ggplot2:facet_grid]{ggplot2::facet_grid()}}. Set to \code{NULL} to suppress faceting.}
+\item{facet}{column or expression to facet by (default: \code{NULL}, no extra
+faceting). When
+\code{data_type} is used as a facet row (see \code{data_type_as_facet}), a single
+\code{facet} variable becomes the facet_grid column (\code{data_type ~ facet}) and a
+\code{NULL} facet gives \code{data_type ~ .}. Otherwise a plain column or expression
+(e.g. \code{file_name} or \code{paste(species, mass)}) is faceted with
+\code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}, and a two-sided formula (e.g. \code{species ~ mass}) is
+faceted with \code{\link[ggplot2:facet_grid]{ggplot2::facet_grid()}}. Set to \code{NULL} to suppress faceting.}
+
+\item{data_type_as_facet}{whether the \code{data_type} column (intensities vs
+ratios) is used as the \code{\link[ggplot2:facet_grid]{ggplot2::facet_grid()}} row variable: \code{auto()}
+(default) uses it only when more than one data type is present; \code{TRUE}
+always uses it; \code{FALSE} never does. When used, the y axis label is dropped
+(the facet strip provides it) and the facet becomes \code{data_type ~ .} (a \code{NULL}
+\code{facet}) or \code{data_type ~ facet} (a single-variable \code{facet}). It is ignored
+when \code{facet} is a two-sided formula (a warning is issued if
+\code{data_type_as_facet = TRUE} is combined with a formula \code{facet}, since the two
+are mutually exclusive).}
 
 \item{scales}{whether facet scales should be \code{"free"} (default), \code{"fixed"},
 \code{"free_x"}, or \code{"free_y"}; passed on to \code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}} /
