@@ -60,7 +60,7 @@
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
 <p>This package provides easy access to common IRMS (isotope ratio mass spectrometry) file formats, enabling the reading and processing of stable isotope data directly from the data files for platform-independent (Windows, Mac, Linux), efficient, and reproducible data reduction.</p>
-<p><a href="https://isoreader2.isoverse.org/">isoreader2</a> succeeds the <a href="https://isoreader.isoverse.org/" class="external-link">isoreader</a> package with a completely new architecture built around the <a href="https://github.com/isoverse/IsofileExtractor" class="external-link">isoextract</a> command-line tool. This makes <a href="https://isoreader2.isoverse.org/">isoreader2</a> signifcantely faster, and more versatile with support for the following file formats:</p>
+<p><a href="https://isoreader2.isoverse.org/">isoreader2</a> succeeds the <a href="https://isoreader.isoverse.org/" class="external-link">isoreader</a> package with a completely new architecture built around the <a href="https://github.com/isoverse/IsofileExtractor" class="external-link">isoextract</a> command-line tool. This makes <a href="https://isoreader2.isoverse.org/">isoreader2</a> significantly faster, and more versatile with support for the following file formats:</p>
 <table class="table">
 <colgroup>
 <col width="26%">
@@ -198,9 +198,9 @@ Time slice of continuous flow examples with ratios
 <span></span>
 <span><span class="co"># read the files</span></span>
 <span><span class="va">isofiles</span> <span class="op">&lt;-</span> <span class="va">file_paths</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/ir_read_isofiles.html">ir_read_isofiles</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[103ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> finished extracting 1 file/archive
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[100ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> finished extracting 1 file/archive
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[239ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 1 isotope data file/archive
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[235ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 1 isotope data file/archive
 </code></pre>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># show information about the files</span></span>
@@ -219,7 +219,7 @@ Time slice of continuous flow examples with ratios
 <code class="sourceCode R"><span><span class="co"># aggregate the data from the read files specifying which units to use</span></span>
 <span><span class="co"># (mV, V, nA, A, cps, etc.), conversion via resistor values happens automatically</span></span>
 <span><span class="va">dataset</span> <span class="op">&lt;-</span> <span class="va">isofiles</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles</a></span><span class="op">(</span><span class="st">"V"</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[41ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (1) and <span style="color: #0000BB;">cycles</span> (102,
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[43ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (1) and <span style="color: #0000BB;">cycles</span> (102,
 <span style="color: #00BB00;">intensity</span> in <span style="color: #BB00BB;">V</span>) from 1 file using the <span style="font-weight: bold; font-style: italic;">standard</span> aggregator
 </code></pre>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
@@ -252,7 +252,7 @@ Time slice of continuous flow examples with ratios
 <span>  <span class="fu"><a href="reference/ir_plot_dual_inlet.html">ir_plot_dual_inlet</a></span><span class="op">(</span>mass <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">44</span><span class="op">:</span><span class="fl">48</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="co"># use ggplot2 to modify with custom theming (or any other ggplot elements)</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>strip.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">30</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[3ms]</span> <span style="font-weight: bold;">ir_calculate_ratios()</span> calculated 85 ratio and added <span style="color: #00BB00;">ratio_name</span>/<span style="color: #00BB00;">ratio</span>
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[5ms]</span> <span style="font-weight: bold;">ir_calculate_ratios()</span> calculated 85 ratio and added <span style="color: #00BB00;">ratio_name</span>/<span style="color: #00BB00;">ratio</span>
 columns to <span style="color: #00BB00;">cycles</span>
 </code></pre>
 <div class="figure">
@@ -277,7 +277,7 @@ Plot of dual inlet examples
 <pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[3ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 102 records from the combination of <span style="color: #0000BB;">metadata</span>
 (1) and <span style="color: #0000BB;">cycles</span> (102) via <span style="color: #00BB00;">uidx</span> and <span style="color: #00BB00;">analysis</span>
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[179ms]</span> <span style="font-weight: bold;">ir_export_to_excel()</span> exported 1 row of <span style="color: #00BB00;">metadata</span> and 102 rows of
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[184ms]</span> <span style="font-weight: bold;">ir_export_to_excel()</span> exported 1 row of <span style="color: #00BB00;">metadata</span> and 102 rows of
 <span style="color: #00BB00;">cycles</span> to <span style="color: #0000BB;">my_export.xlsx</span>
 </code></pre>
 </div>
@@ -474,7 +474,7 @@ Click on the individual functions to jump straight to their documenation.
 <h2 id="isoverse-">isoverse <a href="https://www.isoverse.org/" class="external-link"><img src="reference/figures/isoverse_logo_thumb.png" align="right" width="100" alt="isoverse logo"></a>
 <a class="anchor" aria-label="anchor" href="#isoverse-"></a>
 </h2>
-<p>This package is part of the isoverse suite of data tools for stable isotopes. If you like the functionality that isoverse packages provide, please help us spread the word and include an isoverse or individual package logo on one of your posters or slides. All logos are posted in high resolution in <a href="https://github.com/isoverse/logos" class="external-link">this repository</a>. If you have suggestions for new features or other constructive feedback, please let us know on this short <a href="https://www.isoverse.org/feedback/" class="external-link">feeback form</a>.</p>
+<p>This package is part of the isoverse suite of data tools for stable isotopes. If you like the functionality that isoverse packages provide, please help us spread the word and include an isoverse or individual package logo on one of your posters or slides. All logos are posted in high resolution in <a href="https://github.com/isoverse/logos" class="external-link">this repository</a>. If you have suggestions for new features or other constructive feedback, please let us know on this short <a href="https://www.isoverse.org/feedback/" class="external-link">feedback form</a>.</p>
 </div>
 <div class="section level2">
 <h2 id="funding-">Funding <a href="https://www.nsf.gov/" class="external-link"><img src="reference/figures/NSF_logo.svg" align="right" width="100" alt="NSF logo"></a>

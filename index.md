@@ -13,7 +13,7 @@ data reduction.
 new architecture built around the
 [isoextract](https://github.com/isoverse/IsofileExtractor) command-line
 tool. This makes [isoreader2](https://isoreader2.isoverse.org/)
-signifcantely faster, and more versatile with support for the following
+significantly faster, and more versatile with support for the following
 file formats:
 
 | Extension | Measurement type | Produced by |
@@ -122,11 +122,11 @@ isofiles <- file_paths |> ir_read_isofiles()
 ```
 
 ``` fansi
-✔ [103ms] ir_extract_isofiles() finished extracting 1 file/archive
+✔ [100ms] ir_extract_isofiles() finished extracting 1 file/archive
 ```
 
 ``` fansi
-✔ [239ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+✔ [235ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 ```
 
 ``` r
@@ -155,7 +155,7 @@ dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
 ``` fansi
-✔ [41ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+✔ [43ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
 intensity in V) from 1 file using the standard aggregator
 ```
 
@@ -202,7 +202,7 @@ dataset |>
 ```
 
 ``` fansi
-✔ [3ms] ir_calculate_ratios() calculated 85 ratio and added ratio_name/ratio
+✔ [5ms] ir_calculate_ratios() calculated 85 ratio and added ratio_name/ratio
 columns to cycles
 ```
 
@@ -234,7 +234,7 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [179ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
+✔ [184ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
 cycles to my_export.xlsx
 ```
 
@@ -279,7 +279,7 @@ please help us spread the word and include an isoverse or individual
 package logo on one of your posters or slides. All logos are posted in
 high resolution in [this repository](https://github.com/isoverse/logos).
 If you have suggestions for new features or other constructive feedback,
-please let us know on this short [feeback
+please let us know on this short [feedback
 form](https://www.isoverse.org/feedback/).
 
 ## Funding [![NSF logo](reference/figures/NSF_logo.svg)](https://www.nsf.gov/)

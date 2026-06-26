@@ -1,4 +1,4 @@
-# Dynamic data agreggator
+# Dynamic data aggregator
 
 These functions allow definition of custom data aggregators for
 processing data extracted from isofiles. An aggregator is run on each
@@ -68,7 +68,7 @@ ir_get_aggregator(name)
 - default:
 
   the default value if no `source` columns can be found or another error
-  is encountered during aggregatio. Note that the `default` value will
+  is encountered during aggregation. Note that the `default` value will
   also be processed with the function in `cast` to make sure it has the
   correct data type.
 
@@ -81,7 +81,7 @@ ir_get_aggregator(name)
 
 - regexp:
 
-  whether source columm names should be interpreted as a regular
+  whether source column names should be interpreted as a regular
   expressions for the purpose of finding the relevant column(s). Note if
   `regexp = TRUE`, the search for the source column always becomes
   case-insensitive so this can also be used for a direct match of a
@@ -100,11 +100,11 @@ ir_get_aggregator(name)
 - args:
 
   an optional list of arguments to pass to the `func` in addition to the
-  values coming from the source colummn(s)
+  values coming from the source column(s)
 
 ## Value
 
-an orbi aggregator tibble
+an aggregator tibble
 
 ## Functions
 

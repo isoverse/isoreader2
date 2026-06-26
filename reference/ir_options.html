@@ -91,7 +91,7 @@ values; <code>ir_get_option()</code> returns the value of the single requested o
     <h2 id="options-for-the-isoreader-package">Options for the isoreader2 package<a class="anchor" aria-label="anchor" href="#options-for-the-isoreader-package"></a></h2>
 
 
-<ul><li><p><code>aggregators</code>: data aggregators for pulling data out of raw files. The list of available aggregators is accessible via <code>ir_get_option("aggregators")</code>. Individiual aggregators are available via the shortcut helper function <code>ir_get_aggregator("standard")</code>. Register new/overwrite existing aggregators via <code><a href="ir_aggregator.html">ir_register_aggregator()</a></code>.</p></li>
+<ul><li><p><code>aggregators</code>: data aggregators for pulling data out of raw files. The list of available aggregators is accessible via <code>ir_get_option("aggregators")</code>. Individual aggregators are available via the shortcut helper function <code>ir_get_aggregator("standard")</code>. Register new/overwrite existing aggregators via <code><a href="ir_aggregator.html">ir_register_aggregator()</a></code>.</p></li>
 <li><p><code>debug</code>: turn on debug mode</p></li>
 <li><p><code>auto_use_ansi</code>: whether to automatically enable correct rendering of stylized (ansi) output in HTML reports from notebooks that call <code><a href="https://rdrr.io/r/base/library.html" class="external-link">library(isoir)</a></code>. Can be turned off by calling <code>isoir::ir_options(auto_use_ansi = FALSE)</code> <strong>before</strong> call <code><a href="https://rdrr.io/r/base/library.html" class="external-link">library(isoir)</a></code>.</p></li>
 </ul></div>

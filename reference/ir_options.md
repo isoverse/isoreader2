@@ -54,7 +54,7 @@ option.
 
 - `aggregators`: data aggregators for pulling data out of raw files. The
   list of available aggregators is accessible via
-  `ir_get_option("aggregators")`. Individiual aggregators are available
+  `ir_get_option("aggregators")`. Individual aggregators are available
   via the shortcut helper function `ir_get_aggregator("standard")`.
   Register new/overwrite existing aggregators via
   [`ir_register_aggregator()`](https://isoreader2.isoverse.org/reference/ir_aggregator.md).

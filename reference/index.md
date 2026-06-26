@@ -45,7 +45,7 @@ These functions combine the data from multiple isofiles for combined use
   [`ir_add_to_aggregator()`](https://isoreader2.isoverse.org/reference/ir_aggregator.md)
   [`ir_register_aggregator()`](https://isoreader2.isoverse.org/reference/ir_aggregator.md)
   [`ir_get_aggregator()`](https://isoreader2.isoverse.org/reference/ir_aggregator.md)
-  : Dynamic data agreggator
+  : Dynamic data aggregator
 - [`ir_get_data()`](https://isoreader2.isoverse.org/reference/ir_get_data.md)
   [`ir_get_metadata()`](https://isoreader2.isoverse.org/reference/ir_get_data.md)
   [`ir_get_resistors()`](https://isoreader2.isoverse.org/reference/ir_get_data.md)
