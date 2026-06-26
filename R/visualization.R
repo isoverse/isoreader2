@@ -257,7 +257,7 @@ sort_trace_factor <- function(plot_data) {
 # unchanged if the data lacks the columns needed to key by (it can then be used
 # as a plain ordered palette).
 build_trace_color_values <- function(plot_data, color_values) {
-  if (!all(c("trace", "species", "mass") %in% names(plot_data))) {
+  if (!"trace" %in% names(plot_data)) {
     return(color_values)
   }
   trace_levels <- if (is.factor(plot_data$trace)) {
@@ -265,21 +265,21 @@ build_trace_color_values <- function(plot_data, color_values) {
   } else {
     unique(as.character(plot_data$trace))
   }
-  # distinct trace -> (species, mass) colour key, as present in the data
-  key_map <- plot_data |>
-    dplyr::distinct(.data$trace, .data$species, .data$mass) |>
-    dplyr::mutate(
-      .trace = as.character(.data$trace),
-      .key = paste(.data$species, .data$mass)
-    )
-  trace_to_key <- stats::setNames(key_map$.key, key_map$.trace)
-  # restrict to (and order by) the levels actually present in the data
-  trace_levels <- trace_levels[trace_levels %in% names(trace_to_key)]
-  keys_in_order <- unique(trace_to_key[trace_levels])
-  n_keys <- length(keys_in_order)
-  if (n_keys == 0) {
+  if (length(trace_levels) == 0L) {
     return(color_values)
   }
+  # colour key = species + numerator mass, parsed from each trace label (the same
+  # way sort_trace_factor() does) so that EVERY level gets a colour - including
+  # levels that have no rows in the current data (e.g. a mass that is absent from
+  # the selected scan type) which the factor still keeps when drop_unused_levels =
+  # FALSE - and an intensity trace shares its key with its ratio traces
+  # ("N2: 29" and "N2: 29/28" -> key "N2 29").
+  species_part <- sub(":.*$", "", trace_levels)
+  mass_part <- sub("^[^:]*:\\s*", "", trace_levels)
+  numerator <- sub("/.*$", "", mass_part)
+  keys <- paste(species_part, numerator)
+  keys_in_order <- unique(keys)
+  n_keys <- length(keys_in_order)
   # one colour per key: use the supplied palette if it is large enough, else hues
   key_colors <- if (!is.null(color_values) && length(color_values) >= n_keys) {
     unname(color_values)[seq_len(n_keys)]
@@ -287,8 +287,8 @@ build_trace_color_values <- function(plot_data, color_values) {
     scales::hue_pal()(n_keys)
   }
   key_colors <- stats::setNames(key_colors, keys_in_order)
-  # named vector: trace level -> its key's colour
-  stats::setNames(unname(key_colors[trace_to_key[trace_levels]]), trace_levels)
+  # named vector: every trace level -> its key's colour
+  stats::setNames(unname(key_colors[keys]), trace_levels)
 }
 
 # internal: add the colour aesthetic and a matching colour scale. When the
@@ -970,6 +970,10 @@ ir_plot_scans <- function(
     }
     plot_data <- dplyr::filter(plot_data, .data$scan_type == !!scan_type)
   }
+  # the trace factor was built across all scan types; after filtering to one, drop
+  # the now-empty trace levels (traces that belong to other scan types) so they do
+  # not linger as uncoloured, line-less entries in the legend
+  plot_data <- droplevels(plot_data)
 
   # derive axis labels: y from the data_type when unique (e.g. "intensity [mV]"),
   # otherwise the generic "value" since intensities and ratios are mixed

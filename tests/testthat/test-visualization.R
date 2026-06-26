@@ -305,6 +305,29 @@ test_that("drop_unused_levels is validated and trace colouring scales past palet
   expect_length(breaks(ir_plot_continuous_flow(many) |> suppressMessages()), 15)
 })
 
+test_that("every trace level gets a colour, even ones with no data rows", {
+  # regression: a trace factor with more levels than the palette where some
+  # levels have no data rows (as happens after a scan_type filter, which keeps
+  # all levels but drops rows). build_trace_color_values() must produce a colour
+  # for EVERY level (keyed by species + numerator mass) so none are left
+  # unassigned and scale_color_manual() can be used.
+  levs <- c(paste0("CO2: ", 40:49), "Ar: 36", "Ar: 40") # 12 > 9 palette colours
+  d <- tibble(trace = factor("CO2: 44", levels = levs)) # only one level has a row
+  cv <- build_trace_color_values(d, palette.colors())
+  expect_length(cv, length(levs))
+  expect_setequal(names(cv), levs)
+  expect_false(any(is.na(cv)))
+
+  # keyed sharing holds across present + absent levels (intensity vs its ratio)
+  levs2 <- c("N2: 28", "N2: 29", "N2: 29/28", paste0("X: ", 1:10))
+  cv2 <- build_trace_color_values(
+    tibble(trace = factor("X: 1", levels = levs2)),
+    palette.colors()
+  )
+  expect_false(any(is.na(cv2)))
+  expect_equal(unname(cv2["N2: 29"]), unname(cv2["N2: 29/28"]))
+})
+
 test_that("drop_unused_levels drops traces that are outside the zoom window", {
   breaks <- function(p) {
     as.character(
@@ -379,6 +402,40 @@ test_that("ir_plot_scans() builds a ggplot and handles scan_type", {
     ir_plot_scans(multi, scan_type = "high voltage"),
     "ggplot"
   )
+})
+
+test_that("ir_plot_scans() drops traces belonging to other scan types", {
+  # two scan types with different masses; the trace factor is built across both,
+  # but after selecting one scan type only its traces should remain (no empty,
+  # uncoloured legend entries for the other scan type's masses)
+  sc <- dplyr::bind_rows(
+    tibble(
+      file_name = "a",
+      species = "CO2",
+      mass = c("44", "45"),
+      scan_type = "high voltage",
+      x_units = "kV",
+      x = 0,
+      intensity.mV = c(1, 2)
+    ),
+    tibble(
+      file_name = "a",
+      species = "Ar",
+      mass = c("36", "40"),
+      scan_type = "magnet current",
+      x_units = "A",
+      x = 0,
+      intensity.mV = c(3, 4)
+    )
+  )
+  p <- ir_plot_scans(sc, scan_type = "high voltage")
+  b <- ggplot2::ggplot_build(p)
+  # only the high-voltage traces survive as factor levels (Ar masses dropped)
+  expect_equal(sort(levels(b$plot$data$trace)), c("CO2: 44", "CO2: 45"))
+  # and the legend has exactly those two, each with a colour
+  gd <- ggplot2::get_guide_data(p, "colour")
+  expect_equal(nrow(gd), 2L)
+  expect_false(any(is.na(gd$colour)))
 })
 
 # trace data with pre-computed ratios (as ir_calculate_ratios() would add them)
