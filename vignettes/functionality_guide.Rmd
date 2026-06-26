@@ -105,6 +105,21 @@ dataset <- isofiles |> ir_aggregate_isofiles()
 dataset
 ```
 
+### bonus intensity units
+
+By default the raw signals are reported in millivolts (`mV`). Pass a different
+`intensity_units` to report voltage (`mV`, `V`), current (`fA`, `pA`, `nA`,
+`µA`, `mA`, `A`), or counts per second (`cps`) instead. Conversions that cross
+the voltage/current/cps boundary use the recorded resistor values automatically
+(the same machinery is exposed as `ir_convert_intensity()`).
+
+```{r}
+# report intensities in nanoamperes instead of the default millivolts
+isofiles |>
+  ir_aggregate_isofiles(intensity_units = "nA") |>
+  ir_get_data(traces = c("species", "mass", "time.s", "intensity.nA"))
+```
+
 ### bonus `ir_get_aggregator()`
 
 You can optionally use a different aggregator. Besides the default `standard` aggregator, the package ships (from smallest to largest) the `metadata` aggregator (metadata only), the `minimal` aggregator (metadata plus the core data series), and the `extended` aggregator, which is more elaborate and provides access to additional columns (such as the resistor/cup configuration and the vendor data table) from the data files.
@@ -211,6 +226,17 @@ dataset |>
 
 These functions also work directly on an unaggregated `ir_isofiles` object (applied individually to each file), though that is significantly slower than working on an aggregated dataset.
 
+### bonus `ir_filter_for_continuous_flow()` / `ir_filter_for_dual_inlet()` / `ir_filter_for_scans()`
+
+If a dataset mixes measurement types, these convenience filters keep only the files of one type (filtering on the metadata `type` field) and cascade to all datasets, just like `ir_filter_metadata()`.
+
+```{r}
+# keep only the continuous flow files
+dataset |>
+  ir_filter_for_continuous_flow() |>
+  ir_get_metadata(metadata = c("file_name", "type"))
+```
+
 ## bonus `ir_save_aggregated_data()` / `ir_load_aggregated_data()`
 
 Aggregated data can be stored to (and loaded from) a parquet file for fast, language-independent access. This requires the suggested **arrow** package.
@@ -219,6 +245,35 @@ Aggregated data can be stored to (and loaded from) a parquet file for fast, lang
 # save and reload the aggregated data
 dataset |> ir_save_aggregated_data(file.path("tmp_examples", "my_dataset"))
 reloaded <- ir_load_aggregated_data(file.path("tmp_examples", "my_dataset"))
+```
+
+# Calculating ratios
+
+## `ir_calculate_ratios()`
+
+Isotope work is all about *ratios*. `ir_calculate_ratios()` adds two columns - `ratio_name` (e.g. `"45/44"`) and `ratio` - to the `traces`, `cycles`, and/or `scans` of an aggregated dataset. By default each mass is divided by the numerically lowest ("base") mass of the same species at each time/cycle/scan position.
+
+```{r}
+dataset_ratios <- dataset |> ir_calculate_ratios()
+
+dataset_ratios |>
+  ir_get_data(
+    metadata = "file_name",
+    traces = c("species", "mass", "time.s", "ratio_name", "ratio")
+  )
+```
+
+### bonus base mass, additive offsets, and normalization
+
+The base mass can be overridden per species by name (e.g. `N2 = 28`, `CO2 = 44`). For continuous flow (`traces`) and `scans` data a small additive offset is added to numerator and denominator before dividing, which stabilizes the ratio where the signal is near the baseline; it is configurable per unit family (`num_add.V`/`denom_add.V` for voltage, `num_add.nA`/`denom_add.nA` for current, `num_add.cps`/`denom_add.cps` for counts) and is always `0` for dual inlet `cycles`. Finally, `normalize_ratios` can divide each ratio by a per-file summary function such as `mean`, `median`, `min`, or `max`.
+
+```{r}
+dataset |>
+  ir_calculate_ratios(N2 = 28, normalize_ratios = median) |>
+  ir_get_data(
+    metadata = "file_name",
+    traces = c("species", "mass", "ratio_name", "ratio")
+  )
 ```
 
 # Visualizing data
@@ -233,22 +288,93 @@ isoreader2 provides quick-look plotting functions for each measurement type. The
 dataset |> ir_plot_continuous_flow(facet = file_name)
 ```
 
+Narrow the plot down with `species`/`mass` and zoom in with a time window given
+either in seconds (`time_window.s`) or minutes (`time_window.min`):
+
+```{r}
+#| fig.width: 8
+#| fig.height: 5
+dataset |>
+  ir_plot_continuous_flow(
+    species = "CO2",
+    facet = file_name,
+    time_window.min = c(4.5, 8.5)
+  )
+```
+
+Add calculated `ratio`s to the plot. When more than one data type is present
+(intensities and ratios), they are automatically split into facet rows
+(`data_type_as_facet = auto()`):
+
+```{r}
+#| fig.width: 8
+#| fig.height: 6
+dataset |>
+  ir_calculate_ratios(normalize_ratios = median) |>
+  ir_plot_continuous_flow(
+    species = "CO2",
+    ratio = "45/44",
+    facet = file_name,
+    time_window.min = c(4.5, 8.5)
+  )
+```
+
+The plots are ordinary `ggplot` objects (the package theme `ir_default_theme()`
+is always applied), so you can keep customizing with ggplot2 layers - and tune
+the aesthetics with arguments like `color`, `scientific`, `linetype`, or
+`color_values`:
+
+```{r}
+#| fig.width: 8
+#| fig.height: 5
+library(ggplot2)
+dataset |>
+  ir_plot_continuous_flow(
+    species = "N2",
+    facet = file_name,
+    scientific = TRUE
+  ) +
+  labs(title = "N2 traces") +
+  theme(legend.position = "bottom")
+```
+
+### bonus `ir_generate_traces_tibble()` / `ir_generate_cycles_tibble()` / `ir_generate_scans_tibble()`
+
+If you want the exact tibble that a plot would draw (e.g. to build your own plot or do further analysis), the `ir_generate_*_tibble()` helpers return it without plotting. They take the same `species`/`mass`/`ratio` arguments and add the `trace`, `data_type`, and `value` columns the plotting functions use.
+
+```{r}
+dataset |> ir_generate_traces_tibble(species = "CO2")
+```
+
 ## `ir_plot_dual_inlet()`
 
 ```{r}
 #| fig.width: 8
 #| fig.height: 7
-data_folder |>
+di_dataset <-
+  data_folder |>
   ir_find_dual_inlet() |>
   ir_read_isofiles() |>
   ir_aggregate_isofiles("V") |>
-  ir_calculate_ratios() |>
-  ir_plot_dual_inlet(facet = file_name)
+  ir_calculate_ratios()
+
+di_dataset |> ir_plot_dual_inlet(facet = file_name)
+```
+
+The same `species`/`mass`/`ratio` filters apply, and `cycle_window` zooms to a
+range of cycles:
+
+```{r}
+#| fig.width: 8
+#| fig.height: 5
+di_dataset |> ir_plot_dual_inlet(mass = c(44, 45, 46), facet = file_name)
 ```
 
 ## `ir_plot_scans()`
 
-For scan files with more than one scan type, specify which one to plot.
+For scan files with more than one scan type, specify which one to plot
+(`x_window` zooms the x axis the same way `time_window.s` does for continuous
+flow):
 
 ```{r}
 #| fig.width: 8
@@ -274,7 +400,25 @@ ir_export_to_excel(
 )
 ```
 
+# Package options
+
+## bonus `ir_options()` / `ir_get_option()`
+
+A handful of package-wide options control isoreader2's behavior. `ir_get_options()` lists them, `ir_get_option()` reads one, and `ir_options()` sets them. For example, `debug = TRUE` disables the fail-safe error catching so problems surface with a full traceback, which is useful when troubleshooting a reader.
+
+```{r}
+# list available options and read one
+names(ir_get_options())
+ir_get_option("debug")
+
+# set an option (here enable debug mode), then restore the default
+invisible(ir_options(debug = TRUE))
+ir_get_option("debug")
+```
+
 ```{r, include=FALSE}
+# reset options
+invisible(ir_options(debug = FALSE))
 # clean up the local data folder created for this vignette
 unlink("tmp_examples", recursive = TRUE)
 ```
