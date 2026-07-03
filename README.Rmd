@@ -44,8 +44,8 @@ if (!isTRUE(params$generating_pkgdown_index)) {
 # isoreader2 <a href='https://isoreader2.isoverse.org/'> <img src="man/figures/isoreader_logo_thumb.png" align="right" width="100" alt="isoreader logo"/> </a>
 
 <!-- badges: start -->
-  [![Documentation](https://img.shields.io/badge/docs-online-green.svg)](https://isoreader2.isoverse.org/)
-  [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/ggstackplot)](https://cran.r-project.org/package=isoreader2)
+  [![Documentation](https://img.shields.io/badge/docs-online-brightgreen.svg)](https://isoreader2.isoverse.org/)
+  [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/isoreader2)](https://cran.r-project.org/package=isoreader2)
   [![Life cycle](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html)
   [![R-CMD-check](https://github.com/isoverse/isoreader2/workflows/R-CMD-check/badge.svg)](https://github.com/isoverse/isoreader2/actions)
   [![Codecov test coverage](https://codecov.io/gh/isoverse/isoreader2/graph/badge.svg)](https://app.codecov.io/gh/isoverse/isoreader2)

@@ -11,8 +11,8 @@ params:
 # isoreader2 <a href='https://isoreader2.isoverse.org/'> <img src="man/figures/isoreader_logo_thumb.png" align="right" width="100" alt="isoreader logo"/> </a>
 
 <!-- badges: start -->
-  [![Documentation](https://img.shields.io/badge/docs-online-green.svg)](https://isoreader2.isoverse.org/)
-  [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/ggstackplot)](https://cran.r-project.org/package=isoreader2)
+  [![Documentation](https://img.shields.io/badge/docs-online-brightgreen.svg)](https://isoreader2.isoverse.org/)
+  [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/isoreader2)](https://cran.r-project.org/package=isoreader2)
   [![Life cycle](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html)
   [![R-CMD-check](https://github.com/isoverse/isoreader2/workflows/R-CMD-check/badge.svg)](https://github.com/isoverse/isoreader2/actions)
   [![Codecov test coverage](https://codecov.io/gh/isoverse/isoreader2/graph/badge.svg)](https://app.codecov.io/gh/isoverse/isoreader2)
@@ -126,8 +126,8 @@ file_paths <- data_folder |> ir_find_dual_inlet()
 isofiles <- file_paths |> ir_read_isofiles()
 ```
 
-<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[92ms]</span> <span style='font-weight: bold;'>ir_extract_isofiles()</span> finished extracting 1 file/archive
-</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[224ms]</span> <span style='font-weight: bold;'>ir_read_isofiles()</span> finished reading 1 isotope data file/archive
+<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[89ms]</span> <span style='font-weight: bold;'>ir_extract_isofiles()</span> finished extracting 1 file/archive
+</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[209ms]</span> <span style='font-weight: bold;'>ir_read_isofiles()</span> finished reading 1 isotope data file/archive
 </CODE></PRE>
 
 ``` r
@@ -204,10 +204,10 @@ ir_export_to_excel(
 )
 ```
 
-<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[5ms]</span> <span style='font-weight: bold;'>ir_get_data()</span> retrieved 1 records from <span style='color: #0000BB;'>metadata</span>
+<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[2ms]</span> <span style='font-weight: bold;'>ir_get_data()</span> retrieved 1 records from <span style='color: #0000BB;'>metadata</span>
 </CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[3ms]</span> <span style='font-weight: bold;'>ir_get_data()</span> retrieved 102 records from the combination of <span style='color: #0000BB;'>metadata</span>
 (1) and <span style='color: #0000BB;'>cycles</span> (102) via <span style='color: #00BB00;'>uidx</span> and <span style='color: #00BB00;'>analysis</span>
-</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[179ms]</span> <span style='font-weight: bold;'>ir_export_to_excel()</span> exported 1 row of <span style='color: #00BB00;'>metadata</span> and 102 rows of
+</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[188ms]</span> <span style='font-weight: bold;'>ir_export_to_excel()</span> exported 1 row of <span style='color: #00BB00;'>metadata</span> and 102 rows of
 <span style='color: #00BB00;'>cycles</span> to <span style='color: #0000BB;'>my_export.xlsx</span>
 </CODE></PRE>
 

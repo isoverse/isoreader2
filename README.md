@@ -5,8 +5,8 @@
 
 <!-- badges: start -->
 
-[![Documentation](https://img.shields.io/badge/docs-online-green.svg)](https://isoreader2.isoverse.org/)
-[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/ggstackplot)](https://cran.r-project.org/package=isoreader2)
+[![Documentation](https://img.shields.io/badge/docs-online-brightgreen.svg)](https://isoreader2.isoverse.org/)
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/isoreader2)](https://cran.r-project.org/package=isoreader2)
 [![Life
 cycle](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html)
 [![R-CMD-check](https://github.com/isoverse/isoreader2/workflows/R-CMD-check/badge.svg)](https://github.com/isoverse/isoreader2/actions)
@@ -141,9 +141,9 @@ file_paths <- data_folder |> ir_find_dual_inlet()
 isofiles <- file_paths |> ir_read_isofiles()
 ```
 
-    > ✔ [102ms] ir_extract_isofiles() finished extracting 1 file/archive
+    > ✔ [97ms] ir_extract_isofiles() finished extracting 1 file/archive
 
-    > ✔ [174ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+    > ✔ [175ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 
 ``` r
 # show information about the files
@@ -163,7 +163,7 @@ isofiles
 dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
-    > ✔ [40ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+    > ✔ [39ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
     > intensity in V) from 1 file using the standard aggregator
 
 ``` r
@@ -198,7 +198,7 @@ dataset |>
   theme(strip.text = element_text(size = 30))
 ```
 
-    > ✔ [3ms] ir_calculate_ratios() calculated 85 ratios and added ratio_name and
+    > ✔ [5ms] ir_calculate_ratios() calculated 85 ratios and added ratio_name and
     > ratio columns to the cycles
 
 <div class="figure">
@@ -225,10 +225,10 @@ ir_export_to_excel(
 
     > ✔ [2ms] ir_get_data() retrieved 1 records from metadata
 
-    > ✔ [2ms] ir_get_data() retrieved 102 records from the combination of metadata
+    > ✔ [3ms] ir_get_data() retrieved 102 records from the combination of metadata
     > (1) and cycles (102) via uidx and analysis
 
-    > ✔ [59ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of cycles
+    > ✔ [60ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of cycles
     > to 'my_export.xlsx'
 
 ### Bonus: explore isofiles interactively
