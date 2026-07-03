@@ -50,7 +50,7 @@ ir_examples_folder() |> ir_find_scans()
 # copy the bundled examples into a temporary folder and find them
 ir_copy_examples(folder = file.path(tempdir(), "examples")) |>
   ir_find_continuous_flow()
-#> ✔ [3ms] ir_copy_examples() copied 7 example files to /tmp/RtmpScmt8O/examples
-#> [1] "/tmp/RtmpScmt8O/examples/continuous_flow_ea_example.dxf"
-#> [2] "/tmp/RtmpScmt8O/examples/continuous_flow_gc_example.cf" 
+#> ✔ [2ms] ir_copy_examples() copied 7 example files to /tmp/Rtmp1XJqn8/examples
+#> [1] "/tmp/Rtmp1XJqn8/examples/continuous_flow_ea_example.dxf"
+#> [2] "/tmp/Rtmp1XJqn8/examples/continuous_flow_gc_example.cf" 
 ```
