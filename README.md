@@ -6,9 +6,13 @@
 <!-- badges: start -->
 
 [![Documentation](https://img.shields.io/badge/docs-online-green.svg)](https://isoreader2.isoverse.org/)
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/ggstackplot)](https://cran.r-project.org/package=isoreader2)
+[![Life
+cycle](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html)
 [![R-CMD-check](https://github.com/isoverse/isoreader2/workflows/R-CMD-check/badge.svg)](https://github.com/isoverse/isoreader2/actions)
 [![Codecov test
 coverage](https://codecov.io/gh/isoverse/isoreader2/graph/badge.svg)](https://app.codecov.io/gh/isoverse/isoreader2)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.02878/status.svg)](https://doi.org/10.21105/joss.02878)
 <!-- badges: end -->
 
 ## Overview
@@ -137,9 +141,9 @@ file_paths <- data_folder |> ir_find_dual_inlet()
 isofiles <- file_paths |> ir_read_isofiles()
 ```
 
-    > ✔ [107ms] ir_extract_isofiles() finished extracting 1 file/archive
+    > ✔ [102ms] ir_extract_isofiles() finished extracting 1 file/archive
 
-    > ✔ [196ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+    > ✔ [174ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 
 ``` r
 # show information about the files
@@ -149,8 +153,7 @@ isofiles
     > ─────── 1 isofile with 1 analysis - process with ir_aggregate_isofiles() ───────
 
     > 1. caf_dual_inlet_example.caf: with 8 sample/standard cycles for CO2clump
-    > (masses 44, 45, 46, 47, 48, 49, 44, 45, 46, 47, 48, 49, 44, 45, 46, 47, 48, 49,
-    > …, 48, and 49); 21 metadata columns
+    > (masses 44, 45, 46, 47, 48, and 49); 21 metadata columns
 
 ### Aggregate the data
 
@@ -160,7 +163,7 @@ isofiles
 dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
-    > ✔ [42ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+    > ✔ [40ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
     > intensity in V) from 1 file using the standard aggregator
 
 ``` r
@@ -195,8 +198,8 @@ dataset |>
   theme(strip.text = element_text(size = 30))
 ```
 
-    > ✔ [4ms] ir_calculate_ratios() calculated 85 ratio and added ratio_name/ratio
-    > columns to cycles
+    > ✔ [3ms] ir_calculate_ratios() calculated 85 ratios and added ratio_name and
+    > ratio columns to the cycles
 
 <div class="figure">
 
@@ -222,11 +225,11 @@ ir_export_to_excel(
 
     > ✔ [2ms] ir_get_data() retrieved 1 records from metadata
 
-    > ✔ [3ms] ir_get_data() retrieved 102 records from the combination of metadata
+    > ✔ [2ms] ir_get_data() retrieved 102 records from the combination of metadata
     > (1) and cycles (102) via uidx and analysis
 
-    > ✔ [202ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
-    > cycles to 'my_export.xlsx'
+    > ✔ [59ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of cycles
+    > to 'my_export.xlsx'
 
 ### Bonus: explore isofiles interactively
 
