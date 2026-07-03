@@ -122,11 +122,11 @@ isofiles <- file_paths |> ir_read_isofiles()
 ```
 
 ``` fansi
-✔ [100ms] ir_extract_isofiles() finished extracting 1 file/archive
+✔ [92ms] ir_extract_isofiles() finished extracting 1 file/archive
 ```
 
 ``` fansi
-✔ [235ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+✔ [224ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 ```
 
 ``` r
@@ -141,8 +141,7 @@ isofiles
 
 ``` fansi
 1. caf_dual_inlet_example.caf: with 8 sample/standard cycles for CO2clump
-(masses 44, 45, 46, 47, 48, 49, 44, 45, 46, 47, 48, 49, 44, 45, 46, 47, 48, 49,
-…, 48, and 49); 21 metadata columns
+(masses 44, 45, 46, 47, 48, and 49); 21 metadata columns
 ```
 
 ### Aggregate the data
@@ -155,7 +154,7 @@ dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
 ``` fansi
-✔ [43ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+✔ [41ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
 intensity in V) from 1 file using the standard aggregator
 ```
 
@@ -202,8 +201,8 @@ dataset |>
 ```
 
 ``` fansi
-✔ [5ms] ir_calculate_ratios() calculated 85 ratio and added ratio_name/ratio
-columns to cycles
+✔ [3ms] ir_calculate_ratios() calculated 85 ratios and added ratio_name and
+ratio columns to the cycles
 ```
 
 ![Plot of dual inlet
@@ -225,7 +224,7 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [2ms] ir_get_data() retrieved 1 records from metadata
+✔ [5ms] ir_get_data() retrieved 1 records from metadata
 ```
 
 ``` fansi
@@ -234,7 +233,7 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [184ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
+✔ [179ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
 cycles to my_export.xlsx
 ```
 
