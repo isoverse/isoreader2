@@ -1,20 +1,14 @@
 # export functions ==========
 
-# check openxlsx is available, try to install from CRAN once if not
+# check the (suggested) openxlsx package is available
 check_openxlsx <- function() {
   if (!requireNamespace("openxlsx", quietly = TRUE)) {
-    message(
-      "package 'openxlsx' is required for Excel export but is not installed, attempting to install from CRAN..."
-    )
-    utils::install.packages("openxlsx")
-    if (!requireNamespace("openxlsx", quietly = TRUE)) {
-      cli_abort(
-        c(
-          "package {.pkg openxlsx} is required for {.fn ir_export_to_excel} but could not be installed",
-          "i" = "install manually with {.code install.packages('openxlsx')}"
-        )
+    cli_abort(
+      c(
+        "package {.pkg openxlsx} is required for {.fn ir_export_to_excel}",
+        "i" = "install it with {.code install.packages(\"openxlsx\")}"
       )
-    }
+    )
   }
 }
 
@@ -30,8 +24,7 @@ check_openxlsx <- function() {
 #' This function only accepts data frames. To store a complete
 #' [ir_aggregate_isofiles()] result use [ir_save_aggregated_data()] instead.
 #'
-#' Requires the \pkg{openxlsx} package. If not installed, one
-#' installation attempt from CRAN is made automatically.
+#' Requires the suggested \pkg{openxlsx} package.
 #'
 #' @param ... one or more data frames / tibbles to export, one per sheet. Named
 #'   arguments set the sheet name; unnamed arguments use `"Sheet{position}"`.
@@ -45,16 +38,18 @@ check_openxlsx <- function() {
 #' @return the exported data invisibly (the single data frame if one was
 #'   provided, otherwise the list of data frames), for use in pipes
 #' @examples
-#' \dontrun{
-#' agg <- ir_examples_folder() |>
-#'   ir_find_continuous_flow() |>
-#'   ir_read_isofiles() |>
-#'   ir_aggregate_isofiles()
-#' ir_export_to_excel(
-#'   metadata = ir_get_metadata(agg),
-#'   traces = ir_get_traces(agg),
-#'   file = "my_export.xlsx"
-#' )
+#' \donttest{
+#' if (requireNamespace("openxlsx", quietly = TRUE)) {
+#'   agg <- ir_examples_folder() |>
+#'     ir_find_continuous_flow() |>
+#'     ir_read_isofiles() |>
+#'     ir_aggregate_isofiles()
+#'   ir_export_to_excel(
+#'     metadata = ir_get_metadata(agg),
+#'     traces = ir_get_traces(agg),
+#'     file = file.path(tempdir(), "my_export.xlsx")
+#'   )
+#' }
 #' }
 #' @export
 ir_export_to_excel <- function(

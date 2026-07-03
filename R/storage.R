@@ -1,20 +1,14 @@
 # storage for ir_aggregated_data ==========
 
-# check arrow is available, try to install from CRAN once if not
+# check the (suggested) arrow package is available
 check_arrow <- function() {
   if (!requireNamespace("arrow", quietly = TRUE)) {
-    message(
-      "package 'arrow' is required for storage but is not installed, attempting to install from CRAN..."
-    )
-    utils::install.packages("arrow")
-    if (!requireNamespace("arrow", quietly = TRUE)) {
-      cli_abort(
-        c(
-          "package {.pkg arrow} is required for {.fn ir_save_aggregated_data}/{.fn ir_load_aggregated_data} but could not be installed",
-          "i" = "install manually with {.code install.packages('arrow')}"
-        )
+    cli_abort(
+      c(
+        "package {.pkg arrow} is required for {.fn ir_save_aggregated_data}/{.fn ir_load_aggregated_data}",
+        "i" = "install it with {.code install.packages(\"arrow\")}"
       )
-    }
+    )
   }
 }
 
@@ -25,8 +19,7 @@ check_arrow <- function() {
 #' is set to `NULL` per row because R condition objects cannot be stored in parquet.
 #' `ir_load_aggregated_data()` reads the file back and returns an `ir_aggregated_data` object.
 #'
-#' Requires the \pkg{arrow} package (suggested). If not installed, one
-#' installation attempt from CRAN is made automatically.
+#' Requires the suggested \pkg{arrow} package.
 #'
 #' @param aggregated_data datasets aggregated from [ir_aggregate_isofiles()]
 #' @param file path to the parquet file (`.parquet` extension added if absent)

@@ -26,8 +26,7 @@ is set to \code{NULL} per row because R condition objects cannot be stored in pa
 \code{ir_load_aggregated_data()} reads the file back and returns an \code{ir_aggregated_data} object.
 }
 \details{
-Requires the \pkg{arrow} package (suggested). If not installed, one
-installation attempt from CRAN is made automatically.
+Requires the suggested \pkg{arrow} package.
 }
 \section{Functions}{
 \itemize{

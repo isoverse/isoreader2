@@ -45,19 +45,20 @@ a sheet named after their position (e.g. the 3rd unnamed data frame goes into
 This function only accepts data frames. To store a complete
 \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}} result use \code{\link[=ir_save_aggregated_data]{ir_save_aggregated_data()}} instead.
 
-Requires the \pkg{openxlsx} package. If not installed, one
-installation attempt from CRAN is made automatically.
+Requires the suggested \pkg{openxlsx} package.
 }
 \examples{
-\dontrun{
-agg <- ir_examples_folder() |>
-  ir_find_continuous_flow() |>
-  ir_read_isofiles() |>
-  ir_aggregate_isofiles()
-ir_export_to_excel(
-  metadata = ir_get_metadata(agg),
-  traces = ir_get_traces(agg),
-  file = "my_export.xlsx"
-)
+\donttest{
+if (requireNamespace("openxlsx", quietly = TRUE)) {
+  agg <- ir_examples_folder() |>
+    ir_find_continuous_flow() |>
+    ir_read_isofiles() |>
+    ir_aggregate_isofiles()
+  ir_export_to_excel(
+    metadata = ir_get_metadata(agg),
+    traces = ir_get_traces(agg),
+    file = file.path(tempdir(), "my_export.xlsx")
+  )
+}
 }
 }

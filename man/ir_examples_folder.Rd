@@ -39,7 +39,7 @@ executable).
 }}
 \examples{
 ir_examples_folder() |> ir_find_scans()
-\dontrun{
-ir_copy_examples() |> ir_find_continuous_flow()
-}
+# copy the bundled examples into a temporary folder and find them
+ir_copy_examples(folder = file.path(tempdir(), "examples")) |>
+  ir_find_continuous_flow()
 }

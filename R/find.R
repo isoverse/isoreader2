@@ -24,9 +24,9 @@ ir_examples_folder <- function() {
 #'   `"examples"`); created if it does not exist
 #' @return `ir_copy_examples()` invisibly returns the path to the created examples folder
 #' @examples
-#' \dontrun{
-#' ir_copy_examples() |> ir_find_continuous_flow()
-#' }
+#' # copy the bundled examples into a temporary folder and find them
+#' ir_copy_examples(folder = file.path(tempdir(), "examples")) |>
+#'   ir_find_continuous_flow()
 #' @export
 ir_copy_examples <- function(folder = "examples") {
   check_arg(

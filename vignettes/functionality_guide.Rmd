@@ -396,7 +396,7 @@ Finally, you can export individual data frames (typically retrieved with the `ir
 ir_export_to_excel(
   metadata = dataset |> ir_get_metadata(),
   traces = dataset |> ir_get_traces(),
-  file = "tmp/my_dataset.xlsx"
+  file = "tmp_examples/my_dataset.xlsx"
 )
 ```
 
