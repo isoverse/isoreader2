@@ -34,9 +34,9 @@ release
 pkgdown
 .quarto
 **/*.quarto_ipynb
-inst/extdata/*.json
 
 # Package specific auxiliary files
 tmp
 examples
+docs
 README.html
