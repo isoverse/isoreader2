@@ -34,8 +34,7 @@ ir_load_aggregated_data(file)
 
 ## Details
 
-Requires the arrow package (suggested). If not installed, one
-installation attempt from CRAN is made automatically.
+Requires the suggested arrow package.
 
 ## Functions
 

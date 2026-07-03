@@ -47,7 +47,10 @@ ir_examples_folder() |> ir_find_scans()
 #> [2] "/home/runner/work/_temp/Library/isoreader2/extdata/peak_shape_scan_example.scn" 
 #> [3] "/home/runner/work/_temp/Library/isoreader2/extdata/peak_shape_scan_example2.scn"
 #> [4] "/home/runner/work/_temp/Library/isoreader2/extdata/time_scan_example.scn"       
-if (FALSE) { # \dontrun{
-ir_copy_examples() |> ir_find_continuous_flow()
-} # }
+# copy the bundled examples into a temporary folder and find them
+ir_copy_examples(folder = file.path(tempdir(), "examples")) |>
+  ir_find_continuous_flow()
+#> ✔ [3ms] ir_copy_examples() copied 7 example files to /tmp/Rtmp6Da7GO/examples
+#> [1] "/tmp/Rtmp6Da7GO/examples/continuous_flow_ea_example.dxf"
+#> [2] "/tmp/Rtmp6Da7GO/examples/continuous_flow_gc_example.cf" 
 ```

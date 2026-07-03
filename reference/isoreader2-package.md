@@ -2,11 +2,12 @@
 
 Interface to the raw data and metadata stored in the file formats
 commonly encountered in scientific disciplines that make use of stable
-isotopes. Supports 'Isodat' ('.dxf', '.cf', '.did', '.caf', '.scn'),
-'IonOS' ('.iarc'), 'LyticOS' ('.larc'), 'Callisto' ('.bch'), and
-'Qtegra' ('.imexp') file formats. Provides a consistent data structure
-together with tools to aggregate, convert signal units, filter, and
-visualize the extracted data.
+isotopes. Supports Isodat (.dxf, .cf, .did, .caf, .scn), IonOS (.iarc),
+LyticOS (.larc), Callisto (.bch), and Qtegra (.imexp) file formats.
+Provides a consistent data structure together with tools to aggregate,
+convert signal units, filter, and visualize the extracted data. The
+approach is described in Kopf et al. (2021)
+[doi:10.21105/joss.02878](https://doi.org/10.21105/joss.02878) .
 
 ## Details
 
