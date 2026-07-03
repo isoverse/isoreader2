@@ -7,6 +7,21 @@ test_that("print.ir_aggregator() / knit_print run without error", {
   expect_no_error(suppressMessages(print(ir_start_aggregator("empty"))))
 })
 
+test_that("get_cycle_info() lists each mass only once (not per cycle/type)", {
+  # dual inlet cycles repeat every mass for each cycle and each standard/sample
+  cycles <- tibble(
+    species = "CO2",
+    cycle = rep(1:2, each = 4),
+    type = rep(c("standard", "sample"), each = 2, times = 2),
+    mass = rep(c("44", "45"), times = 4)
+  )
+  info <- get_cycle_info(cycles) |> cli::ansi_strip()
+  expect_match(info, "2 sample/standard cycles for CO2")
+  # each mass appears exactly once (would be four times each without dedup)
+  expect_length(gregexpr("44", info)[[1]], 1L)
+  expect_length(gregexpr("45", info)[[1]], 1L)
+})
+
 test_that("print.ir_isofiles() handles an empty collection", {
   empty <- structure(
     tibble(file_path = character(0), metadata = list()),

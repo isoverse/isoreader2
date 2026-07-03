@@ -152,10 +152,11 @@ get_cycle_info <- function(cycles) {
   cycles |>
     dplyr::summarize(
       .by = "species",
+      # deduplicate: cycles repeat every mass per cycle and per standard/sample
       masses = if (all(is.na(.data$mass))) {
-        format_inline("channels {.field {channel}}")
+        format_inline("channels {.field {unique(channel)}}")
       } else {
-        format_inline("masses {.field {mass}}")
+        format_inline("masses {.field {unique(mass)}}")
       },
       info = format_inline(
         "{col_cyan(max(.data$cycle))} sample/standard cycles for {col_magenta(species[1])} ({masses})"
@@ -245,10 +246,11 @@ print.ir_aggregated_data <- function(x, ...) {
           sprintf(fmt = "{.field %s}") |>
           paste0(dplyr::case_when(
             n_na == nrow(dataset) ~ " ({col_yellow('all NA')})",
-            n_na > 0 ~ sprintf(
-              " ({col_yellow('%s NA')})",
-              n_na |> numbers_to_text()
-            ),
+            n_na > 0 ~
+              sprintf(
+                " ({col_yellow('%s NA')})",
+                n_na |> numbers_to_text()
+              ),
             .default = ""
           ))
         unused_cols <- sprintf(
