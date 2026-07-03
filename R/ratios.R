@@ -96,6 +96,12 @@ ir_calculate_ratios <- function(
     is.null(normalize_ratios) || is.function(normalize_ratios),
     "must be NULL or a function (e.g. mean, median, min, max)"
   )
+  # capture how the user wrote the normalization function (for the info message)
+  normalize_label <- if (!is.null(normalize_ratios)) {
+    deparse1(substitute(normalize_ratios))
+  } else {
+    NULL
+  }
 
   # validate the additive offset factors (each a single finite number)
   add_factors <- list(
@@ -190,8 +196,31 @@ ir_calculate_ratios <- function(
   # so drop it everywhere (consistent with the metadata operations)
   aggregated_data <- drop_not_aggregated_info(aggregated_data)
 
+  # describe the non-default parameters used, for the info message. The additive
+  # offsets only apply to traces/scans (never cycles), so only report them when
+  # such data is present and at least one offset is non-zero.
+  offset_desc <- NULL
+  if (any(present %in% c("traces", "scans"))) {
+    nonzero <- add_factors[!purrr::map_lgl(add_factors, \(x) x == 0)]
+    if (length(nonzero) > 0L) {
+      offset_desc <- purrr::imap_chr(
+        nonzero,
+        \(v, nm) sprintf("%s = %s", nm, format(v))
+      )
+    }
+  }
+
   finish_info(
-    "calculated {numbers_to_text(n_ratios)} ratio{?s} and added {.field ratio_name}/{.field ratio} columns to {.field {present}}",
+    paste0(
+      "calculated {numbers_to_text(n_ratios)}{qty(n_ratios)} ratio{?s}",
+      if (!is.null(offset_desc)) {
+        " with {qty(length(offset_desc))}additive offset{?s} {.field {offset_desc}}"
+      },
+      if (!is.null(normalize_label)) {
+        " normalized by {.fn {normalize_label}}"
+      },
+      " and added {.field ratio_name} and {.field ratio} columns to the {col_blue(present)}"
+    ),
     start = start
   )
 

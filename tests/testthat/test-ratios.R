@@ -241,6 +241,26 @@ test_that("ir_calculate_ratios() is idempotent (overwrites prior columns)", {
   expect_equal(sum(names(twice$traces) == "ratio"), 1L)
 })
 
+test_that("ir_calculate_ratios() reports offsets and normalization in the message", {
+  # default num_add.V = 100 offset on traces is reported; no normalization
+  txt <- testthat::capture_messages(ir_calculate_ratios(agg_traces())) |>
+    paste(collapse = " ") |>
+    cli::ansi_strip()
+  expect_match(txt, "additive offset")
+  expect_match(txt, "num_add.V = 100")
+  expect_false(grepl("normalized by", txt))
+
+  # offsets off (num_add.V = 0) and normalization by median -> only normalization
+  txt2 <- testthat::capture_messages(
+    ir_calculate_ratios(agg_traces(), num_add.V = 0, normalize_ratios = median)
+  ) |>
+    paste(collapse = " ") |>
+    cli::ansi_strip()
+  expect_false(grepl("additive offset", txt2))
+  expect_match(txt2, "normalized by")
+  expect_match(txt2, "median")
+})
+
 test_that("ir_calculate_ratios() honors per-species base mass overrides", {
   res <- ir_calculate_ratios(agg_traces(), N2 = 29, num_add.V = 0) |>
     suppressMessages()
