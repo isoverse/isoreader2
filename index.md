@@ -122,11 +122,11 @@ isofiles <- file_paths |> ir_read_isofiles()
 ```
 
 ``` fansi
-✔ [92ms] ir_extract_isofiles() finished extracting 1 file/archive
+✔ [89ms] ir_extract_isofiles() finished extracting 1 file/archive
 ```
 
 ``` fansi
-✔ [224ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+✔ [209ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 ```
 
 ``` r
@@ -224,7 +224,7 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [5ms] ir_get_data() retrieved 1 records from metadata
+✔ [2ms] ir_get_data() retrieved 1 records from metadata
 ```
 
 ``` fansi
@@ -233,7 +233,7 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [179ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
+✔ [188ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
 cycles to my_export.xlsx
 ```
 
