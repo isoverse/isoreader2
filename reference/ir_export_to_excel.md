@@ -84,13 +84,13 @@ if (requireNamespace("openxlsx", quietly = TRUE)) {
 }
 #> ✔ [1ms] ir_extract_isofiles() is finished, 0 files/archives required
 #> (re-)extraction
-#> ✔ [442ms] ir_read_isofiles() finished reading 2 isotope data files/archives
-#> ✔ [253ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+#> ✔ [449ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+#> ✔ [251ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 #> intensity in mV) from 2 files using the standard aggregator
 #> ✔ [4ms] ir_get_data() retrieved 2 records from metadata
 #> ✔ [9ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 #> (2) and traces (24.5k) via uidx and analysis
-#> ✔ [996ms] ir_export_to_excel() exported 2 rows of metadata and 24.5k rows of
-#> traces to /tmp/RtmpwrjreS/my_export.xlsx
+#> ✔ [1.3s] ir_export_to_excel() exported 2 rows of metadata and 24.5k rows of
+#> traces to /tmp/RtmpSLku8A/my_export.xlsx
 # }
 ```
