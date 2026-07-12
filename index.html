@@ -124,8 +124,17 @@
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p><a href="https://isoreader2.isoverse.org/">isoreader2</a> is not yet on the Comprehensive R Archive Network (CRAN) but you can install the latest version from <a href="https://github.com/isoverse/isoreader2" class="external-link">GitHub</a> as shown below. If you are on Windows, make sure to install the equivalent version of <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link">Rtools</a> for your version of R (e.g. for the latest R 4.5 and 4.6, use <a href="https://cran.r-project.org/bin/windows/Rtools/rtools45/rtools.html" class="external-link">RTools4.5</a> - you can find out which version you have with <code><a href="https://rdrr.io/r/base/numeric_version.html" class="external-link">getRversion()</a></code> from an R console).</p>
+<p>You can install the current CRAN version of <a href="https://isoreader2.isoverse.org/">isoreader2</a> with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># install the isoreader2 package</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"isoreader2"</span><span class="op">)</span></span>
+<span><span class="co"># check/install isoextract</span></span>
+<span><span class="fu">isoreader2</span><span class="fu">::</span><span class="fu"><a href="reference/ir_check_isoextract.html">ir_check_isoextract</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="development-version">Development version<a class="anchor" aria-label="anchor" href="#development-version"></a>
+</h3>
+<p>To use the latest updates, you can install the development version of <a href="https://isoreader2.isoverse.org/">isoreader2</a> from <a href="https://github.com/isoverse/isoreader2" class="external-link">GitHub</a> as shown below. If you are on Windows, make sure to install the equivalent version of <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link">Rtools</a> for your version of R (e.g. for the latest R 4.5 and 4.6, use <a href="https://cran.r-project.org/bin/windows/Rtools/rtools45/rtools.html" class="external-link">RTools4.5</a> - you can find out which version you have with <code><a href="https://rdrr.io/r/base/numeric_version.html" class="external-link">getRversion()</a></code> from an R console).</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># checks that you are set up to build R packages from source</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"pkgbuild"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"pkgbuild"</span><span class="op">)</span></span>
@@ -141,10 +150,11 @@
 <span><span class="co"># check/install isoextract</span></span>
 <span><span class="fu">isoreader2</span><span class="fu">::</span><span class="fu"><a href="reference/ir_check_isoextract.html">ir_check_isoextract</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
+</div>
 <div class="section level2">
 <h2 id="show-me-some-code">Show me some code<a class="anchor" aria-label="anchor" href="#show-me-some-code"></a>
 </h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># load library</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://isoreader2.isoverse.org/">isoreader2</a></span><span class="op">)</span></span>
 <span></span>
@@ -165,7 +175,7 @@
 Plot of continuous flow examples
 </p>
 </div>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># visualize CO2 with ratios and a specific time window</span></span>
 <span><span class="va">dataset</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/ir_calculate_ratios.html">ir_calculate_ratios</a></span><span class="op">(</span>normalize_ratios <span class="op">=</span> <span class="va">median</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -185,7 +195,7 @@ Time slice of continuous flow examples with ratios
 <div class="section level3">
 <h3 id="read-isotope-data-files">Read isotope data files<a class="anchor" aria-label="anchor" href="#read-isotope-data-files"></a>
 </h3>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># load library</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://isoreader2.isoverse.org/">isoreader2</a></span><span class="op">)</span></span>
 <span></span>
@@ -198,11 +208,11 @@ Time slice of continuous flow examples with ratios
 <span></span>
 <span><span class="co"># read the files</span></span>
 <span><span class="va">isofiles</span> <span class="op">&lt;-</span> <span class="va">file_paths</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/ir_read_isofiles.html">ir_read_isofiles</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[89ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> finished extracting 1 file/archive
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[101ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> finished extracting 1 file/archive
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[209ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 1 isotope data file/archive
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[240ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 1 isotope data file/archive
 </code></pre>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># show information about the files</span></span>
 <span><span class="va">isofiles</span></span></code></pre></div>
 <pre class="fansi fansi-message"><code>─────── <span style="font-weight: bold;">1 isofile with 1 analysis - process with ir_aggregate_isofiles()</span> ───────
@@ -214,14 +224,14 @@ Time slice of continuous flow examples with ratios
 <div class="section level3">
 <h3 id="aggregate-the-data">Aggregate the data<a class="anchor" aria-label="anchor" href="#aggregate-the-data"></a>
 </h3>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># aggregate the data from the read files specifying which units to use</span></span>
 <span><span class="co"># (mV, V, nA, A, cps, etc.), conversion via resistor values happens automatically</span></span>
 <span><span class="va">dataset</span> <span class="op">&lt;-</span> <span class="va">isofiles</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles</a></span><span class="op">(</span><span class="st">"V"</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[41ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (1) and <span style="color: #0000BB;">cycles</span> (102,
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[48ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (1) and <span style="color: #0000BB;">cycles</span> (102,
 <span style="color: #00BB00;">intensity</span> in <span style="color: #BB00BB;">V</span>) from 1 file using the <span style="font-weight: bold; font-style: italic;">standard</span> aggregator
 </code></pre>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># show the available data that was aggregated  metadata is all the available</span></span>
 <span><span class="co"># sequence information from the different file types</span></span>
 <span><span class="va">dataset</span></span></code></pre></div>
@@ -241,7 +251,7 @@ Time slice of continuous flow examples with ratios
 <div class="section level3">
 <h3 id="visualize-the-data">Visualize the data<a class="anchor" aria-label="anchor" href="#visualize-the-data"></a>
 </h3>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># filter the data by a metadata field and mass range and plot it</span></span>
 <span><span class="co"># (use ir_plot_continuous_flow() and ir_plot_scans(), respectively)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
@@ -251,7 +261,7 @@ Time slice of continuous flow examples with ratios
 <span>  <span class="fu"><a href="reference/ir_plot_dual_inlet.html">ir_plot_dual_inlet</a></span><span class="op">(</span>mass <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">44</span><span class="op">:</span><span class="fl">48</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="co"># use ggplot2 to modify with custom theming (or any other ggplot elements)</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>strip.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">30</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[3ms]</span> <span style="font-weight: bold;">ir_calculate_ratios()</span> calculated 85 ratios and added <span style="color: #00BB00;">ratio_name</span> and
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[4ms]</span> <span style="font-weight: bold;">ir_calculate_ratios()</span> calculated 85 ratios and added <span style="color: #00BB00;">ratio_name</span> and
 <span style="color: #00BB00;">ratio</span> columns to the <span style="color: #0000BB;">cycles</span>
 </code></pre>
 <div class="figure">
@@ -263,7 +273,7 @@ Plot of dual inlet examples
 <div class="section level3">
 <h3 id="export-the-data">Export the data<a class="anchor" aria-label="anchor" href="#export-the-data"></a>
 </h3>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get the data of interest (here, metadata and dual inlet cycles data)</span></span>
 <span><span class="co"># and export both into one excel file (one sheet per data set)</span></span>
 <span><span class="fu"><a href="reference/ir_export_to_excel.html">ir_export_to_excel</a></span><span class="op">(</span></span>
@@ -273,17 +283,17 @@ Plot of dual inlet examples
 <span><span class="op">)</span></span></code></pre></div>
 <pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[2ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 1 records from <span style="color: #0000BB;">metadata</span>
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[3ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 102 records from the combination of <span style="color: #0000BB;">metadata</span>
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[4ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 102 records from the combination of <span style="color: #0000BB;">metadata</span>
 (1) and <span style="color: #0000BB;">cycles</span> (102) via <span style="color: #00BB00;">uidx</span> and <span style="color: #00BB00;">analysis</span>
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[188ms]</span> <span style="font-weight: bold;">ir_export_to_excel()</span> exported 1 row of <span style="color: #00BB00;">metadata</span> and 102 rows of
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[206ms]</span> <span style="font-weight: bold;">ir_export_to_excel()</span> exported 1 row of <span style="color: #00BB00;">metadata</span> and 102 rows of
 <span style="color: #00BB00;">cycles</span> to <span style="color: #0000BB;">my_export.xlsx</span>
 </code></pre>
 </div>
 <div class="section level3">
 <h3 id="bonus-explore-isofiles-interactively">Bonus: explore isofiles interactively<a class="anchor" aria-label="anchor" href="#bonus-explore-isofiles-interactively"></a>
 </h3>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># you can also use the isoexplorer package to explore isofiles</span></span>
 <span><span class="co"># interactively and generate visualization code from the GUI</span></span>
 <span><span class="co"># (use ie_explore_continuous_flow/dual_inlet/scans)</span></span>
@@ -485,6 +495,7 @@ Click on the individual functions to jump straight to their documenation.
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
+<li><a href="https://cloud.r-project.org/package=isoreader2" class="external-link">View on CRAN</a></li>
 <li><a href="https://github.com/isoverse/isoreader2/" class="external-link">Browse source code</a></li>
 <li><a href="https://github.com/isoverse/isoreader2/issues" class="external-link">Report a bug</a></li>
 </ul>
@@ -493,7 +504,8 @@ Click on the individual functions to jump straight to their documenation.
 <div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
-<li>AGPL (&gt;= 3)</li>
+<li><a href="LICENSE.html">Full license</a></li>
+<li><small>AGPL (&gt;= 3)</small></li>
 </ul>
 </div>
 
@@ -523,7 +535,7 @@ Click on the individual functions to jump straight to their documenation.
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

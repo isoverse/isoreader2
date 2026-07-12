@@ -30,12 +30,25 @@ file formats:
 
 ## Installation
 
-[isoreader2](https://isoreader2.isoverse.org/) is not yet on the
-Comprehensive R Archive Network (CRAN) but you can install the latest
-version from [GitHub](https://github.com/isoverse/isoreader2) as shown
-below. If you are on Windows, make sure to install the equivalent
-version of [Rtools](https://cran.r-project.org/bin/windows/Rtools/) for
-your version of R (e.g. for the latest R 4.5 and 4.6, use
+You can install the current CRAN version of
+[isoreader2](https://isoreader2.isoverse.org/) with:
+
+``` r
+
+# install the isoreader2 package
+install.packages("isoreader2")
+# check/install isoextract
+isoreader2::ir_check_isoextract()
+```
+
+### Development version
+
+To use the latest updates, you can install the development version of
+[isoreader2](https://isoreader2.isoverse.org/) from
+[GitHub](https://github.com/isoverse/isoreader2) as shown below. If you
+are on Windows, make sure to install the equivalent version of
+[Rtools](https://cran.r-project.org/bin/windows/Rtools/) for your
+version of R (e.g. for the latest R 4.5 and 4.6, use
 [RTools4.5](https://cran.r-project.org/bin/windows/Rtools/rtools45/rtools.html) -
 you can find out which version you have with
 [`getRversion()`](https://rdrr.io/r/base/numeric_version.html) from an R
@@ -122,11 +135,11 @@ isofiles <- file_paths |> ir_read_isofiles()
 ```
 
 ``` fansi
-✔ [89ms] ir_extract_isofiles() finished extracting 1 file/archive
+✔ [101ms] ir_extract_isofiles() finished extracting 1 file/archive
 ```
 
 ``` fansi
-✔ [209ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+✔ [240ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 ```
 
 ``` r
@@ -154,7 +167,7 @@ dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
 ``` fansi
-✔ [41ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+✔ [48ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
 intensity in V) from 1 file using the standard aggregator
 ```
 
@@ -201,7 +214,7 @@ dataset |>
 ```
 
 ``` fansi
-✔ [3ms] ir_calculate_ratios() calculated 85 ratios and added ratio_name and
+✔ [4ms] ir_calculate_ratios() calculated 85 ratios and added ratio_name and
 ratio columns to the cycles
 ```
 
@@ -228,12 +241,12 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [3ms] ir_get_data() retrieved 102 records from the combination of metadata
+✔ [4ms] ir_get_data() retrieved 102 records from the combination of metadata
 (1) and cycles (102) via uidx and analysis
 ```
 
 ``` fansi
-✔ [188ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
+✔ [206ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
 cycles to my_export.xlsx
 ```
 
