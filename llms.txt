@@ -135,11 +135,11 @@ isofiles <- file_paths |> ir_read_isofiles()
 ```
 
 ``` fansi
-✔ [101ms] ir_extract_isofiles() finished extracting 1 file/archive
+✔ [97ms] ir_extract_isofiles() finished extracting 1 file/archive
 ```
 
 ``` fansi
-✔ [240ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+✔ [199ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 ```
 
 ``` r
@@ -167,7 +167,7 @@ dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
 ``` fansi
-✔ [48ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+✔ [40ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
 intensity in V) from 1 file using the standard aggregator
 ```
 
@@ -214,7 +214,7 @@ dataset |>
 ```
 
 ``` fansi
-✔ [4ms] ir_calculate_ratios() calculated 85 ratios and added ratio_name and
+✔ [3ms] ir_calculate_ratios() calculated 85 ratios and added ratio_name and
 ratio columns to the cycles
 ```
 
@@ -246,7 +246,7 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [206ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
+✔ [265ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
 cycles to my_export.xlsx
 ```
 
@@ -258,7 +258,7 @@ cycles to my_export.xlsx
 # interactively and generate visualization code from the GUI
 # (use ie_explore_continuous_flow/dual_inlet/scans)
 if (!requireNamespace("isoexplorer", quietly = TRUE)) {
-  pak::pak("isoverse/isoexplorer")
+  install.packages("isoexplorer")
 }
 example_files <- ir_copy_examples() |> ir_find_isofiles() |> ir_read_isofiles()
 example_files |> isoexplorer::ie_explore_continuous_flow()
