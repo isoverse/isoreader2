@@ -216,7 +216,7 @@ unlink("examples", recursive = TRUE, force = TRUE)
 # interactively and generate visualization code from the GUI
 # (use ie_explore_continuous_flow/dual_inlet/scans)
 if (!requireNamespace("isoexplorer", quietly = TRUE)) {
-  pak::pak("isoverse/isoexplorer")
+  install.packages("isoexplorer")
 }
 example_files <- ir_copy_examples() |> ir_find_isofiles() |> ir_read_isofiles()
 example_files |> isoexplorer::ie_explore_continuous_flow()

@@ -153,23 +153,19 @@ file_paths <- data_folder |> ir_find_dual_inlet()
 isofiles <- file_paths |> ir_read_isofiles()
 ```
 
-<PRE class="fansi fansi-message"><CODE>&gt; <span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[115ms]</span> <span style='font-weight: bold;'>ir_extract_isofiles()</span> finished extracting 1 file/archive
-</CODE></PRE>
+    > ✔ [122ms] ir_extract_isofiles() finished extracting 1 file/archive
 
-<PRE class="fansi fansi-message"><CODE>&gt; <span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[183ms]</span> <span style='font-weight: bold;'>ir_read_isofiles()</span> finished reading 1 isotope data file/archive
-</CODE></PRE>
+    > ✔ [163ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 
 ``` r
 # show information about the files
 isofiles
 ```
 
-<PRE class="fansi fansi-message"><CODE>&gt; ─────── <span style='font-weight: bold;'>1 isofile with 1 analysis - process with ir_aggregate_isofiles()</span> ───────
-</CODE></PRE>
+    > ─────── 1 isofile with 1 analysis - process with ir_aggregate_isofiles() ───────
 
-<PRE class="fansi fansi-message"><CODE>&gt; 1. <span style='color: #0000BB;'>caf_dual_inlet_example.caf</span>: with <span style='color: #00BBBB;'>8</span> sample/standard cycles for <span style='color: #BB00BB;'>CO2clump</span>
-&gt; (masses <span style='color: #00BB00;'>44</span>, <span style='color: #00BB00;'>45</span>, <span style='color: #00BB00;'>46</span>, <span style='color: #00BB00;'>47</span>, <span style='color: #00BB00;'>48</span>, and <span style='color: #00BB00;'>49</span>); <span style='color: #00BBBB;'>21</span> metadata columns
-</CODE></PRE>
+    > 1. caf_dual_inlet_example.caf: with 8 sample/standard cycles for CO2clump
+    > (masses 44, 45, 46, 47, 48, and 49); 21 metadata columns
 
 ### Aggregate the data
 
@@ -179,9 +175,8 @@ isofiles
 dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
-<PRE class="fansi fansi-message"><CODE>&gt; <span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[47ms]</span> <span style='font-weight: bold;'>ir_aggregate_isofiles()</span> aggregated <span style='color: #0000BB;'>metadata</span> (1) and <span style='color: #0000BB;'>cycles</span> (102,
-&gt; <span style='color: #00BB00;'>intensity</span> in <span style='color: #BB00BB;'>V</span>) from 1 file using the <span style='font-weight: bold; font-style: italic;'>standard</span> aggregator
-</CODE></PRE>
+    > ✔ [39ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+    > intensity in V) from 1 file using the standard aggregator
 
 ``` r
 # show the available data that was aggregated  metadata is all the available
@@ -189,21 +184,17 @@ dataset <- isofiles |> ir_aggregate_isofiles("V")
 dataset
 ```
 
-<PRE class="fansi fansi-message"><CODE>&gt; ─ <span style='font-weight: bold;'>aggregated data from 1 isofiles with 1 analysis - retrieve with ir_get_data(</span> ─
-</CODE></PRE>
+    > ─ aggregated data from 1 isofiles with 1 analysis - retrieve with ir_get_data( ─
 
-<PRE class="fansi fansi-message"><CODE>&gt; → <span style='color: #0000BB;'>metadata</span> (1): <span style='color: #00BB00;'>uidx</span>, <span style='color: #00BB00;'>file_path</span>, <span style='color: #00BB00;'>file_name</span>, <span style='color: #00BB00;'>analysis</span>, <span style='color: #00BB00;'>timestamp</span>, <span style='color: #00BB00;'>type</span>,
-&gt; <span style='color: #00BB00;'>h3_factor</span> (<span style='color: #BBBB00;'>all NA</span>), <span style='color: #00BB00;'>Line</span>, <span style='color: #00BB00;'>Peak Center</span>, <span style='color: #00BB00;'>Pressadjust</span>, <span style='color: #00BB00;'>Background</span>, <span style='color: #00BB00;'>Reference</span>
-&gt; <span style='color: #00BB00;'>Refill</span>, <span style='color: #00BB00;'>Weight [mg]</span>, <span style='color: #00BB00;'>Sample</span>, <span style='color: #00BB00;'>Identifier 1</span>, <span style='color: #00BB00;'>Identifier 2</span>, <span style='color: #00BB00;'>Analysis</span>, <span style='color: #00BB00;'>Comment</span>,
-&gt; <span style='color: #00BB00;'>Preparation</span>, <span style='color: #00BB00;'>Pre Script</span>, <span style='color: #00BB00;'>Post Script</span>, <span style='color: #00BB00;'>Method</span>
-</CODE></PRE>
+    > → metadata (1): uidx, file_path, file_name, analysis, timestamp, type,
+    > h3_factor (all NA), Line, Peak Center, Pressadjust, Background, Reference
+    > Refill, Weight [mg], Sample, Identifier 1, Identifier 2, Analysis, Comment,
+    > Preparation, Pre Script, Post Script, Method
 
-<PRE class="fansi fansi-message"><CODE>&gt; → <span style='color: #0000BB;'>cycles</span> (102): <span style='color: #00BB00;'>uidx</span>, <span style='color: #00BB00;'>analysis</span>, <span style='color: #00BB00;'>species</span>, <span style='color: #00BB00;'>cycle</span>, <span style='color: #00BB00;'>type</span>, <span style='color: #00BB00;'>mass</span>, <span style='color: #00BB00;'>intensity.V</span>; (<span style='font-style: italic;'>not</span>
-&gt; <span style='font-style: italic;'>aggregated</span>: <span style='color: #BBBB00; font-style: italic;'>channel</span>)
-</CODE></PRE>
+    > → cycles (102): uidx, analysis, species, cycle, type, mass, intensity.V; (not
+    > aggregated: channel)
 
-<PRE class="fansi fansi-message"><CODE>&gt; → <span style='color: #0000BB;'>problems</span>: has <span style='color: #00BB00;'>no issues</span>
-</CODE></PRE>
+    > → problems: has no issues
 
 ### Visualize the data
 
@@ -219,9 +210,8 @@ dataset |>
   theme(strip.text = element_text(size = 30))
 ```
 
-<PRE class="fansi fansi-message"><CODE>&gt; <span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[3ms]</span> <span style='font-weight: bold;'>ir_calculate_ratios()</span> calculated 85 ratios and added <span style='color: #00BB00;'>ratio_name</span> and
-&gt; <span style='color: #00BB00;'>ratio</span> columns to the <span style='color: #0000BB;'>cycles</span>
-</CODE></PRE>
+    > ✔ [3ms] ir_calculate_ratios() calculated 85 ratios and added ratio_name and
+    > ratio columns to the cycles
 
 <div class="figure">
 
@@ -245,16 +235,13 @@ ir_export_to_excel(
 )
 ```
 
-<PRE class="fansi fansi-message"><CODE>&gt; <span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[2ms]</span> <span style='font-weight: bold;'>ir_get_data()</span> retrieved 1 records from <span style='color: #0000BB;'>metadata</span>
-</CODE></PRE>
+    > ✔ [2ms] ir_get_data() retrieved 1 records from metadata
 
-<PRE class="fansi fansi-message"><CODE>&gt; <span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[3ms]</span> <span style='font-weight: bold;'>ir_get_data()</span> retrieved 102 records from the combination of <span style='color: #0000BB;'>metadata</span>
-&gt; (1) and <span style='color: #0000BB;'>cycles</span> (102) via <span style='color: #00BB00;'>uidx</span> and <span style='color: #00BB00;'>analysis</span>
-</CODE></PRE>
+    > ✔ [3ms] ir_get_data() retrieved 102 records from the combination of metadata
+    > (1) and cycles (102) via uidx and analysis
 
-<PRE class="fansi fansi-message"><CODE>&gt; <span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[407ms]</span> <span style='font-weight: bold;'>ir_export_to_excel()</span> exported 1 row of <span style='color: #00BB00;'>metadata</span> and 102 rows of
-&gt; <span style='color: #00BB00;'>cycles</span> to <span style='color: #0000BB;'>my_export.xlsx</span>
-</CODE></PRE>
+    > ✔ [206ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
+    > cycles to 'my_export.xlsx'
 
 ### Bonus: explore isofiles interactively
 
@@ -263,7 +250,7 @@ ir_export_to_excel(
 # interactively and generate visualization code from the GUI
 # (use ie_explore_continuous_flow/dual_inlet/scans)
 if (!requireNamespace("isoexplorer", quietly = TRUE)) {
-  pak::pak("isoverse/isoexplorer")
+  install.packages("isoexplorer")
 }
 example_files <- ir_copy_examples() |> ir_find_isofiles() |> ir_read_isofiles()
 example_files |> isoexplorer::ie_explore_continuous_flow()
