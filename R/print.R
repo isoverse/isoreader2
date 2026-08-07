@@ -140,7 +140,7 @@ get_trace_info <- function(traces) {
         "{col_cyan(numbers_to_text(max(n)))} time points for {col_magenta(species[1])} ({masses})"
       )
     ) |>
-    dplyr::pull(.data$info) |>
+    dplyr::pull("info") |>
     paste(collapse = "; ")
 }
 
@@ -162,7 +162,7 @@ get_cycle_info <- function(cycles) {
         "{col_cyan(max(.data$cycle))} sample/standard cycles for {col_magenta(species[1])} ({masses})"
       )
     ) |>
-    dplyr::pull(.data$info) |>
+    dplyr::pull("info") |>
     paste(collapse = "; ")
 }
 
@@ -187,7 +187,7 @@ get_scans_info <- function(scans, metadata = NULL) {
         "{col_cyan(numbers_to_text(max(n)))} {metadata$scan_type} steps for {col_magenta(species[1])} ({masses})"
       )
     ) |>
-    dplyr::pull(.data$info) |>
+    dplyr::pull("info") |>
     paste(collapse = "; ")
 }
 
@@ -325,7 +325,7 @@ print.ir_aggregator <- function(x, ...) {
           paste0("\u00a0", .data$label)
         ))
       ) |>
-      dplyr::pull(.data$label) |>
+      dplyr::pull("label") |>
       unlist() |>
       cli_bullets_raw() |>
       cli()

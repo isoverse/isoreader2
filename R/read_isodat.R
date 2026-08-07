@@ -145,7 +145,7 @@ parse_isodat_cycles <- function(json_path, root_ptr) {
   pre_row <-
     sprintf("%s/CIntegrationUnitTransferPart", base) |>
     query_json(json_path = json_path, list_as_tibble = TRUE) |>
-    dplyr::pull(.data$CIntensityData) |>
+    dplyr::pull("CIntensityData") |>
     purrr::map(~ .x$values)
 
   # safety check
@@ -173,7 +173,7 @@ parse_isodat_cycles <- function(json_path, root_ptr) {
       std_idx
     ) |>
     query_json(json_path = json_path, list_as_tibble = TRUE) |>
-    dplyr::pull(.data$CIntensityData) |>
+    dplyr::pull("CIntensityData") |>
     purrr::map(~ .x$values)
   sample_rows <-
     sprintf(
@@ -182,7 +182,7 @@ parse_isodat_cycles <- function(json_path, root_ptr) {
       sample_idx
     ) |>
     query_json(json_path = json_path, list_as_tibble = TRUE) |>
-    dplyr::pull(.data$CIntensityData) |>
+    dplyr::pull("CIntensityData") |>
     purrr::map(~ .x$values)
 
   # safety check

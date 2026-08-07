@@ -373,7 +373,7 @@ format_cnds <- function(
           }
         )
     ) |>
-    dplyr::pull(.data$message_w_type) |>
+    dplyr::pull("message_w_type") |>
     unlist()
 
   # format with indentation

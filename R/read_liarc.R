@@ -303,7 +303,7 @@ read_liarc_traces <- function(json_path, global_species, method_species) {
           dplyr::bind_rows()
       })
   ) |>
-    tidyr::unnest(.data$traces)
+    tidyr::unnest("traces")
 
   # safety check
   if (nrow(traces) == 0L) {

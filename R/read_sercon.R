@@ -150,7 +150,7 @@ read_bch_traces <- function(json_path) {
         )
     )
   ) |>
-    tidyr::unnest(.data$traces)
+    tidyr::unnest("traces")
 }
 
 # Assigns species to traces via timing windows (per-method from metadata/timings),

@@ -74,7 +74,7 @@ ir_read_isofiles <- function(
           }
         )
       ) |>
-      tidyr::unnest(.data$meta) |>
+      tidyr::unnest("meta") |>
       dplyr::left_join(.file_type_specs, by = "file_type") |>
       dplyr::mutate(
         version_ok = numeric_version(.data$isoextract_version) >=

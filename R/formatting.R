@@ -95,5 +95,5 @@ secs_to_text <- function(secs) {
         paste(.data$label[!is.na(.data$label)], collapse = " ")
       )
     ) |>
-    dplyr::pull(.data$out)
+    dplyr::pull("out")
 }
