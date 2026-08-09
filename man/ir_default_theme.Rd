@@ -14,7 +14,7 @@ a \code{ggplot2} theme object
 }
 \description{
 This theme is always applied by the plotting functions
-(\code{\link[=ir_plot_continuous_flow]{ir_plot_continuous_flow()}}, \code{\link[=ir_plot_dual_inlet]{ir_plot_dual_inlet()}}, \code{\link[=ir_plot_scans]{ir_plot_scans()}}).
+(\code{\link[=ir_plot_traces]{ir_plot_traces()}}, \code{\link[=ir_plot_dual_inlet]{ir_plot_dual_inlet()}}, \code{\link[=ir_plot_scans]{ir_plot_scans()}}).
 To customize a plot, add a \code{\link[ggplot2:theme]{ggplot2::theme()}} on top of the returned plot,
-e.g. \code{ir_plot_continuous_flow(...) + ggplot2::theme(text = element_text(size = 20))}.
+e.g. \code{ir_plot_traces(...) + ggplot2::theme(text = element_text(size = 20))}.
 }

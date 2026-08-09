@@ -280,12 +280,12 @@ dataset |>
 
 isoreader2 provides quick-look plotting functions for each measurement type. They operate on aggregated data and return regular `ggplot` objects that you can further customize. To add your own ggplot2 layers (e.g. `+ labs(...)` or `+ theme(...)`), attach ggplot2 with `library(ggplot2)` first.
 
-## `ir_plot_continuous_flow()`
+## `ir_plot_traces()`
 
 ```{r}
 #| fig.width: 8
 #| fig.height: 5
-dataset |> ir_plot_continuous_flow(facet = file_name)
+dataset |> ir_plot_traces(facet = file_name)
 ```
 
 Narrow the plot down with `species`/`mass` and zoom in with a time window given
@@ -295,7 +295,7 @@ either in seconds (`time_window.s`) or minutes (`time_window.min`):
 #| fig.width: 8
 #| fig.height: 5
 dataset |>
-  ir_plot_continuous_flow(
+  ir_plot_traces(
     species = "CO2",
     facet = file_name,
     time_window.min = c(4.5, 8.5)
@@ -311,7 +311,7 @@ Add calculated `ratio`s to the plot. When more than one data type is present
 #| fig.height: 6
 dataset |>
   ir_calculate_ratios(normalize_ratios = median) |>
-  ir_plot_continuous_flow(
+  ir_plot_traces(
     species = "CO2",
     ratio = "45/44",
     facet = file_name,
@@ -330,7 +330,7 @@ names. Here `-"46"` drops mass 46:
 #| fig.height: 6
 dataset |>
   ir_calculate_ratios() |>
-  ir_plot_continuous_flow(
+  ir_plot_traces(
     species = "CO2",
     mass = -"46",
     facet = file_name,
@@ -346,21 +346,21 @@ Both `mass` and `ratio` arguments default to `everything()` and take `c()` for n
 with_ratios <- dataset |> ir_calculate_ratios()
 
 # all masses and all available ratios (the default)
-with_ratios |> ir_plot_continuous_flow()
+with_ratios |> ir_plot_traces()
 # only the ratios, no intensity traces
-with_ratios |> ir_plot_continuous_flow(mass = c())
+with_ratios |> ir_plot_traces(mass = c())
 # only the intensity traces, no ratios
-with_ratios |> ir_plot_continuous_flow(ratio = c())
+with_ratios |> ir_plot_traces(ratio = c())
 # a specific set, as names or (via as.character) as numbers
-dataset |> ir_plot_continuous_flow(mass = c("44", "45"))
-dataset |> ir_plot_continuous_flow(mass = 44:46)
+dataset |> ir_plot_traces(mass = c("44", "45"))
+dataset |> ir_plot_traces(mass = 44:46)
 # everything except one
-ir_plot_continuous_flow(dataset, mass = -"30")
+ir_plot_traces(dataset, mass = -"30")
 # pattern matching helpers
-dataset |> ir_plot_continuous_flow(mass = starts_with("4"))
-with_ratios |> ir_plot_continuous_flow(mass = c(), ratio = matches("/44"))
+dataset |> ir_plot_traces(mass = starts_with("4"))
+with_ratios |> ir_plot_traces(mass = c(), ratio = matches("/44"))
 # tolerate masses/ratios that may not be in the data with any_of (a plain c() would error)
-dataset |> ir_plot_continuous_flow(mass = any_of(c("44", "47")))
+dataset |> ir_plot_traces(mass = any_of(c("44", "47")))
 ```
 
 ### bonus: ggplot modifications
@@ -375,7 +375,7 @@ the aesthetics with arguments like `color`, `scientific`, `linetype`, or
 #| fig.height: 5
 library(ggplot2)
 dataset |>
-  ir_plot_continuous_flow(
+  ir_plot_traces(
     species = "N2",
     facet = file_name,
     scientific = TRUE

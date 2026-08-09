@@ -91,29 +91,27 @@ dataset <-
   ir_aggregate_isofiles("mV")
 
 # visualize data for each file
-dataset |> ir_plot_continuous_flow(facet = file_name)
+dataset |> ir_plot_traces(facet = file_name)
 ```
 
-<div class="figure">
-<img src="man/figures/README-continuous_flow_example-1.png" alt="Plot of continuous flow examples" width="100%" />
-<p class="caption">Plot of continuous flow examples</p>
-</div>
+<PRE class="fansi fansi-error"><CODE><span style='color: #BBBB00; font-weight: bold;'>Error</span><span style='font-weight: bold;'> in `ir_plot_traces()`:</span>
+<span style='color: #BBBB00;'>!</span> could not find function &quot;ir_plot_traces&quot;
+</CODE></PRE>
 
 
 ``` r
 # visualize CO2 with ratios and a specific time window
 dataset |>
   ir_calculate_ratios(normalize_ratios = median) |>
-  ir_plot_continuous_flow(
+  ir_plot_traces(
     species = "CO2",
     time_window.min = c(4.5, 8.5)
   )
 ```
 
-<div class="figure">
-<img src="man/figures/README-continuous_flow_example_w_ratios-1.png" alt="Time slice of continuous flow examples with ratios" width="100%" />
-<p class="caption">Time slice of continuous flow examples with ratios</p>
-</div>
+<PRE class="fansi fansi-error"><CODE><span style='color: #BBBB00; font-weight: bold;'>Error</span><span style='font-weight: bold;'> in `ir_plot_traces()`:</span>
+<span style='color: #BBBB00;'>!</span> could not find function &quot;ir_plot_traces&quot;
+</CODE></PRE>
 
 ## Show me more details
 
@@ -137,8 +135,8 @@ file_paths <- data_folder |> ir_find_dual_inlet()
 isofiles <- file_paths |> ir_read_isofiles()
 ```
 
-<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[94ms]</span> <span style='font-weight: bold;'>ir_extract_isofiles()</span> finished extracting 1 file/archive
-</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[188ms]</span> <span style='font-weight: bold;'>ir_read_isofiles()</span> finished reading 1 isotope data file/archive
+<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[83ms]</span> <span style='font-weight: bold;'>ir_extract_isofiles()</span> finished extracting 1 file/archive
+</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[191ms]</span> <span style='font-weight: bold;'>ir_read_isofiles()</span> finished reading 1 isotope data file/archive
 </CODE></PRE>
 
 ``` r
@@ -160,7 +158,7 @@ isofiles
 dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
-<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[55ms]</span> <span style='font-weight: bold;'>ir_aggregate_isofiles()</span> aggregated <span style='color: #0000BB;'>metadata</span> (1) and <span style='color: #0000BB;'>cycles</span> (102,
+<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[37ms]</span> <span style='font-weight: bold;'>ir_aggregate_isofiles()</span> aggregated <span style='color: #0000BB;'>metadata</span> (1) and <span style='color: #0000BB;'>cycles</span> (102,
 <span style='color: #00BB00;'>intensity</span> in <span style='color: #BB00BB;'>V</span>) from 1 file using the <span style='font-weight: bold; font-style: italic;'>standard</span> aggregator
 </CODE></PRE>
 
@@ -185,7 +183,7 @@ dataset
 
 ``` r
 # filter the data by a metadata field and mass range and plot it
-# (use ir_plot_continuous_flow() and ir_plot_scans(), respectively)
+# (use ir_plot_traces() and ir_plot_scans(), respectively)
 library(ggplot2)
 dataset |>
   ir_filter_metadata(file_name == "caf_dual_inlet_example") |>
@@ -218,7 +216,7 @@ ir_export_to_excel(
 <PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[2ms]</span> <span style='font-weight: bold;'>ir_get_data()</span> retrieved 1 records from <span style='color: #0000BB;'>metadata</span>
 </CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[3ms]</span> <span style='font-weight: bold;'>ir_get_data()</span> retrieved 102 records from the combination of <span style='color: #0000BB;'>metadata</span>
 (1) and <span style='color: #0000BB;'>cycles</span> (102) via <span style='color: #00BB00;'>uidx</span> and <span style='color: #00BB00;'>analysis</span>
-</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[407ms]</span> <span style='font-weight: bold;'>ir_export_to_excel()</span> exported 1 row of <span style='color: #00BB00;'>metadata</span> and 102 rows of
+</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[208ms]</span> <span style='font-weight: bold;'>ir_export_to_excel()</span> exported 1 row of <span style='color: #00BB00;'>metadata</span> and 102 rows of
 <span style='color: #00BB00;'>cycles</span> to <span style='color: #0000BB;'>my_export.xlsx</span>
 </CODE></PRE>
 
@@ -1045,7 +1043,7 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
     <line class="st1" x1="384.1" y1="591.22" x2="323.19" y2="591.22"/>
     <polygon class="st13" points="326.1 581.25 308.83 591.22 326.1 601.19 326.1 581.25"/>
   </g>
-  <a xlink:href="https://isoreader2.isoverse.org/reference/ir_plot_continuous_flow.html">
+  <a xlink:href="https://isoreader2.isoverse.org/reference/ir_plot_traces.html">
     <g>
       <g>
         <path class="st23" d="M72.65,473.11h215.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H72.65c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
@@ -1060,7 +1058,7 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                   <g class="st19">
                     <g class="st19">
                       <g class="st19">
-                        <text class="st16" transform="translate(111.85 498.6)"><tspan x="0" y="0">ir_plot_continuous_flow</tspan></text>
+                        <text class="st16" transform="translate(111.85 498.6)"><tspan x="0" y="0">ir_plot_traces</tspan></text>
                       </g>
                     </g>
                   </g>

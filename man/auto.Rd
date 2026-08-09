@@ -12,7 +12,7 @@ an opaque sentinel of class \code{ir_auto}
 \description{
 A sentinel that requests automatic behavior for an argument (currently the
 \code{data_type_as_facet} argument of the plotting functions
-\code{\link[=ir_plot_continuous_flow]{ir_plot_continuous_flow()}}, \code{\link[=ir_plot_dual_inlet]{ir_plot_dual_inlet()}}, \code{\link[=ir_plot_scans]{ir_plot_scans()}}). It is
+\code{\link[=ir_plot_traces]{ir_plot_traces()}}, \code{\link[=ir_plot_dual_inlet]{ir_plot_dual_inlet()}}, \code{\link[=ir_plot_scans]{ir_plot_scans()}}). It is
 the default for those arguments; pass \code{TRUE}/\code{FALSE} to override the automatic
 choice.
 }

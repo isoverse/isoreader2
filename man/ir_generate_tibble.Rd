@@ -61,7 +61,7 @@ a tibble with the prepared data plus the \code{trace}, \code{color}, \code{data_
 \code{value} columns described above.
 }
 \description{
-These helpers build the exact flat tibble that \code{\link[=ir_plot_continuous_flow]{ir_plot_continuous_flow()}}
+These helpers build the exact flat tibble that \code{\link[=ir_plot_traces]{ir_plot_traces()}}
 (\code{ir_generate_traces_tibble()}), \code{\link[=ir_plot_dual_inlet]{ir_plot_dual_inlet()}}
 (\code{ir_generate_cycles_tibble()}), and \code{\link[=ir_plot_scans]{ir_plot_scans()}}
 (\code{ir_generate_scans_tibble()}) plot, so it can be inspected or used

@@ -74,7 +74,7 @@ reference:
   contents:
   - ir_default_theme
   - ir_plot_scans
-  - ir_plot_continuous_flow
+  - ir_plot_traces
   - ir_plot_dual_inlet
   - ir_generate_tibble
   - auto

@@ -45,17 +45,17 @@ test_that("plotting functions reject raw isofiles and invalid input", {
     tibble(file_path = "a.dxf", metadata = list(tibble())),
     class = c("ir_isofiles", "tbl_df", "tbl", "data.frame")
   )
-  ir_plot_continuous_flow(iso) |> expect_error("aggregate")
+  ir_plot_traces(iso) |> expect_error("aggregate")
   ir_plot_dual_inlet(iso) |> expect_error("aggregate")
   ir_plot_scans(iso) |> expect_error("aggregate")
 
-  ir_plot_continuous_flow(42) |> expect_error("must be a data frame")
+  ir_plot_traces(42) |> expect_error("must be a data frame")
   ir_plot_dual_inlet(42) |> expect_error("must be a data frame")
   ir_plot_scans(42) |> expect_error("must be a data frame")
 })
 
 test_that("plotting functions error on missing required columns", {
-  ir_plot_continuous_flow(cf_data() |> dplyr::select(-"time.s")) |>
+  ir_plot_traces(cf_data() |> dplyr::select(-"time.s")) |>
     expect_error("missing required")
   ir_plot_dual_inlet(di_data() |> dplyr::select(-"cycle")) |>
     expect_error("missing required")
@@ -81,19 +81,19 @@ test_that("plotting functions filter by species and mass", {
   }
 
   # species filter
-  expect_equal(species_in(ir_plot_continuous_flow(d)), c("CO2", "N2"))
-  expect_equal(species_in(ir_plot_continuous_flow(d, species = "CO2")), "CO2")
+  expect_equal(species_in(ir_plot_traces(d)), c("CO2", "N2"))
+  expect_equal(species_in(ir_plot_traces(d, species = "CO2")), "CO2")
   # mass filter (numeric value matches the character mass column)
-  expect_equal(mass_in(ir_plot_continuous_flow(d, mass = 44)), "44")
+  expect_equal(mass_in(ir_plot_traces(d, mass = 44)), "44")
   # combined
-  p <- ir_plot_continuous_flow(d, species = "N2", mass = c(28, 29))
+  p <- ir_plot_traces(d, species = "N2", mass = c(28, 29))
   expect_equal(species_in(p), "N2")
   expect_equal(mass_in(p), c("28", "29"))
 
   # informative errors when a selection leaves no data
-  ir_plot_continuous_flow(d, species = "Ar") |>
+  ir_plot_traces(d, species = "Ar") |>
     expect_error("no data left.*species")
-  ir_plot_continuous_flow(d, mass = 99) |>
+  ir_plot_traces(d, mass = 99) |>
     expect_error("not a valid mass selection")
 
   # the same parameters work for scans and dual inlet
@@ -108,28 +108,45 @@ test_that("plotting functions filter by species and mass", {
   expect_equal(mass_in(ir_plot_dual_inlet(di, mass = 28)), "28")
 })
 
-test_that("ir_plot_continuous_flow() builds a ggplot", {
-  p <- ir_plot_continuous_flow(cf_data())
+test_that("ir_plot_traces() builds a ggplot", {
+  p <- ir_plot_traces(cf_data())
   expect_s3_class(p, "ggplot")
   expect_no_error(ggplot2::ggplot_build(p))
 
   # formula facet -> facet_grid; plain expression -> facet_wrap; NULL -> none
   expect_s3_class(
-    ir_plot_continuous_flow(cf_data(), facet = species ~ mass)$facet,
+    ir_plot_traces(cf_data(), facet = species ~ mass)$facet,
     "FacetGrid"
   )
   expect_s3_class(
-    ir_plot_continuous_flow(cf_data(), facet = file_name)$facet,
+    ir_plot_traces(cf_data(), facet = file_name)$facet,
     "FacetWrap"
   )
   # default facet is NULL (no faceting for single-data-type data)
-  expect_s3_class(ir_plot_continuous_flow(cf_data())$facet, "FacetNull")
+  expect_s3_class(ir_plot_traces(cf_data())$facet, "FacetNull")
 
   # nrow/ncol warn when used with a formula facet
   expect_warning(
-    ir_plot_continuous_flow(cf_data(), facet = species ~ mass, nrow = 2),
+    ir_plot_traces(cf_data(), facet = species ~ mass, nrow = 2),
     "only apply"
   )
+})
+
+test_that("ir_plot_continuous_flow() is a deprecated alias for ir_plot_traces()", {
+  lifecycle::expect_deprecated(
+    ir_plot_continuous_flow(cf_data()),
+    "ir_plot_traces"
+  )
+  # forwards all arguments (incl. NSE ones) and gives the same plot
+  withr::local_options(lifecycle_verbosity = "quiet")
+  old <- ir_plot_continuous_flow(cf_data(), species = "CO2", facet = file_name)
+  new <- ir_plot_traces(cf_data(), species = "CO2", facet = file_name)
+  expect_equal(
+    ggplot2::ggplot_build(old)$data,
+    ggplot2::ggplot_build(new)$data
+  )
+  # the NSE `facet` argument made it through the `...`
+  expect_s3_class(old$facet, "FacetWrap")
 })
 
 test_that("ir_plot_dual_inlet() builds a ggplot", {
@@ -176,22 +193,22 @@ test_that("windows without data points of their own are allowed", {
 
   # a window that falls *between* two data points still plots: the bracketing
   # points on either side are kept so the line interpolates across the window
-  p <- ir_plot_continuous_flow(cf, time_window.s = c(12, 18)) |>
+  p <- ir_plot_traces(cf, time_window.s = c(12, 18)) |>
     suppressMessages()
   expect_no_error(ggplot2::ggplot_build(p))
   expect_equal(sort(p$data$time.s), c(10, 20))
   expect_equal(p$coordinates$limits$x, c(12, 18))
 
   # a window beyond the data range keeps the nearest bracketing point, no error
-  p_past <- ir_plot_continuous_flow(cf, time_window.s = c(100, 200)) |>
+  p_past <- ir_plot_traces(cf, time_window.s = c(100, 200)) |>
     suppressMessages()
   expect_no_error(ggplot2::ggplot_build(p_past))
   expect_equal(p_past$data$time.s, 40)
 
   # an impossible window (min >= max) is the only window error
-  ir_plot_continuous_flow(cf, time_window.s = c(20, 10)) |>
+  ir_plot_traces(cf, time_window.s = c(20, 10)) |>
     expect_error("min < max")
-  ir_plot_continuous_flow(cf, time_window.s = c(20, 20)) |>
+  ir_plot_traces(cf, time_window.s = c(20, 20)) |>
     expect_error("min < max")
 
   # same empty-window tolerance for scans and dual inlet
@@ -224,7 +241,7 @@ test_that("windows without data points of their own are allowed", {
   expect_equal(sort(p_di$data$cycle), c(2, 3))
 })
 
-test_that("ir_plot_continuous_flow() accepts the time window in seconds or minutes", {
+test_that("ir_plot_traces() accepts the time window in seconds or minutes", {
   cf <- tibble(
     file_name = "a",
     species = "CO2",
@@ -234,21 +251,21 @@ test_that("ir_plot_continuous_flow() accepts the time window in seconds or minut
     intensity.mV = c(1, 2, 3, 4, 5)
   )
   # 1-3 minutes == 60-180 seconds: identical clipping
-  p_min <- ir_plot_continuous_flow(cf, time_window.min = c(1, 3)) |>
+  p_min <- ir_plot_traces(cf, time_window.min = c(1, 3)) |>
     suppressMessages()
-  p_sec <- ir_plot_continuous_flow(cf, time_window.s = c(60, 180)) |>
+  p_sec <- ir_plot_traces(cf, time_window.s = c(60, 180)) |>
     suppressMessages()
   expect_equal(p_min$coordinates$limits$x, c(60, 180))
   expect_equal(p_min$coordinates$limits$x, p_sec$coordinates$limits$x)
   expect_equal(sort(p_min$data$time.s), sort(p_sec$data$time.s))
 
   # both NULL (default) -> no window, all points shown
-  p_none <- ir_plot_continuous_flow(cf)
+  p_none <- ir_plot_traces(cf)
   expect_null(p_none$coordinates$limits$x)
   expect_equal(sort(p_none$data$time.s), cf$time.s)
 
   # an invalid minutes window is validated too
-  ir_plot_continuous_flow(cf, time_window.min = c(3, 1)) |>
+  ir_plot_traces(cf, time_window.min = c(3, 1)) |>
     expect_error("min < max")
 })
 
@@ -263,8 +280,8 @@ test_that("zooming preserves trace/mass factor levels and colours", {
     intensity.mV = c(1:6, rep(0, 5), 9) # mass 45 only rises at the last point
   )
 
-  full <- ir_plot_continuous_flow(d) |> suppressMessages()
-  zoom <- ir_plot_continuous_flow(d, time_window.s = c(0, 20)) |>
+  full <- ir_plot_traces(d) |> suppressMessages()
+  zoom <- ir_plot_traces(d, time_window.s = c(0, 20)) |>
     suppressMessages()
   expect_no_error(ggplot2::ggplot_build(zoom))
 
@@ -289,7 +306,7 @@ test_that("drop_unused_levels is validated and trace colouring scales past palet
 
   # the flag is validated
   expect_error(
-    ir_plot_continuous_flow(cf_data(), drop_unused_levels = "yes"),
+    ir_plot_traces(cf_data(), drop_unused_levels = "yes"),
     "TRUE OR FALSE|TRUE or FALSE"
   )
 
@@ -302,7 +319,7 @@ test_that("drop_unused_levels is validated and trace colouring scales past palet
     time.s = 0,
     intensity.mV = 1:15
   )
-  expect_length(breaks(ir_plot_continuous_flow(many) |> suppressMessages()), 15)
+  expect_length(breaks(ir_plot_traces(many) |> suppressMessages()), 15)
 })
 
 test_that("add_trace_and_color_factors() keys the colour by species + mass", {
@@ -408,7 +425,7 @@ test_that("an NA species drops the prefix from the trace and colour labels", {
   )
 
   # the plot builds: 3 lines sharing 2 colours
-  p <- ir_plot_continuous_flow(d(NA_character_)) |> suppressMessages()
+  p <- ir_plot_traces(d(NA_character_)) |> suppressMessages()
   built <- ggplot2::ggplot_build(p)$data[[1]]
   expect_equal(dplyr::n_distinct(built$group), 3L)
   expect_equal(dplyr::n_distinct(built$colour), 2L)
@@ -424,7 +441,7 @@ test_that("every colour level gets a colour, even ones with no data rows", {
     time.s = 0,
     intensity.mV = 1:12
   )
-  p <- ir_plot_continuous_flow(d) |> suppressMessages()
+  p <- ir_plot_traces(d) |> suppressMessages()
   sc <- ggplot2::ggplot_build(p)$plot$scales$get_scales("colour")
   cols <- sc$map(sc$get_breaks())
   expect_length(cols, 12)
@@ -473,14 +490,14 @@ test_that("drop_unused_levels drops traces that are outside the zoom window", {
   # default keeps every trace even though only the bracketing points of some
   # remain in the window (stable colour mapping)
   expect_equal(
-    breaks(ir_plot_continuous_flow(d, time_window.s = w) |> suppressMessages()),
+    breaks(ir_plot_traces(d, time_window.s = w) |> suppressMessages()),
     c("CO2: 44", "CO2: 45", "CO2: 46")
   )
   # drop_unused_levels = TRUE drops the trace that is entirely outside the window
   # but keeps the one inside it and the one whose line crosses it
   expect_equal(
     breaks(
-      ir_plot_continuous_flow(
+      ir_plot_traces(
         d,
         time_window.s = w,
         drop_unused_levels = TRUE
@@ -637,7 +654,7 @@ test_that("ratio columns that hold no ratios at all still plot", {
 
   # and the plotting function gets all the way through
   expect_no_error(suppressMessages(
-    ggplot2::ggplot_build(ir_plot_continuous_flow(no_ratios))
+    ggplot2::ggplot_build(ir_plot_traces(no_ratios))
   ))
 })
 
@@ -679,7 +696,7 @@ test_that("asking for no ratios never needs the ratio columns", {
     expect_equal(nrow(tb), nrow(no_ratio_cols))
     expect_setequal(tb$data_type, "intensity [mV]")
     expect_no_error(suppressMessages(rlang::eval_tidy(rlang::expr(
-      ggplot2::ggplot_build(ir_plot_continuous_flow(
+      ggplot2::ggplot_build(ir_plot_traces(
         no_ratio_cols,
         ratio = !!sel
       ))
@@ -700,12 +717,12 @@ test_that("requesting ratios errors when not calculated or not present", {
   ir_generate_traces_tibble(cf_ratio_data(), ratio = "99/98") |>
     expect_error("not a valid ratio selection")
   # the plotting function surfaces the same error
-  ir_plot_continuous_flow(cf_data(), ratio = "45/44") |>
+  ir_plot_traces(cf_data(), ratio = "45/44") |>
     expect_error("ir_calculate_ratios")
 })
 
 test_that("the default colour groups traces by species + (numerator) mass", {
-  p <- ir_plot_continuous_flow(
+  p <- ir_plot_traces(
     cf_ratio_data(),
     ratio = c("29/28", "30/28")
   ) |>
@@ -738,7 +755,7 @@ test_that("the default colour groups traces by species + (numerator) mass", {
 })
 
 test_that("the colour aesthetic can be overridden per trace", {
-  p <- ir_plot_continuous_flow(
+  p <- ir_plot_traces(
     cf_ratio_data(),
     ratio = c("29/28", "30/28"),
     color = trace
@@ -753,13 +770,13 @@ test_that("the colour aesthetic can be overridden per trace", {
   expect_length(unique(sc$map(sc$get_breaks())), 5L)
   expect_equal(ggplot2::get_labs(p)$colour, "trace")
   # an unrelated column keeps its own legend title
-  p2 <- ir_plot_continuous_flow(cf_ratio_data(), color = mass) |>
+  p2 <- ir_plot_traces(cf_ratio_data(), color = mass) |>
     suppressMessages()
   expect_equal(ggplot2::get_labs(p2)$colour, "mass")
 })
 
 test_that("ratio rows carry a 'ratios' data_type and the plot uses value as y", {
-  p <- ir_plot_continuous_flow(cf_ratio_data(), ratio = "29/28") |>
+  p <- ir_plot_traces(cf_ratio_data(), ratio = "29/28") |>
     suppressMessages()
   expect_no_error(ggplot2::ggplot_build(p))
   # both data types are present in the plotted data
@@ -856,7 +873,7 @@ test_that("a ratio plots even when its numerator mass is excluded by `mass`", {
   expect_true("ratios" %in% tb$data_type)
   expect_equal(tb$value[tb$data_type == "ratios"], 0.4)
   # the same holds in the plotting function
-  p <- ir_plot_continuous_flow(
+  p <- ir_plot_traces(
     cf_ratio_data(),
     mass = "28",
     ratio = "29/28"
@@ -884,7 +901,7 @@ test_that("mass = NULL drops intensities (e.g. to plot only ratios)", {
 test_that("the default facet is NULL (single data type -> no faceting)", {
   # cf_data has only intensities -> data_type not used as a facet row, and the
   # default facet = NULL -> no faceting at all
-  p <- ir_plot_continuous_flow(cf_data())
+  p <- ir_plot_traces(cf_data())
   expect_s3_class(p$facet, "FacetNull")
   # y label shows the (single) data type
   expect_equal(p$labels$y, "intensity [mV]")
@@ -899,14 +916,14 @@ test_that("data_type_as_facet = auto() uses data_type when >1 type is present", 
   }
   # cf_ratio_data has both intensities and ratios -> auto() faceting on data_type;
   # the default facet = NULL gives data_type ~ .
-  p <- ir_plot_continuous_flow(cf_ratio_data()) |> suppressMessages()
+  p <- ir_plot_traces(cf_ratio_data()) |> suppressMessages()
   expect_s3_class(p$facet, "FacetGrid")
   expect_equal(fvars(p)$rows, "data_type")
   expect_length(fvars(p)$cols, 0)
   expect_null(p$labels$y) # the strip provides the label
 
   # a single facet variable becomes the column: data_type ~ file_name
-  p_col <- ir_plot_continuous_flow(cf_ratio_data(), facet = file_name) |>
+  p_col <- ir_plot_traces(cf_ratio_data(), facet = file_name) |>
     suppressMessages()
   expect_s3_class(p_col$facet, "FacetGrid")
   expect_equal(fvars(p_col)$rows, "data_type")
@@ -916,12 +933,12 @@ test_that("data_type_as_facet = auto() uses data_type when >1 type is present", 
 test_that("the data_type facet strip sits on the left, outside the y axis", {
   # data_type used as a facet row -> row strips switched to the left and placed
   # outside the y axis (next to the per-row y-axis values)
-  p <- ir_plot_continuous_flow(cf_ratio_data()) |> suppressMessages()
+  p <- ir_plot_traces(cf_ratio_data()) |> suppressMessages()
   expect_equal(p$facet$params$switch, "y")
   expect_equal(p$theme$strip.placement, "outside")
 
   # not applied when data_type is not used as a facet row
-  p_no <- ir_plot_continuous_flow(
+  p_no <- ir_plot_traces(
     cf_ratio_data(),
     data_type_as_facet = FALSE
   ) |>
@@ -933,7 +950,7 @@ test_that("the data_type facet strip sits on the left, outside the y axis", {
 test_that("data_type_as_facet TRUE/FALSE override the automatic choice", {
   # FALSE with two data types: no data_type facet row; with the default facet
   # (NULL) that means no faceting, and the y label shows both data types
-  p_false <- ir_plot_continuous_flow(
+  p_false <- ir_plot_traces(
     cf_ratio_data(),
     data_type_as_facet = FALSE
   ) |>
@@ -942,21 +959,21 @@ test_that("data_type_as_facet TRUE/FALSE override the automatic choice", {
   expect_equal(p_false$labels$y, "intensity [mV] / ratios")
 
   # TRUE with a single data type: forces the data_type facet row; y dropped
-  p_true <- ir_plot_continuous_flow(cf_data(), data_type_as_facet = TRUE)
+  p_true <- ir_plot_traces(cf_data(), data_type_as_facet = TRUE)
   expect_s3_class(p_true$facet, "FacetGrid")
   expect_equal(names(p_true$facet$params$rows), "data_type")
   expect_null(p_true$labels$y)
 
   # validated
   expect_error(
-    ir_plot_continuous_flow(cf_data(), data_type_as_facet = "yes"),
+    ir_plot_traces(cf_data(), data_type_as_facet = "yes"),
     "auto\\(\\), TRUE, or FALSE"
   )
 })
 
 test_that("a formula facet ignores data_type_as_facet (with a warning if TRUE)", {
   # formula facet always wins; data_type is not used as a row, y shows the types
-  p <- ir_plot_continuous_flow(cf_ratio_data(), facet = species ~ mass) |>
+  p <- ir_plot_traces(cf_ratio_data(), facet = species ~ mass) |>
     suppressMessages()
   expect_s3_class(p$facet, "FacetGrid")
   expect_equal(names(p$facet$params$rows), "species")
@@ -964,7 +981,7 @@ test_that("a formula facet ignores data_type_as_facet (with a warning if TRUE)",
 
   # explicitly combining TRUE with a formula warns (mutually exclusive)
   expect_warning(
-    ir_plot_continuous_flow(
+    ir_plot_traces(
       cf_ratio_data(),
       facet = species ~ mass,
       data_type_as_facet = TRUE

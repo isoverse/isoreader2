@@ -18,9 +18,9 @@ label_scientific <- function() {
 #' Default isoreader2 plotting theme
 #'
 #' This theme is always applied by the plotting functions
-#' ([ir_plot_continuous_flow()], [ir_plot_dual_inlet()], [ir_plot_scans()]).
+#' ([ir_plot_traces()], [ir_plot_dual_inlet()], [ir_plot_scans()]).
 #' To customize a plot, add a [ggplot2::theme()] on top of the returned plot,
-#' e.g. `ir_plot_continuous_flow(...) + ggplot2::theme(text = element_text(size = 20))`.
+#' e.g. `ir_plot_traces(...) + ggplot2::theme(text = element_text(size = 20))`.
 #'
 #' @param text_size base font size in points (default: `16`)
 #' @return a `ggplot2` theme object
@@ -107,7 +107,7 @@ add_facets <- function(
 #'
 #' A sentinel that requests automatic behavior for an argument (currently the
 #' `data_type_as_facet` argument of the plotting functions
-#' [ir_plot_continuous_flow()], [ir_plot_dual_inlet()], [ir_plot_scans()]). It is
+#' [ir_plot_traces()], [ir_plot_dual_inlet()], [ir_plot_scans()]). It is
 #' the default for those arguments; pass `TRUE`/`FALSE` to override the automatic
 #' choice.
 #'
@@ -791,7 +791,7 @@ generate_plot_tibble <- function(
 
 #' Generate the tibble used by the plotting functions
 #'
-#' These helpers build the exact flat tibble that [ir_plot_continuous_flow()]
+#' These helpers build the exact flat tibble that [ir_plot_traces()]
 #' (`ir_generate_traces_tibble()`), [ir_plot_dual_inlet()]
 #' (`ir_generate_cycles_tibble()`), and [ir_plot_scans()]
 #' (`ir_generate_scans_tibble()`) plot, so it can be inspected or used
@@ -1203,9 +1203,10 @@ ir_plot_scans <- function(
   return(p)
 }
 
-#' Plot continuous flow data
+#' Plot trace data
 #'
-#' Plots chromatographic trace data from an [ir_aggregate_isofiles()] result or
+#' Plots chromatographic trace data (continuous flow) from an
+#' [ir_aggregate_isofiles()] result or
 #' a plain data frame. The data is prepared with [ir_generate_traces_tibble()]
 #' (which, for an `ir_aggregated_data` object, inner-joins the `$traces` dataset
 #' with `$metadata`). The plot data must contain `species`, `time.s`, `mass`, and
@@ -1286,7 +1287,9 @@ ir_plot_scans <- function(
 #' @param scientific whether to format y axis labels in scientific notation
 #'   (default: `FALSE`)
 #' @param ... additional arguments passed on to [ggplot2::facet_wrap()] or
-#'   [ggplot2::facet_grid()] (e.g. `labeller`)
+#'   [ggplot2::facet_grid()] (e.g. `labeller`); for the deprecated
+#'   `ir_plot_continuous_flow()` all arguments are simply passed on to
+#'   `ir_plot_traces()`
 #' @param time_window.s,time_window.min optional numeric vector of length 2
 #'   giving the time axis display window `c(min, max)`, either in seconds
 #'   (`time_window.s`) or in minutes (`time_window.min`, converted to seconds
@@ -1306,7 +1309,7 @@ ir_plot_scans <- function(
 #'   plot, add ggplot2 layers on top (e.g. `+ ggplot2::theme(...)` or
 #'   `+ ggplot2::labs(...)`); attach ggplot2 with `library(ggplot2)` first.
 #' @export
-ir_plot_continuous_flow <- function(
+ir_plot_traces <- function(
   dataset,
   species = NULL,
   mass = everything(),
@@ -1489,6 +1492,21 @@ ir_plot_continuous_flow <- function(
   }
 
   return(p)
+}
+
+#' @description `ir_plot_continuous_flow()` is a deprecated alias for
+#'   `ir_plot_traces()` - it takes the same arguments and returns the same plot.
+#'   Use `ir_plot_traces()` instead, it is the more flexible name for what the
+#'   function actually plots (trace data, which continuous flow files contain).
+#' @rdname ir_plot_traces
+#' @export
+ir_plot_continuous_flow <- function(...) {
+  lifecycle::deprecate_soft(
+    when = "0.6.2",
+    what = "ir_plot_continuous_flow()",
+    with = "ir_plot_traces()"
+  )
+  ir_plot_traces(...)
 }
 
 #' Plot dual inlet cycle data
