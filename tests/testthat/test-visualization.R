@@ -94,7 +94,7 @@ test_that("plotting functions filter by species and mass", {
   ir_plot_continuous_flow(d, species = "Ar") |>
     expect_error("no data left.*species")
   ir_plot_continuous_flow(d, mass = 99) |>
-    expect_error("no data left.*mass")
+    expect_error("not a valid mass selection")
 
   # the same parameters work for scans and dual inlet
   sc <- dplyr::mutate(
@@ -305,27 +305,131 @@ test_that("drop_unused_levels is validated and trace colouring scales past palet
   expect_length(breaks(ir_plot_continuous_flow(many) |> suppressMessages()), 15)
 })
 
-test_that("every trace level gets a colour, even ones with no data rows", {
-  # regression: a trace factor with more levels than the palette where some
-  # levels have no data rows (as happens after a scan_type filter, which keeps
-  # all levels but drops rows). build_trace_color_values() must produce a colour
-  # for EVERY level (keyed by species + numerator mass) so none are left
-  # unassigned and scale_color_manual() can be used.
-  levs <- c(paste0("CO2: ", 40:49), "Ar: 36", "Ar: 40") # 12 > 9 palette colours
-  d <- tibble(trace = factor("CO2: 44", levels = levs)) # only one level has a row
-  cv <- build_trace_color_values(d, palette.colors())
-  expect_length(cv, length(levs))
-  expect_setequal(names(cv), levs)
-  expect_false(any(is.na(cv)))
-
-  # keyed sharing holds across present + absent levels (intensity vs its ratio)
-  levs2 <- c("N2: 28", "N2: 29", "N2: 29/28", paste0("X: ", 1:10))
-  cv2 <- build_trace_color_values(
-    tibble(trace = factor("X: 1", levels = levs2)),
-    palette.colors()
+test_that("add_trace_and_color_factors() keys the colour by species + mass", {
+  levs <- c("N2: 28", "N2: 29", "N2: 29/28", "Ar: 36", "Ar: 40")
+  d <- add_trace_and_color_factors(tibble(trace = levs))
+  # every trace level gets a colour level, and an intensity trace shares one with
+  # its ratio traces (keyed by species + numerator mass)
+  expect_s3_class(d$color, "factor")
+  expect_false(any(is.na(d$color)))
+  expect_equal(
+    as.character(d$color),
+    c(
+      "N2: 28",
+      "N2: 29, 29/28",
+      "N2: 29, 29/28",
+      "Ar: 36",
+      "Ar: 40"
+    )
   )
-  expect_false(any(is.na(cv2)))
-  expect_equal(unname(cv2["N2: 29"]), unname(cv2["N2: 29/28"]))
+  # the colour levels follow the trace order (species, then ascending mass)
+  expect_equal(
+    levels(d$trace),
+    c("Ar: 36", "Ar: 40", "N2: 28", "N2: 29", "N2: 29/28")
+  )
+  expect_equal(
+    levels(d$color),
+    c("Ar: 36", "Ar: 40", "N2: 28", "N2: 29, 29/28")
+  )
+
+  # levels that have no data rows (as after a scan_type filter, which keeps all
+  # levels but drops rows) still carry their full colour label
+  kept <- add_trace_and_color_factors(
+    tibble(trace = factor("N2: 28", levels = levs))
+  )
+  expect_equal(levels(kept$color), levels(d$color))
+
+  # a trace label without a "<species>: " prefix falls back to the label itself
+  expect_equal(
+    levels(add_trace_and_color_factors(tibble(trace = c("b", "a")))$color),
+    c("a", "b")
+  )
+  # ... and still keys an intensity trace to its ratios (an NA species)
+  nas <- add_trace_and_color_factors(
+    tibble(trace = c("28", "29", "29/28", "30", "30/28"))
+  )
+  expect_equal(levels(nas$color), c("28", "29, 29/28", "30, 30/28"))
+  expect_equal(
+    as.character(nas$color),
+    c("28", "29, 29/28", "29, 29/28", "30, 30/28", "30, 30/28")
+  )
+  # data without a trace column is passed through untouched
+  expect_identical(
+    add_trace_and_color_factors(tibble(x = 1)),
+    tibble(x = 1)
+  )
+})
+
+test_that("an NA species drops the prefix from the trace and colour labels", {
+  d <- function(species) {
+    tibble(
+      file_name = "a",
+      species = species,
+      mass = rep(c("28", "29"), each = 2),
+      time.s = rep(c(0, 10), 2),
+      intensity.mV = c(100, 200, 40, 80),
+      ratio_name = rep(c(NA, "29/28"), each = 2),
+      ratio = c(NA, NA, 0.4, 0.4)
+    )
+  }
+
+  # NA species -> bare mass/ratio labels, never "NA: 28"
+  tb <- ir_generate_traces_tibble(d(NA_character_))
+  expect_equal(levels(tb$trace), c("28", "29", "29/28"))
+  expect_equal(levels(tb$color), c("28", "29, 29/28"))
+  expect_false(any(grepl("NA", levels(tb$trace))))
+
+  # a named species is unaffected
+  expect_equal(
+    levels(ir_generate_traces_tibble(d("N2"))$color),
+    c("N2: 28", "N2: 29, 29/28")
+  )
+
+  # mixed data keeps both forms, NA species first
+  tb_mix <- ir_generate_traces_tibble(
+    dplyr::bind_rows(d(NA_character_), d("N2"))
+  )
+  expect_equal(
+    levels(tb_mix$color),
+    c("28", "29, 29/28", "N2: 28", "N2: 29, 29/28")
+  )
+
+  # masses still sort ascending when there is no species to sort by first
+  unsorted <- tibble(
+    file_name = "a",
+    species = NA_character_,
+    mass = as.character(c(46, 44, 45)),
+    time.s = 0,
+    intensity.mV = 1:3
+  )
+  expect_equal(
+    levels(ir_generate_traces_tibble(unsorted)$trace),
+    c("44", "45", "46")
+  )
+
+  # the plot builds: 3 lines sharing 2 colours
+  p <- ir_plot_continuous_flow(d(NA_character_)) |> suppressMessages()
+  built <- ggplot2::ggplot_build(p)$data[[1]]
+  expect_equal(dplyr::n_distinct(built$group), 3L)
+  expect_equal(dplyr::n_distinct(built$colour), 2L)
+})
+
+test_that("every colour level gets a colour, even ones with no data rows", {
+  # regression: more colour levels than the palette, some without data rows, must
+  # still all end up with a distinct colour in the legend
+  d <- tibble(
+    file_name = "a",
+    species = "CO2",
+    mass = as.character(40:51), # 12 > 9 palette colours
+    time.s = 0,
+    intensity.mV = 1:12
+  )
+  p <- ir_plot_continuous_flow(d) |> suppressMessages()
+  sc <- ggplot2::ggplot_build(p)$plot$scales$get_scales("colour")
+  cols <- sc$map(sc$get_breaks())
+  expect_length(cols, 12)
+  expect_false(any(is.na(cols)))
+  expect_length(unique(cols), 12)
 })
 
 test_that("drop_unused_levels drops traces that are outside the zoom window", {
@@ -451,23 +555,28 @@ cf_ratio_data <- function() {
   )
 }
 
-test_that("ir_generate_*_tibble() add trace, data_type and value", {
+test_that("ir_generate_*_tibble() add trace, color, data_type and value", {
+  cols <- c("trace", "color", "data_type", "value")
   tb <- ir_generate_traces_tibble(cf_data())
-  expect_true(all(c("trace", "data_type", "value") %in% names(tb)))
+  expect_true(all(cols %in% names(tb)))
   expect_s3_class(tb$trace, "factor")
+  expect_s3_class(tb$color, "factor")
   expect_equal(as.character(unique(tb$trace)), "CO2: 44")
+  # a trace with no ratios is its own colour group
+  expect_equal(as.character(unique(tb$color)), "CO2: 44")
   expect_equal(unique(tb$data_type), "intensity [mV]")
   expect_equal(tb$value, c(1, 2, 3))
 
+  # a ratio shares its colour group with its numerator mass
+  tb_r <- ir_generate_traces_tibble(cf_ratio_data())
+  expect_equal(
+    levels(tb_r$color),
+    c("N2: 28", "N2: 29, 29/28", "N2: 30, 30/28")
+  )
+
   # cycles and scans variants work too
-  expect_true(all(
-    c("trace", "data_type", "value") %in%
-      names(ir_generate_cycles_tibble(di_data()))
-  ))
-  expect_true(all(
-    c("trace", "data_type", "value") %in%
-      names(ir_generate_scans_tibble(scn_data()))
-  ))
+  expect_true(all(cols %in% names(ir_generate_cycles_tibble(di_data()))))
+  expect_true(all(cols %in% names(ir_generate_scans_tibble(scn_data()))))
 })
 
 test_that("trace is always (re)generated from species + mass", {
@@ -500,36 +609,153 @@ test_that("ir_generate_traces_tibble() includes requested ratios", {
   )
 })
 
+test_that("ratio columns that hold no ratios at all still plot", {
+  # a species with a single mass: ir_calculate_ratios() adds the ratio columns,
+  # but the only row is the base mass, so every ratio_name is NA and there are no
+  # ratio rows to build. make_trace_label() must stay character-typed on that
+  # zero-length input - ifelse() returns logical(0), which used to poison the
+  # `trace` column and make the intensity/ratio bind_rows() fail with
+  # "Can't combine `..1$trace` <character> and `..2$trace` <logical>"
+  no_ratios <- tibble(
+    file_name = "a",
+    species = "N2",
+    mass = "28",
+    time.s = c(0, 1),
+    intensity.mV = c(100, 120),
+    ratio_name = NA_character_,
+    ratio = NA_real_
+  )
+
+  tb <- ir_generate_traces_tibble(no_ratios)
+  # just the intensity trace, no ratio rows
+  expect_equal(nrow(tb), 2L)
+  expect_type(as.character(tb$trace), "character")
+  expect_equal(levels(tb$trace), "N2: 28")
+  expect_equal(levels(tb$color), "N2: 28")
+  expect_setequal(tb$data_type, "intensity [mV]")
+  expect_equal(tb$value, c(100, 120))
+
+  # and the plotting function gets all the way through
+  expect_no_error(suppressMessages(
+    ggplot2::ggplot_build(ir_plot_continuous_flow(no_ratios))
+  ))
+})
+
+test_that("make_trace_label() is type stable", {
+  # zero-length in, zero-length character out (never logical(0))
+  expect_identical(make_trace_label(character(0), character(0)), character(0))
+  expect_identical(
+    make_trace_label(NA_character_[0], character(0)),
+    character(0)
+  )
+  # the ordinary labels are unchanged
+  expect_identical(
+    make_trace_label(c("CO2", "N2"), c("44", "29/28")),
+    c("CO2: 44", "N2: 29/28")
+  )
+  # an NA species drops the prefix rather than printing "NA: 44"
+  expect_identical(
+    make_trace_label(c(NA, "CO2"), c("44", "45")),
+    c("44", "CO2: 45")
+  )
+  # a factor mass is labelled by its value, not its integer code
+  expect_identical(make_trace_label("CO2", factor("44")), "CO2: 44")
+})
+
+test_that("asking for no ratios never needs the ratio columns", {
+  # `c()` is documented to mean "none", exactly like NULL - neither is a request
+  # for ratios, so neither may demand the ratio columns. Checking only for a
+  # literal NULL rejected `c()` (and anything else evaluating to NULL) with a
+  # "calculate ratios first" error, which also caught callers forwarding the
+  # argument on with {{ }}
+  no_ratio_cols <- cf_data()
+  expect_false(all(c("ratio_name", "ratio") %in% names(no_ratio_cols)))
+
+  none <- NULL
+  for (sel in list(quote(NULL), quote(c()), quote(none))) {
+    tb <- rlang::eval_tidy(rlang::expr(
+      ir_generate_traces_tibble(no_ratio_cols, ratio = !!sel)
+    ))
+    expect_equal(nrow(tb), nrow(no_ratio_cols))
+    expect_setequal(tb$data_type, "intensity [mV]")
+    expect_no_error(suppressMessages(rlang::eval_tidy(rlang::expr(
+      ggplot2::ggplot_build(ir_plot_continuous_flow(
+        no_ratio_cols,
+        ratio = !!sel
+      ))
+    ))))
+  }
+  # and it still selects nothing when the columns ARE there
+  expect_setequal(
+    ir_generate_traces_tibble(cf_ratio_data(), ratio = c())$data_type,
+    "intensity [mV]"
+  )
+})
+
 test_that("requesting ratios errors when not calculated or not present", {
   # ratio columns absent -> point at ir_calculate_ratios()
   ir_generate_traces_tibble(cf_data(), ratio = "45/44") |>
     expect_error("ir_calculate_ratios")
   # ratio columns present but the requested name is absent
   ir_generate_traces_tibble(cf_ratio_data(), ratio = "99/98") |>
-    expect_error("no data left after filtering ratios")
+    expect_error("not a valid ratio selection")
   # the plotting function surfaces the same error
   ir_plot_continuous_flow(cf_data(), ratio = "45/44") |>
     expect_error("ir_calculate_ratios")
 })
 
-test_that("colouring by trace shares a colour across species + (numerator) mass", {
+test_that("the default colour groups traces by species + (numerator) mass", {
   p <- ir_plot_continuous_flow(
     cf_ratio_data(),
     ratio = c("29/28", "30/28")
   ) |>
     suppressMessages()
-  sc <- ggplot2::ggplot_build(p)$plot$scales$get_scales("colour")
-  cols <- stats::setNames(
-    sc$map(sc$get_breaks()),
-    as.character(sc$get_breaks())
-  )
 
-  # the intensity trace and the ratio trace with the same numerator mass match
-  expect_equal(unname(cols["N2: 29"]), unname(cols["N2: 29/28"]))
-  expect_equal(unname(cols["N2: 30"]), unname(cols["N2: 30/28"]))
-  # different numerator masses get different colours
-  expect_false(unname(cols["N2: 28"]) == unname(cols["N2: 29"]))
-  expect_false(unname(cols["N2: 29"]) == unname(cols["N2: 30"]))
+  # one colour level per species/mass, listing all of its traces, in mass order
+  expect_equal(
+    levels(p$data$color),
+    c("N2: 28", "N2: 29, 29/28", "N2: 30, 30/28")
+  )
+  # each trace is mapped to its colour level
+  trace_to_color <- dplyr::distinct(dplyr::select(p$data, "trace", "color"))
+  expect_equal(
+    as.character(trace_to_color$color[trace_to_color$trace == "N2: 29"]),
+    as.character(trace_to_color$color[trace_to_color$trace == "N2: 29/28"])
+  )
+  # ... but the lines stay grouped by trace, so all 5 are drawn separately
+  built <- ggplot2::ggplot_build(p)$data[[1]]
+  expect_equal(dplyr::n_distinct(built$group), 5L)
+  expect_equal(dplyr::n_distinct(built$colour), 3L)
+
+  # the legend has one entry per colour level, all distinct, titled "trace"
+  sc <- ggplot2::ggplot_build(p)$plot$scales$get_scales("colour")
+  expect_equal(
+    as.character(sc$get_breaks()),
+    c("N2: 28", "N2: 29, 29/28", "N2: 30, 30/28")
+  )
+  expect_length(unique(sc$map(sc$get_breaks())), 3L)
+  expect_equal(ggplot2::get_labs(p)$colour, "trace")
+})
+
+test_that("the colour aesthetic can be overridden per trace", {
+  p <- ir_plot_continuous_flow(
+    cf_ratio_data(),
+    ratio = c("29/28", "30/28"),
+    color = trace
+  ) |>
+    suppressMessages()
+  sc <- ggplot2::ggplot_build(p)$plot$scales$get_scales("colour")
+  # every trace now gets its own colour and the legend is titled from the column
+  expect_equal(
+    as.character(sc$get_breaks()),
+    c("N2: 28", "N2: 29", "N2: 29/28", "N2: 30", "N2: 30/28")
+  )
+  expect_length(unique(sc$map(sc$get_breaks())), 5L)
+  expect_equal(ggplot2::get_labs(p)$colour, "trace")
+  # an unrelated column keeps its own legend title
+  p2 <- ir_plot_continuous_flow(cf_ratio_data(), color = mass) |>
+    suppressMessages()
+  expect_equal(ggplot2::get_labs(p2)$colour, "mass")
 })
 
 test_that("ratio rows carry a 'ratios' data_type and the plot uses value as y", {
@@ -545,19 +771,78 @@ test_that("ratio rows carry a 'ratios' data_type and the plot uses value as y", 
   expect_true(0.4 %in% p$data$value)
 })
 
-test_that("ratio = NULL shows all ratios, character(0) shows none", {
-  # NULL (default) includes every available ratio
+test_that("everything() shows all ratios, NULL shows none", {
+  # everything() (the default) includes every available ratio
   tb_all <- ir_generate_traces_tibble(cf_ratio_data())
   expect_setequal(
     unique(as.character(tb_all$trace[tb_all$data_type == "ratios"])),
     c("N2: 29/28", "N2: 30/28")
   )
-  # character(0) includes no ratios
-  tb_none <- ir_generate_traces_tibble(cf_ratio_data(), ratio = character(0))
-  expect_false("ratios" %in% tb_none$data_type)
-  # data without ratio columns + ratio = NULL -> no ratios, no error
+  expect_equal(
+    tb_all,
+    ir_generate_traces_tibble(cf_ratio_data(), ratio = everything())
+  )
+  # NULL, c(), and character(0) all include no ratios
+  for (none in list(NULL, c(), character(0))) {
+    tb_none <- ir_generate_traces_tibble(cf_ratio_data(), ratio = !!none)
+    expect_false("ratios" %in% tb_none$data_type)
+  }
+  # data without ratio columns + the default -> no ratios, no error
   expect_no_error(ir_generate_traces_tibble(cf_data()))
   expect_false("ratios" %in% ir_generate_traces_tibble(cf_data())$data_type)
+  # ... and the same with an explicit NULL
+  expect_no_error(ir_generate_traces_tibble(cf_data(), ratio = NULL))
+})
+
+test_that("mass/ratio accept the full tidyselect syntax", {
+  traces <- function(...) {
+    sort(as.character(unique(
+      ir_generate_traces_tibble(cf_ratio_data(), ...)$trace
+    )))
+  }
+
+  # names, as character or (via as.character) numeric - including a range
+  expect_equal(
+    traces(mass = c("28", "29"), ratio = NULL),
+    c("N2: 28", "N2: 29")
+  )
+  expect_equal(traces(mass = c(28, 29), ratio = NULL), c("N2: 28", "N2: 29"))
+  expect_equal(traces(mass = 28:29, ratio = NULL), c("N2: 28", "N2: 29"))
+  expect_equal(traces(mass = 28, ratio = NULL), "N2: 28")
+  # numbers select by NAME, not by position (28:29 is not the 28th-29th mass)
+  expect_error(traces(mass = 1:2, ratio = NULL), "not a valid mass selection")
+
+  # a variable holding the names works without all_of()
+  wanted <- c(28, 30)
+  expect_equal(traces(mass = wanted, ratio = NULL), c("N2: 28", "N2: 30"))
+
+  # negative selections
+  expect_equal(traces(mass = -"28", ratio = NULL), c("N2: 29", "N2: 30"))
+  expect_equal(traces(mass = !"28", ratio = NULL), c("N2: 29", "N2: 30"))
+  expect_equal(
+    traces(mass = NULL, ratio = -"29/28"),
+    "N2: 30/28"
+  )
+
+  # helpers
+  expect_equal(
+    traces(mass = starts_with("2"), ratio = NULL),
+    c("N2: 28", "N2: 29")
+  )
+  expect_equal(traces(mass = matches("^30$"), ratio = NULL), "N2: 30")
+  expect_equal(traces(mass = NULL, ratio = starts_with("29")), "N2: 29/28")
+  # all_of() is strict, any_of() ignores what is missing
+  expect_error(
+    traces(mass = all_of(c("28", "99")), ratio = NULL),
+    "not a valid mass"
+  )
+  expect_equal(traces(mass = any_of(c("28", "99")), ratio = NULL), "N2: 28")
+
+  # the error lists what is available, using the expression as written
+  err <- tryCatch(traces(mass = 99), error = function(e) conditionMessage(e))
+  expect_match(err, "mass.*=.*99.*is not a valid mass selection")
+  expect_match(err, "available masses")
+  expect_match(err, "28")
 })
 
 test_that("a ratio plots even when its numerator mass is excluded by `mass`", {
@@ -582,16 +867,16 @@ test_that("a ratio plots even when its numerator mass is excluded by `mass`", {
   )
 })
 
-test_that("mass = character(0) drops intensities (e.g. to plot only ratios)", {
-  tb <- ir_generate_traces_tibble(cf_ratio_data(), mass = character(0))
+test_that("mass = NULL drops intensities (e.g. to plot only ratios)", {
+  tb <- ir_generate_traces_tibble(cf_ratio_data(), mass = NULL)
   expect_true(all(tb$data_type == "ratios"))
   # dropping both masses and ratios leaves nothing -> error
   expect_error(
-    ir_generate_traces_tibble(
-      cf_ratio_data(),
-      mass = character(0),
-      ratio = character(0)
-    ),
+    ir_generate_traces_tibble(cf_ratio_data(), mass = NULL, ratio = NULL),
+    "no data to plot"
+  )
+  expect_error(
+    ir_generate_traces_tibble(cf_ratio_data(), mass = c(), ratio = c()),
     "no data to plot"
   )
 })

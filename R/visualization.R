@@ -217,48 +217,52 @@ add_data_type_or_facets <- function(
     )
 }
 
-# internal: if a `trace` column is present and not already a factor, convert it
-# to a factor with levels sorted by species and then by the numerical (numerator)
-# mass number of the trace label. A trace label is either "<species>: <mass>"
-# (e.g. "CO2: 44") or, for a ratio, "<species>: <numerator>/<denominator>" (e.g.
-# "N2: 29/28"); both are keyed by their leading mass number (44, 29) so an
-# intensity trace and its ratios sort next to each other, with the intensity
-# trace before its ratios. Traces without a parseable number sort last.
-sort_trace_factor <- function(plot_data) {
-  if ("trace" %in% names(plot_data) && !is.factor(plot_data$trace)) {
-    trace_levels <- unique(as.character(plot_data$trace))
-    # split each label into species, leading mass number, and ratio flag
-    species_part <- sub(":.*$", "", trace_levels)
-    mass_part <- sub("^[^:]*:\\s*", "", trace_levels)
-    # coercion NAs (labels without a number) are expected, so silence them
-    mass_number <- suppressWarnings(as.numeric(sub("/.*$", "", mass_part)))
-    is_ratio <- grepl("/", trace_levels)
-    trace_levels <- trace_levels[order(
-      species_part,
-      mass_number,
-      is_ratio,
-      trace_levels,
-      na.last = TRUE
-    )]
-    plot_data <- dplyr::mutate(
-      plot_data,
-      trace = factor(.data$trace, levels = trace_levels)
-    )
-  }
-  return(plot_data)
+# internal: build a trace label from a species and a mass (or ratio name):
+# "<species>: <mass>", e.g. "CO2: 44" or "N2: 29/28". The `species` column is
+# always present but may be NA (e.g. an instrument that does not report it), in
+# which case the label is just the mass/ratio name ("44", "29/28") - the
+# "<species>: " prefix is dropped rather than printed as "NA: 44".
+#
+# Always returns a character vector, including for zero-length input. `ifelse()`
+# would return `logical(0)` there, which propagates as a logical `trace` column
+# and makes the intensity/ratio `bind_rows()` in generate_plot_tibble() fail with
+# "Can't combine `..1$trace` <character> and `..2$trace` <logical>". Zero-length
+# input is reached whenever the `ratio_name`/`ratio` columns exist but hold no
+# ratios at all - e.g. after ir_calculate_ratios() on a species with a single
+# mass, where the only row is the base mass and its ratio_name is NA.
+make_trace_label <- function(species, mass) {
+  species <- as.character(species)
+  mass <- as.character(mass)
+  # recycle0 = TRUE keeps a zero-length input zero-length (paste0() would
+  # otherwise treat it as "" and return the separator as a length-1 string)
+  label <- paste0(species, ": ", mass, recycle0 = TRUE)
+  # no species -> the bare mass/ratio name, rather than "NA: 44"
+  no_species <- is.na(species)
+  label[no_species] <- mass[no_species]
+  label
 }
 
-# internal: build a named colour vector (trace level -> colour) so that traces
-# sharing the same species + (numerator) mass get the same colour - e.g. the
-# intensity trace "N2: 29" and the ratio trace "N2: 29/28" (whose numerator mass
-# is 29, carried in the `mass` column). Each distinct species/mass key is given
-# one colour, drawn from the supplied `color_values` palette when it has enough
-# entries, otherwise from an evenly spaced hue palette. Returns `color_values`
-# unchanged if the data lacks the columns needed to key by (it can then be used
-# as a plain ordered palette).
-build_trace_color_values <- function(plot_data, color_values) {
+# internal: turn the `trace` column into a sorted factor and add the matching
+# `color` factor column.
+#
+# A trace label is either "<species>: <mass>" (e.g. "CO2: 44") or, for a ratio,
+# "<species>: <numerator>/<denominator>" (e.g. "N2: 29/28"), or - when the
+# species is NA - the bare mass/ratio name ("44", "29/28"). All are keyed by
+# their leading (numerator) mass number (44, 29), which gives:
+#  - `trace` levels sorted by species and then by that mass number, so an
+#    intensity trace and its ratios sort next to each other, with the intensity
+#    trace before its ratios. Traces without a parseable number sort last.
+#  - a `color` level per species + (numerator) mass, labelled with every trace
+#    sharing it: "N2: 29" and "N2: 29/28" both get `color` = "N2: 29, 29/28".
+#    Mapping the colour aesthetic to this column is what gives an intensity trace
+#    and its ratios the same colour, without any manual palette assignment; the
+#    `group` aesthetic still uses `trace`, so they remain separate lines.
+# The `color` levels follow the same order as the `trace` levels they are built
+# from, so the legend runs by ascending species/mass. Both columns are always
+# (re)generated. Data without a `trace` column is returned unchanged.
+add_trace_and_color_factors <- function(plot_data) {
   if (!"trace" %in% names(plot_data)) {
-    return(color_values)
+    return(plot_data)
   }
   trace_levels <- if (is.factor(plot_data$trace)) {
     levels(plot_data$trace)
@@ -266,39 +270,78 @@ build_trace_color_values <- function(plot_data, color_values) {
     unique(as.character(plot_data$trace))
   }
   if (length(trace_levels) == 0L) {
-    return(color_values)
+    return(plot_data)
   }
-  # colour key = species + numerator mass, parsed from each trace label (the same
-  # way sort_trace_factor() does) so that EVERY level gets a colour - including
-  # levels that have no rows in the current data (e.g. a mass that is absent from
-  # the selected scan type) which the factor still keeps when drop_unused_levels =
-  # FALSE - and an intensity trace shares its key with its ratio traces
-  # ("N2: 29" and "N2: 29/28" -> key "N2 29").
-  species_part <- sub(":.*$", "", trace_levels)
-  mass_part <- sub("^[^:]*:\\s*", "", trace_levels)
-  numerator <- sub("/.*$", "", mass_part)
-  keys <- paste(species_part, numerator)
-  keys_in_order <- unique(keys)
-  n_keys <- length(keys_in_order)
-  # one colour per key: use the supplied palette if it is large enough, else hues
-  key_colors <- if (!is.null(color_values) && length(color_values) >= n_keys) {
-    unname(color_values)[seq_len(n_keys)]
-  } else {
-    scales::hue_pal()(n_keys)
-  }
-  key_colors <- stats::setNames(key_colors, keys_in_order)
-  # named vector: every trace level -> its key's colour
-  stats::setNames(unname(key_colors[keys]), trace_levels)
+  # split each label into species, mass, leading mass number, and ratio flag. a
+  # label with no "<species>: " prefix (an NA species) is all mass, and its
+  # species sorts as "" - so that e.g. "45" and "45/44" still parse to the same
+  # species/mass key and share a colour
+  has_species <- grepl(":", trace_levels)
+  species_part <- ifelse(has_species, sub(":.*$", "", trace_levels), "")
+  mass_part <- ifelse(
+    has_species,
+    sub("^[^:]*:\\s*", "", trace_levels),
+    trace_levels
+  )
+  # coercion NAs (labels without a number) are expected, so silence them
+  mass_number <- suppressWarnings(as.numeric(sub("/.*$", "", mass_part)))
+  is_ratio <- grepl("/", trace_levels)
+
+  # sort the trace levels (species, then numerator mass, intensity before ratios)
+  ord <- order(
+    species_part,
+    mass_number,
+    is_ratio,
+    trace_levels,
+    na.last = TRUE
+  )
+  trace_levels <- trace_levels[ord]
+  species_part <- species_part[ord]
+  mass_part <- mass_part[ord]
+  has_species <- has_species[ord]
+
+  # colour key = species + numerator mass, so an intensity trace and its ratios
+  # share one key; keep the keys in trace-level order for the legend
+  keys <- paste(species_part, sub("/.*$", "", mass_part))
+  keys <- factor(keys, levels = unique(keys))
+  # one label per key, listing all of its traces: "<species>: <mass>, <mass>, ...",
+  # or just "<mass>, <mass>, ..." when the species is NA
+  color_levels <- vapply(
+    split(seq_along(trace_levels), keys),
+    function(i) {
+      masses <- paste(mass_part[i], collapse = ", ")
+      if (all(has_species[i])) {
+        paste0(species_part[i[1]], ": ", masses)
+      } else {
+        masses
+      }
+    },
+    character(1)
+  )
+  # every trace level -> its key's label
+  color_by_trace <- stats::setNames(
+    unname(color_levels[as.integer(keys)]),
+    trace_levels
+  )
+
+  plot_data$trace <- factor(plot_data$trace, levels = trace_levels)
+  plot_data$color <- factor(
+    unname(color_by_trace[as.character(plot_data$trace)]),
+    levels = unname(color_levels)
+  )
+  return(plot_data)
 }
 
 # internal: add the colour aesthetic and a matching colour scale. When the
-# colour column is a factor (e.g. `mass` or `trace`), unused levels are kept by
+# colour column is a factor (e.g. `mass` or `color`), unused levels are kept by
 # default (`drop_unused_levels = FALSE`) so that the colour mapping stays stable
 # when the plotted data is a subset of the full dataset (e.g. zoomed to a window)
 # instead of re-coloring the remaining groups; pass `drop_unused_levels = TRUE`
 # to show only the levels actually present. The manual palette is only used when
 # it supplies enough colours for the levels being shown; otherwise the default
-# discrete scale (which generates as many hues as needed) is used.
+# discrete scale (which generates as many hues as needed) is used. Colouring by
+# the generated `color` column (the default) is labelled "trace" in the legend,
+# since each of its levels stands for one or more traces.
 add_color_aes <- function(
   p,
   color_quo,
@@ -310,6 +353,9 @@ add_color_aes <- function(
     return(p)
   }
   p <- p + ggplot2::aes(color = !!color_quo)
+  if (rlang::quo_is_symbol(color_quo, "color")) {
+    p <- p + ggplot2::labs(color = "trace")
+  }
   color_vals <- rlang::eval_tidy(color_quo, plot_data)
   is_factor <- is.factor(color_vals)
   # the palette must cover either every factor level (drop_unused_levels = FALSE,
@@ -439,19 +485,91 @@ filter_plot_data <- function(plot_data, species, mass, .env = caller_env()) {
   plot_data
 }
 
-# internal: interpret a NULL/empty/values selection argument: `NULL` -> "all"
-# (no filtering), a zero-length but non-NULL vector (e.g. `character(0)`) ->
-# "none", anything else -> "some" (those specific values). Note that `c()` is
-# `NULL` in R and therefore maps to "all"; use `character(0)` / `numeric(0)` to
-# select none.
-selection_mode <- function(x) {
-  if (is.null(x)) {
-    "all"
-  } else if (length(x) == 0L) {
-    "none"
-  } else {
-    "some"
+# internal: resolve a `mass`/`ratio` tidyselect expression against the values
+# `available` in the data, as if they were the column names of a data frame.
+# Supports the full tidyselect syntax - `everything()` (the default, all of
+# them), `NULL`/`c()` (none), names (`c("44", "45")`, `"45/44"`), negative
+# selections (`-"45/44"`, `!"45/44"`), and helpers (`starts_with("4")`,
+# `all_of()`, `any_of()`, `matches()`, ...).
+#
+# One deviation from plain tidyselect: a numeric selection is matched by NAME,
+# not by position, so `mass = 44:48` means the masses 44 to 48 rather than the
+# 44th to 48th mass. To do this the expression is evaluated first; when it yields
+# a bare character or numeric vector (whether written inline or held in a
+# variable) it is rewritten as `all_of(as.character(<vector>))`. Anything that
+# does not evaluate on its own - a helper such as `starts_with("4")`, or a
+# negation - is handed to tidyselect untouched.
+#
+# `label` is the plural name used in error messages ("masses"/"ratios").
+eval_trace_selection <- function(
+  quo,
+  available,
+  arg,
+  label,
+  .env = caller_env()
+) {
+  available <- unique(as.character(available))
+  available <- available[!is.na(available)]
+  if (rlang::quo_is_null(quo)) {
+    return(character(0))
   }
+  # keep what the user wrote for the error message, the expression below is
+  # rewritten and would not be recognizable
+  user_expr <- rlang::as_label(quo)
+  # evaluating the selection tells a plain vector from a selection helper. The
+  # result is wrapped so that "evaluated to NULL" stays distinguishable from
+  # "could not be evaluated" - helpers like `everything()` are only meaningful
+  # inside a selection context and error out here, and must not be mistaken for
+  # a NULL selection.
+  evaluated <- tryCatch(
+    list(value = rlang::eval_tidy(quo)),
+    error = function(e) NULL
+  )
+  # NULL means "select nothing" however it is written - literally, as `c()`, or
+  # held in a variable. Handling it here (rather than letting tidyselect see it)
+  # also avoids its "external vector in selections" deprecation warning for the
+  # variable form.
+  if (!is.null(evaluated) && is.null(evaluated$value)) {
+    return(character(0))
+  }
+  # a plain character/numeric vector selects by name (numbers via as.character).
+  # `all_of` is left as a bare symbol so tidyselect resolves it from its own
+  # selection mask (a namespaced `tidyselect::all_of()` is not evaluable there)
+  value <- evaluated$value
+  if (is.character(value) || is.numeric(value)) {
+    quo <- rlang::new_quosure(
+      rlang::expr(all_of(!!as.character(value))),
+      rlang::quo_get_env(quo)
+    )
+  }
+  data <- rlang::set_names(vector("list", length(available)), available)
+  tryCatch(
+    names(tidyselect::eval_select(quo, data)),
+    error = function(e) {
+      cli_abort(
+        c(
+          "{.arg {arg}} = {.emph {user_expr}} is not a valid {arg} selection",
+          "i" = if (length(available) > 0) {
+            "available {label}: {.val {available}}"
+          } else {
+            "there are no {label} in this dataset"
+          }
+        ),
+        parent = e,
+        call = .env
+      )
+    }
+  )
+}
+
+# internal: the columns each dataset must provide to be plotted
+plot_required_cols <- function(dataset_name) {
+  switch(
+    dataset_name,
+    traces = c("species", "time.s", "mass"),
+    cycles = c("species", "cycle", "type", "mass"),
+    scans = c("species", "scan_type", "x_units", "x", "mass")
+  )
 }
 
 # internal: turn the `dataset` argument (an `ir_aggregated_data` object or a
@@ -522,41 +640,29 @@ prepare_plot_data <- function(dataset, dataset_name, .env = caller_env()) {
 # ratio rows:
 #  - intensity rows carry `trace` = "<species>: <mass>" (always regenerated),
 #    `data_type` = "intensity [UNITS]", and `value` = the intensity. They are
-#    selected by `mass`: NULL = all masses, character(0)/numeric(0) = none, a
-#    vector = those masses.
+#    selected by the `mass_quo` tidyselect expression, resolved against the
+#    masses present in the data.
 #  - ratio rows carry `trace` = "<species>: <ratio_name>", `data_type` =
-#    "ratios", and `value` = the ratio. They are selected by `ratio`: NULL = all
-#    available ratios, character(0) = none, a vector = those ratio names.
-#    Requesting specific ratios when the `ratio_name`/`ratio` columns are absent
-#    errors (pointing to ir_calculate_ratios()); with `ratio = NULL` and no ratio
-#    columns, no ratios are simply added.
-# Finally `trace` is turned into a sorted factor.
+#    "ratios", and `value` = the ratio. They are selected by the `ratio_quo`
+#    tidyselect expression, resolved against the ratio names present in the data.
+#    Selecting ratios when the `ratio_name`/`ratio` columns are absent errors
+#    (pointing to ir_calculate_ratios()); the default `everything()` and `NULL`
+#    simply add no ratios when they are absent.
+# Both selections default to `everything()`; see eval_trace_selection().
+# Finally `trace` is turned into a sorted factor and the `color` column added.
 generate_plot_tibble <- function(
   dataset,
   dataset_name,
-  required_cols,
   species = NULL,
-  mass = NULL,
-  ratio = NULL,
+  mass_quo = rlang::quo(everything()),
+  ratio_quo = rlang::quo(everything()),
   .env = caller_env()
 ) {
-  # validate filters
+  # validate filters (mass/ratio are tidyselect expressions, checked on use)
   check_arg(
     species,
     is.null(species) || is.character(species) || is.numeric(species),
     "must be NULL or a character/numeric vector",
-    .env = .env
-  )
-  check_arg(
-    mass,
-    is.null(mass) || is.character(mass) || is.numeric(mass),
-    "must be NULL or a character/numeric vector",
-    .env = .env
-  )
-  check_arg(
-    ratio,
-    is.null(ratio) || is.character(ratio),
-    "must be NULL or a character vector of ratio names (e.g. c(\"45/44\"))",
     .env = .env
   )
 
@@ -564,6 +670,7 @@ generate_plot_tibble <- function(
   plot_data <- prepare_plot_data(dataset, dataset_name, .env = .env)
 
   # required columns
+  required_cols <- plot_required_cols(dataset_name)
   missing_cols <- setdiff(required_cols, names(plot_data))
   if (length(missing_cols) > 0) {
     cli_abort(
@@ -596,12 +703,18 @@ generate_plot_tibble <- function(
   # them with bind_rows BEFORE applying the mass/ratio selections, so that a ratio
   # (e.g. "45/44") still plots when its numerator mass (45) is not in the `mass`
   # selection - the mass filter only ever drops intensity rows, never ratio rows.
-  mass_mode <- selection_mode(mass)
-  ratio_mode <- selection_mode(ratio)
   has_ratio_cols <- all(c("ratio_name", "ratio") %in% names(plot_data))
-  # an explicit ratio request needs the ratio columns; `ratio = NULL` just adds
-  # no ratios when they are absent
-  if (ratio_mode == "some" && !has_ratio_cols) {
+  # an explicit ratio request needs the ratio columns; the default `everything()`
+  # (and anything meaning "none") just adds no ratios when they are absent.
+  # "none" is not only a literal `NULL`: `c()` is documented to mean the same
+  # thing, and so does any expression evaluating to NULL - checking only the
+  # literal would reject those with a "calculate ratios first" error even though
+  # they ask for no ratios at all. `everything()` cannot be evaluated outside a
+  # selection context, hence the tryCatch.
+  selects_nothing <- rlang::quo_is_null(ratio_quo) ||
+    identical(rlang::quo_get_expr(ratio_quo), quote(everything())) ||
+    is.null(tryCatch(rlang::eval_tidy(ratio_quo), error = function(e) NA))
+  if (!has_ratio_cols && !selects_nothing) {
     cli_abort(
       c(
         "cannot include ratios: the {.field ratio_name}/{.field ratio} columns are not present in the {dataset_name} data",
@@ -615,7 +728,7 @@ generate_plot_tibble <- function(
   # so `trace` is always "<species>: <mass>"
   intensity_rows <- dplyr::mutate(
     plot_data,
-    trace = sprintf("%s: %s", .data$species, .data$mass),
+    trace = make_trace_label(.data$species, .data$mass),
     data_type = paste0("intensity [", intensity_units, "]"),
     value = .data[[intensity_col]]
   )
@@ -624,7 +737,7 @@ generate_plot_tibble <- function(
     plot_data |>
       dplyr::filter(!is.na(.data$ratio_name)) |>
       dplyr::mutate(
-        trace = sprintf("%s: %s", .data$species, .data$ratio_name),
+        trace = make_trace_label(.data$species, .data$ratio_name),
         data_type = "ratios",
         value = .data$ratio
       )
@@ -632,58 +745,48 @@ generate_plot_tibble <- function(
     intensity_rows[0, , drop = FALSE]
   }
 
-  # combine BEFORE filtering, then select intensity rows by `mass` and ratio rows
-  # by `ratio` (NULL = all of that type, character(0) = none, a vector = those)
+  # combine BEFORE filtering, then resolve the `mass`/`ratio` tidyselect
+  # expressions against the masses / ratio names actually present in the data
   plot_data <- dplyr::bind_rows(intensity_rows, ratio_rows)
   is_ratio <- plot_data$data_type == "ratios"
-
-  keep_mass <- switch(
-    mass_mode,
-    all = !is_ratio,
-    none = rep(FALSE, nrow(plot_data)),
-    some = !is_ratio & as.character(plot_data$mass) %in% as.character(mass)
-  )
-  if (mass_mode == "some" && !any(keep_mass)) {
-    available <- unique(as.character(plot_data$mass[!is_ratio]))
-    cli_abort(
-      c(
-        "no data left after filtering {.field mass} to {.val {mass}}",
-        "i" = "available mass: {.val {available}}"
-      ),
-      call = .env
-    )
+  # without ratio columns there is no ratio_name to select on (and no ratio rows)
+  ratio_names <- if (has_ratio_cols) {
+    plot_data$ratio_name
+  } else {
+    rep(NA_character_, nrow(plot_data))
   }
 
-  keep_ratio <- switch(
-    ratio_mode,
-    all = is_ratio,
-    none = rep(FALSE, nrow(plot_data)),
-    some = is_ratio & plot_data$ratio_name %in% ratio
+  selected_masses <- eval_trace_selection(
+    mass_quo,
+    plot_data$mass[!is_ratio],
+    "mass",
+    "masses",
+    .env = .env
   )
-  if (ratio_mode == "some" && !any(keep_ratio)) {
-    available <- sort(unique(plot_data$ratio_name[is_ratio]))
-    cli_abort(
-      c(
-        "no data left after filtering ratios to {.val {ratio}}",
-        "i" = "available ratio{?s}: {.val {available}}"
-      ),
-      call = .env
-    )
-  }
+  selected_ratios <- eval_trace_selection(
+    ratio_quo,
+    ratio_names[is_ratio],
+    "ratio",
+    "ratios",
+    .env = .env
+  )
+  keep_mass <- !is_ratio & as.character(plot_data$mass) %in% selected_masses
+  keep_ratio <- is_ratio & ratio_names %in% selected_ratios
 
   plot_data <- plot_data[keep_mass | keep_ratio, ]
   if (nrow(plot_data) == 0) {
     cli_abort(
       c(
         "no data to plot: the {.arg mass}/{.arg ratio} selection left no rows",
-        "i" = "use {.code mass = NULL} for all masses and/or {.code ratio = NULL} for all ratios"
+        "i" = "use {.code mass = everything()} for all masses and/or {.code ratio = everything()} for all ratios"
       ),
       call = .env
     )
   }
 
-  # turn the trace identifier into a sorted factor (species + numerator mass)
-  sort_trace_factor(plot_data)
+  # turn the trace identifier into a sorted factor and add the `color` column
+  # that groups traces sharing a species + (numerator) mass
+  add_trace_and_color_factors(plot_data)
 }
 
 #' Generate the tibble used by the plotting functions
@@ -696,12 +799,21 @@ generate_plot_tibble <- function(
 #' the plotting functions (an `ir_aggregated_data` object has its `traces` /
 #' `cycles` / `scans` dataset inner-joined with `$metadata`; a plain data frame
 #' is used as is), filtered by `species`, and then split into intensity rows and
-#' (optionally) ratio rows, each augmented with three columns:
+#' (optionally) ratio rows, each augmented with four columns:
 #' \itemize{
 #'   \item `trace` - the identifier `"<species>: <mass>"` for intensity rows
 #'     (e.g. `"CO2: 44"`) or `"<species>: <ratio_name>"` for ratio rows (e.g.
 #'     `"CO2: 45/44"`), always (re)generated and returned as a factor sorted by
-#'     species and numerical (numerator) mass.
+#'     species and numerical (numerator) mass. This is what the plotting
+#'     functions group their lines by. Rows whose `species` is `NA` get the bare
+#'     mass/ratio name instead (`"44"`, `"45/44"`) rather than an `"NA: "` prefix.
+#'   \item `color` - the colour identifier, a factor listing every trace that
+#'     shares a species and (numerator) mass: both `"CO2: 45"` and `"CO2: 45/44"`
+#'     get `"CO2: 45, 45/44"` (or `"45, 45/44"` for an `NA` species). Mapping the
+#'     colour aesthetic to this column (the plotting functions' default) is what
+#'     draws an intensity trace and its ratios in the same colour while keeping
+#'     them separate lines. Its levels follow the `trace` order, so the legend
+#'     runs by ascending species/mass.
 #'   \item `data_type` - `"intensity [UNITS]"` (e.g. `"intensity [mV]"`) for the
 #'     intensity rows, or `"ratios"` for ratio rows.
 #'   \item `value` - the value to plot: the intensity for intensity rows, or the
@@ -713,33 +825,40 @@ generate_plot_tibble <- function(
 #'   function)
 #' @param species optional vector to filter to specific species (e.g. `"CO2"` or
 #'   `c("N2", "CO2")`); default `NULL` keeps all species.
-#' @param mass which masses to include as intensity traces: `NULL` (default) for
-#'   all masses, a vector (e.g. `44` or `c(44, 45)`) for specific masses, or a
-#'   zero-length vector (`numeric(0)`/`character(0)`) for none. Note that `c()`
-#'   is `NULL` in R, i.e. all masses.
-#' @param ratio which ratios to include (computed with [ir_calculate_ratios()]):
-#'   `NULL` (default) for all available ratios, a character vector of ratio names
-#'   (e.g. `c("45/44", "46/44")`) for specific ones, or `character(0)` for none.
-#'   Requesting specific ratio names when ratios have not been calculated is an
-#'   error pointing to [ir_calculate_ratios()]; with `ratio = NULL` and no ratios
-#'   present none are simply added.
-#' @return a tibble with the prepared data plus the `trace`, `data_type`, and
+#' @param mass which masses to include as intensity traces, as a
+#'   [tidyselect][tidyselect::language] expression evaluated as if the masses
+#'   present in the data were column names. The default `everything()` includes
+#'   every mass and `NULL` (or `c()`) includes none; beyond that any tidyselect
+#'   syntax works, e.g. `c("44", "45")` or `44:48` for specific masses,
+#'   `-"45"`/`!"45"` to exclude one, and helpers such as `starts_with("4")`,
+#'   `matches()`, `all_of()`, or `any_of()`. Unlike plain tidyselect, numbers
+#'   select by name rather than by position (`44:48` means the masses 44 to 48,
+#'   not the 44th to 48th mass). Selecting a mass that is not in the data is an
+#'   error that lists the available masses; use `any_of()` to ignore missing ones.
+#' @param ratio which ratios to include (computed with [ir_calculate_ratios()]),
+#'   as a [tidyselect][tidyselect::language] expression evaluated as if the ratio
+#'   names present in the data were column names - the same syntax as `mass`,
+#'   e.g. `everything()` (the default, all available ratios), `NULL` for none,
+#'   `c("45/44", "46/44")`, `-"45/44"`, or `starts_with("45")`. Selecting
+#'   specific ratios when ratios have not been calculated is an error pointing to
+#'   [ir_calculate_ratios()]; with the default `everything()` (or `NULL`) and no
+#'   ratios present, none are simply added.
+#' @return a tibble with the prepared data plus the `trace`, `color`, `data_type`, and
 #'   `value` columns described above.
 #' @name ir_generate_tibble
 #' @export
 ir_generate_traces_tibble <- function(
   dataset,
   species = NULL,
-  mass = NULL,
-  ratio = NULL
+  mass = everything(),
+  ratio = everything()
 ) {
   generate_plot_tibble(
     dataset,
     "traces",
-    required_cols = c("species", "time.s", "mass"),
     species = species,
-    mass = mass,
-    ratio = ratio
+    mass_quo = rlang::enquo(mass),
+    ratio_quo = rlang::enquo(ratio)
   )
 }
 
@@ -748,16 +867,15 @@ ir_generate_traces_tibble <- function(
 ir_generate_cycles_tibble <- function(
   dataset,
   species = NULL,
-  mass = NULL,
-  ratio = NULL
+  mass = everything(),
+  ratio = everything()
 ) {
   generate_plot_tibble(
     dataset,
     "cycles",
-    required_cols = c("species", "cycle", "type", "mass"),
     species = species,
-    mass = mass,
-    ratio = ratio
+    mass_quo = rlang::enquo(mass),
+    ratio_quo = rlang::enquo(ratio)
   )
 }
 
@@ -766,16 +884,15 @@ ir_generate_cycles_tibble <- function(
 ir_generate_scans_tibble <- function(
   dataset,
   species = NULL,
-  mass = NULL,
-  ratio = NULL
+  mass = everything(),
+  ratio = everything()
 ) {
   generate_plot_tibble(
     dataset,
     "scans",
-    required_cols = c("species", "scan_type", "x_units", "x", "mass"),
     species = species,
-    mass = mass,
-    ratio = ratio
+    mass_quo = rlang::enquo(mass),
+    ratio_quo = rlang::enquo(ratio)
   )
 }
 
@@ -786,9 +903,10 @@ ir_generate_scans_tibble <- function(
 #' `ir_aggregated_data` object, inner-joins the `$scans` dataset with
 #' `$metadata`). The plot data must contain `species`, `x`, `scan_type`,
 #' `x_units`, `mass`, and an `intensity.*` column — an error is thrown if any are
-#' missing. A `trace` identifier (`"<species>: <mass>"`) is always regenerated
-#' and the plotted `value` together with a `data_type` label (`"intensity
-#' [UNITS]"`, or `"ratios"` for ratio rows) are added. `scan_type` and `x_units`
+#' missing. A `trace` identifier (`"<species>: <mass>"`) and the matching
+#' `color` identifier are always regenerated and the plotted `value` together
+#' with a `data_type` label (`"intensity [UNITS]"`, or `"ratios"` for ratio
+#' rows) are added. `scan_type` and `x_units`
 #' are combined for the x axis label.
 #'
 #' @param dataset an `ir_aggregated_data` object from [ir_aggregate_isofiles()]
@@ -800,19 +918,27 @@ ir_generate_scans_tibble <- function(
 #'   must either be `NULL` or match that type exactly.
 #' @param species optional vector to filter the displayed data to specific
 #'   species (e.g. `"CO2"` or `c("N2", "CO2")`); default `NULL` shows all species.
-#' @param mass which masses to include as intensity traces: `NULL` (default)
-#'   shows all masses, a vector (e.g. `44` or `c(44, 45)`) shows specific masses,
-#'   and a zero-length vector (`numeric(0)`/`character(0)`) shows none. Note that
-#'   `c()` is `NULL` in R (i.e. all masses).
-#' @param ratio which ratios to additionally include (computed with
-#'   [ir_calculate_ratios()]): `NULL` (default) shows all available ratios, a
-#'   character vector of ratio names (e.g. `c("45/44", "46/44")`) shows specific
-#'   ones, and `character(0)` shows none. Requesting specific ratio names when
-#'   ratios have not been calculated is an error pointing to
-#'   [ir_calculate_ratios()] (with `ratio = NULL` and no ratios present, none are
-#'   simply added). Ratio rows are plotted on the same `value` axis with
-#'   `data_type = "ratios"`; the default `facet = data_type` (with free scales)
-#'   separates them from the intensities.
+#' @param mass which masses to show as intensity traces, as a
+#'   [tidyselect][tidyselect::language] expression evaluated as if the masses
+#'   present in the data were column names. The default `everything()` shows
+#'   every mass and `NULL` (or `c()`) shows none; beyond that any tidyselect
+#'   syntax works, e.g. `c("44", "45")` or `44:48` for specific masses,
+#'   `-"45"`/`!"45"` to exclude one, and helpers such as `starts_with("4")`,
+#'   `matches()`, `all_of()`, or `any_of()`. Unlike plain tidyselect, numbers
+#'   select by name rather than by position (`44:48` means the masses 44 to 48,
+#'   not the 44th to 48th mass). Selecting a mass that is not in the data is an
+#'   error that lists the available masses; use `any_of()` to ignore missing ones.
+#' @param ratio which ratios to additionally show (computed with
+#'   [ir_calculate_ratios()]), as a [tidyselect][tidyselect::language] expression
+#'   evaluated as if the ratio names present in the data were column names - the
+#'   same syntax as `mass`, e.g. `everything()` (the default, all available
+#'   ratios), `NULL` for none, `c("45/44", "46/44")`, `-"45/44"`, or
+#'   `starts_with("45")`. Selecting specific ratios when ratios have not been
+#'   calculated is an error pointing to [ir_calculate_ratios()] (with the default
+#'   `everything()`, or `NULL`, and no ratios present, none are simply added).
+#'   Ratio rows are plotted on the same `value` axis with `data_type = "ratios"`;
+#'   `data_type` is then used as a facet row (see `data_type_as_facet`) to
+#'   separate them from the intensities.
 #' @param facet column or expression to facet by (default: `NULL`, no extra
 #'   faceting). When
 #'   `data_type` is used as a facet row (see `data_type_as_facet`), a single
@@ -839,21 +965,23 @@ ir_generate_scans_tibble <- function(
 #'   expression (faceted with [ggplot2::facet_wrap()]); ignored when `facet` is a
 #'   formula (faceted with [ggplot2::facet_grid()]), with a warning if you set
 #'   them explicitly.
-#' @param color column or expression for the colour aesthetic (default:
-#'   `trace`, the per-species/mass trace identifier, e.g. `"CO2: 44"`). When
-#'   colouring by `trace`, traces that share the same species and (numerator)
-#'   mass are given the same colour, so an intensity trace (`"N2: 29"`) and its
-#'   ratio traces (`"N2: 29/28"`) match.
+#' @param color column or expression for the colour aesthetic (default: the
+#'   generated `color` column, which holds all the traces that share a species
+#'   and (numerator) mass, e.g. `"N2: 29, 29/28"` for both the intensity trace
+#'   `"N2: 29"` and its ratio trace `"N2: 29/28"`, so they are drawn in the same
+#'   colour while remaining separate lines). The legend for it is labelled
+#'   `trace`; use `color = trace` to give every trace its own colour instead.
 #' @param linetype column or expression for the linetype aesthetic (default:
 #'   `NULL`, i.e. no linetype aesthetic)
 #' @param color_values named or unnamed character vector of colours passed to
 #'   [ggplot2::scale_color_manual()], or `NULL` to use the ggplot2 default
 #'   colour palette (default: [palette.colors()])
-#' @param drop_unused_levels whether to drop unused `trace` factor levels (e.g.
+#' @param drop_unused_levels whether to drop unused colour factor levels (e.g.
 #'   traces that are absent after zooming to a window) from the colour scale and
 #'   legend. Default `FALSE` keeps every level so the colour mapping stays stable
 #'   across subsets of the same dataset; set to `TRUE` to show only the levels
-#'   actually present in the plotted data.
+#'   actually present in the plotted data. Note that a `color` level covers every
+#'   trace of its species/mass, so it is only dropped when none of them is shown.
 #' @param scientific whether to format y axis labels in scientific notation
 #'   (default: `FALSE`)
 #' @param ... additional arguments passed on to [ggplot2::facet_wrap()] or
@@ -875,14 +1003,14 @@ ir_plot_scans <- function(
   dataset,
   scan_type = NULL,
   species = NULL,
-  mass = NULL,
-  ratio = NULL,
+  mass = everything(),
+  ratio = everything(),
   facet = NULL,
   data_type_as_facet = auto(),
   scales = "free",
   nrow = NULL,
   ncol = 1,
-  color = trace,
+  color = color,
   linetype = NULL,
   color_values = palette.colors(),
   drop_unused_levels = FALSE,
@@ -938,14 +1066,17 @@ ir_plot_scans <- function(
   # capture aesthetics before any data manipulation
   facet_quo <- rlang::enquo(facet)
   color_quo <- rlang::enquo(color)
+  mass_quo <- rlang::enquo(mass)
+  ratio_quo <- rlang::enquo(ratio)
   linetype_quo <- rlang::enquo(linetype)
 
   # build the plotting tibble (join, filter, trace/data_type/value, ratios)
-  plot_data <- ir_generate_scans_tibble(
+  plot_data <- generate_plot_tibble(
     dataset,
+    "scans",
     species = species,
-    mass = mass,
-    ratio = ratio
+    mass_quo = mass_quo,
+    ratio_quo = ratio_quo
   )
 
   # enforce a single scan type
@@ -1037,11 +1168,8 @@ ir_plot_scans <- function(
       labels = if (scientific) label_scientific() else ggplot2::waiver()
     )
 
-  # additional aesthetics; when colouring by trace, share a colour across traces
-  # of the same species/mass (e.g. "N2: 29" and "N2: 29/28")
-  if (rlang::quo_is_symbol(color_quo, "trace")) {
-    color_values <- build_trace_color_values(plot_data, color_values)
-  }
+  # additional aesthetics; the default `color` column already groups traces of
+  # the same species/mass (e.g. "N2: 29" and "N2: 29/28") into one colour level
   p <- add_color_aes(p, color_quo, color_values, plot_data, drop_unused_levels)
   if (!rlang::quo_is_null(linetype_quo)) {
     p <- p + ggplot2::aes(linetype = !!linetype_quo)
@@ -1082,28 +1210,36 @@ ir_plot_scans <- function(
 #' (which, for an `ir_aggregated_data` object, inner-joins the `$traces` dataset
 #' with `$metadata`). The plot data must contain `species`, `time.s`, `mass`, and
 #' an `intensity.*` column — an error is thrown if any are missing. A `trace`
-#' identifier (`"<species>: <mass>"`) is always regenerated and the plotted
-#' `value` together with a `data_type` label (`"intensity [UNITS]"`, or
-#' `"ratios"` for ratio rows) are added.
+#' identifier (`"<species>: <mass>"`) and the matching `color` identifier are
+#' always regenerated and the plotted `value` together with a `data_type` label
+#' (`"intensity [UNITS]"`, or `"ratios"` for ratio rows) are added.
 #'
 #' @param dataset an `ir_aggregated_data` object from [ir_aggregate_isofiles()]
 #'   or a plain data frame with `species`, `time.s`, `mass`, and an
 #'   `intensity.*` column
 #' @param species optional vector to filter the displayed data to specific
 #'   species (e.g. `"CO2"` or `c("N2", "CO2")`); default `NULL` shows all species.
-#' @param mass which masses to include as intensity traces: `NULL` (default)
-#'   shows all masses, a vector (e.g. `44` or `c(44, 45)`) shows specific masses,
-#'   and a zero-length vector (`numeric(0)`/`character(0)`) shows none. Note that
-#'   `c()` is `NULL` in R (i.e. all masses).
-#' @param ratio which ratios to additionally include (computed with
-#'   [ir_calculate_ratios()]): `NULL` (default) shows all available ratios, a
-#'   character vector of ratio names (e.g. `c("45/44", "46/44")`) shows specific
-#'   ones, and `character(0)` shows none. Requesting specific ratio names when
-#'   ratios have not been calculated is an error pointing to
-#'   [ir_calculate_ratios()] (with `ratio = NULL` and no ratios present, none are
-#'   simply added). Ratio rows are plotted on the same `value` axis with
-#'   `data_type = "ratios"`; the default `facet = data_type` (with free scales)
-#'   separates them from the intensities.
+#' @param mass which masses to show as intensity traces, as a
+#'   [tidyselect][tidyselect::language] expression evaluated as if the masses
+#'   present in the data were column names. The default `everything()` shows
+#'   every mass and `NULL` (or `c()`) shows none; beyond that any tidyselect
+#'   syntax works, e.g. `c("44", "45")` or `44:48` for specific masses,
+#'   `-"45"`/`!"45"` to exclude one, and helpers such as `starts_with("4")`,
+#'   `matches()`, `all_of()`, or `any_of()`. Unlike plain tidyselect, numbers
+#'   select by name rather than by position (`44:48` means the masses 44 to 48,
+#'   not the 44th to 48th mass). Selecting a mass that is not in the data is an
+#'   error that lists the available masses; use `any_of()` to ignore missing ones.
+#' @param ratio which ratios to additionally show (computed with
+#'   [ir_calculate_ratios()]), as a [tidyselect][tidyselect::language] expression
+#'   evaluated as if the ratio names present in the data were column names - the
+#'   same syntax as `mass`, e.g. `everything()` (the default, all available
+#'   ratios), `NULL` for none, `c("45/44", "46/44")`, `-"45/44"`, or
+#'   `starts_with("45")`. Selecting specific ratios when ratios have not been
+#'   calculated is an error pointing to [ir_calculate_ratios()] (with the default
+#'   `everything()`, or `NULL`, and no ratios present, none are simply added).
+#'   Ratio rows are plotted on the same `value` axis with `data_type = "ratios"`;
+#'   `data_type` is then used as a facet row (see `data_type_as_facet`) to
+#'   separate them from the intensities.
 #' @param facet column or expression to facet by (default: `NULL`, no extra
 #'   faceting). When
 #'   `data_type` is used as a facet row (see `data_type_as_facet`), a single
@@ -1130,21 +1266,23 @@ ir_plot_scans <- function(
 #'   expression (faceted with [ggplot2::facet_wrap()]); ignored when `facet` is a
 #'   formula (faceted with [ggplot2::facet_grid()]), with a warning if you set
 #'   them explicitly.
-#' @param color column or expression for the colour aesthetic (default:
-#'   `trace`, the per-species/mass trace identifier, e.g. `"CO2: 44"`). When
-#'   colouring by `trace`, traces that share the same species and (numerator)
-#'   mass are given the same colour, so an intensity trace (`"N2: 29"`) and its
-#'   ratio traces (`"N2: 29/28"`) match.
+#' @param color column or expression for the colour aesthetic (default: the
+#'   generated `color` column, which holds all the traces that share a species
+#'   and (numerator) mass, e.g. `"N2: 29, 29/28"` for both the intensity trace
+#'   `"N2: 29"` and its ratio trace `"N2: 29/28"`, so they are drawn in the same
+#'   colour while remaining separate lines). The legend for it is labelled
+#'   `trace`; use `color = trace` to give every trace its own colour instead.
 #' @param linetype column or expression for the linetype aesthetic (default:
 #'   `NULL`, i.e. no linetype aesthetic)
 #' @param color_values named or unnamed character vector of colours passed to
 #'   [ggplot2::scale_color_manual()], or `NULL` to use the ggplot2 default
 #'   colour palette (default: [palette.colors()])
-#' @param drop_unused_levels whether to drop unused `trace` factor levels (e.g.
+#' @param drop_unused_levels whether to drop unused colour factor levels (e.g.
 #'   traces that are absent after zooming to a window) from the colour scale and
 #'   legend. Default `FALSE` keeps every level so the colour mapping stays stable
 #'   across subsets of the same dataset; set to `TRUE` to show only the levels
-#'   actually present in the plotted data.
+#'   actually present in the plotted data. Note that a `color` level covers every
+#'   trace of its species/mass, so it is only dropped when none of them is shown.
 #' @param scientific whether to format y axis labels in scientific notation
 #'   (default: `FALSE`)
 #' @param ... additional arguments passed on to [ggplot2::facet_wrap()] or
@@ -1171,14 +1309,14 @@ ir_plot_scans <- function(
 ir_plot_continuous_flow <- function(
   dataset,
   species = NULL,
-  mass = NULL,
-  ratio = NULL,
+  mass = everything(),
+  ratio = everything(),
   facet = NULL,
   data_type_as_facet = auto(),
   scales = "free",
   nrow = NULL,
   ncol = 1,
-  color = trace,
+  color = color,
   linetype = NULL,
   color_values = palette.colors(),
   drop_unused_levels = FALSE,
@@ -1246,14 +1384,17 @@ ir_plot_continuous_flow <- function(
   # capture aesthetics before any data manipulation
   facet_quo <- rlang::enquo(facet)
   color_quo <- rlang::enquo(color)
+  mass_quo <- rlang::enquo(mass)
+  ratio_quo <- rlang::enquo(ratio)
   linetype_quo <- rlang::enquo(linetype)
 
   # build the plotting tibble (join, filter, trace/data_type/value, ratios)
-  plot_data <- ir_generate_traces_tibble(
+  plot_data <- generate_plot_tibble(
     dataset,
+    "traces",
     species = species,
-    mass = mass,
-    ratio = ratio
+    mass_quo = mass_quo,
+    ratio_quo = ratio_quo
   )
   time_col <- "time.s"
 
@@ -1315,11 +1456,8 @@ ir_plot_continuous_flow <- function(
       labels = if (scientific) label_scientific() else ggplot2::waiver()
     )
 
-  # additional aesthetics; when colouring by trace, share a colour across traces
-  # of the same species/mass (e.g. "N2: 29" and "N2: 29/28")
-  if (rlang::quo_is_symbol(color_quo, "trace")) {
-    color_values <- build_trace_color_values(plot_data, color_values)
-  }
+  # additional aesthetics; the default `color` column already groups traces of
+  # the same species/mass (e.g. "N2: 29" and "N2: 29/28") into one colour level
   p <- add_color_aes(p, color_quo, color_values, plot_data, drop_unused_levels)
   if (!rlang::quo_is_null(linetype_quo)) {
     p <- p + ggplot2::aes(linetype = !!linetype_quo)
@@ -1360,28 +1498,36 @@ ir_plot_continuous_flow <- function(
 #' `ir_aggregated_data` object, inner-joins the `$cycles` dataset with
 #' `$metadata`). The plot data must contain `species`, `cycle`, `type`, `mass`,
 #' and an `intensity.*` column — an error is thrown if any are missing. A `trace`
-#' identifier (`"<species>: <mass>"`) is always regenerated and the plotted
-#' `value` together with a `data_type` label (`"intensity [UNITS]"`, or
-#' `"ratios"` for ratio rows) are added.
+#' identifier (`"<species>: <mass>"`) and the matching `color` identifier are
+#' always regenerated and the plotted `value` together with a `data_type` label
+#' (`"intensity [UNITS]"`, or `"ratios"` for ratio rows) are added.
 #'
 #' @param dataset an `ir_aggregated_data` object from [ir_aggregate_isofiles()]
 #'   or a plain data frame with `species`, `cycle`, `type`, `mass`, and an
 #'   `intensity.*` column
 #' @param species optional vector to filter the displayed data to specific
 #'   species (e.g. `"CO2"` or `c("N2", "CO2")`); default `NULL` shows all species.
-#' @param mass which masses to include as intensity traces: `NULL` (default)
-#'   shows all masses, a vector (e.g. `44` or `c(44, 45)`) shows specific masses,
-#'   and a zero-length vector (`numeric(0)`/`character(0)`) shows none. Note that
-#'   `c()` is `NULL` in R (i.e. all masses).
-#' @param ratio which ratios to additionally include (computed with
-#'   [ir_calculate_ratios()]): `NULL` (default) shows all available ratios, a
-#'   character vector of ratio names (e.g. `c("45/44", "46/44")`) shows specific
-#'   ones, and `character(0)` shows none. Requesting specific ratio names when
-#'   ratios have not been calculated is an error pointing to
-#'   [ir_calculate_ratios()] (with `ratio = NULL` and no ratios present, none are
-#'   simply added). Ratio rows are plotted on the same `value` axis with
-#'   `data_type = "ratios"`; the default `facet = data_type` (with free scales)
-#'   separates them from the intensities.
+#' @param mass which masses to show as intensity traces, as a
+#'   [tidyselect][tidyselect::language] expression evaluated as if the masses
+#'   present in the data were column names. The default `everything()` shows
+#'   every mass and `NULL` (or `c()`) shows none; beyond that any tidyselect
+#'   syntax works, e.g. `c("44", "45")` or `44:48` for specific masses,
+#'   `-"45"`/`!"45"` to exclude one, and helpers such as `starts_with("4")`,
+#'   `matches()`, `all_of()`, or `any_of()`. Unlike plain tidyselect, numbers
+#'   select by name rather than by position (`44:48` means the masses 44 to 48,
+#'   not the 44th to 48th mass). Selecting a mass that is not in the data is an
+#'   error that lists the available masses; use `any_of()` to ignore missing ones.
+#' @param ratio which ratios to additionally show (computed with
+#'   [ir_calculate_ratios()]), as a [tidyselect][tidyselect::language] expression
+#'   evaluated as if the ratio names present in the data were column names - the
+#'   same syntax as `mass`, e.g. `everything()` (the default, all available
+#'   ratios), `NULL` for none, `c("45/44", "46/44")`, `-"45/44"`, or
+#'   `starts_with("45")`. Selecting specific ratios when ratios have not been
+#'   calculated is an error pointing to [ir_calculate_ratios()] (with the default
+#'   `everything()`, or `NULL`, and no ratios present, none are simply added).
+#'   Ratio rows are plotted on the same `value` axis with `data_type = "ratios"`;
+#'   `data_type` is then used as a facet row (see `data_type_as_facet`) to
+#'   separate them from the intensities.
 #' @param facet column or expression to facet by (default: `NULL`, no extra
 #'   faceting). When
 #'   `data_type` is used as a facet row (see `data_type_as_facet`), a single
@@ -1408,11 +1554,12 @@ ir_plot_continuous_flow <- function(
 #'   expression (faceted with [ggplot2::facet_wrap()]); ignored when `facet` is a
 #'   formula (faceted with [ggplot2::facet_grid()]), with a warning if you set
 #'   them explicitly.
-#' @param color column or expression for the colour aesthetic (default:
-#'   `trace`, the per-species/mass trace identifier, e.g. `"CO2: 44"`). When
-#'   colouring by `trace`, traces that share the same species and (numerator)
-#'   mass are given the same colour, so an intensity trace (`"CO2: 45"`) and its
-#'   ratio traces (`"CO2: 45/44"`) match.
+#' @param color column or expression for the colour aesthetic (default: the
+#'   generated `color` column, which holds all the traces that share a species
+#'   and (numerator) mass, e.g. `"N2: 29, 29/28"` for both the intensity trace
+#'   `"N2: 29"` and its ratio trace `"N2: 29/28"`, so they are drawn in the same
+#'   colour while remaining separate lines). The legend for it is labelled
+#'   `trace`; use `color = trace` to give every trace its own colour instead.
 #' @param shape column or expression for the point shape aesthetic (default:
 #'   `type`, distinguishing `"standard"` from `"sample"` cycles)
 #' @param linetype column or expression for the linetype aesthetic (default:
@@ -1420,11 +1567,12 @@ ir_plot_continuous_flow <- function(
 #' @param color_values named or unnamed character vector of colours passed to
 #'   [ggplot2::scale_color_manual()], or `NULL` to use the ggplot2 default
 #'   colour palette (default: [palette.colors()])
-#' @param drop_unused_levels whether to drop unused `trace` factor levels (e.g.
+#' @param drop_unused_levels whether to drop unused colour factor levels (e.g.
 #'   traces that are absent after zooming to a window) from the colour scale and
 #'   legend. Default `FALSE` keeps every level so the colour mapping stays stable
 #'   across subsets of the same dataset; set to `TRUE` to show only the levels
-#'   actually present in the plotted data.
+#'   actually present in the plotted data. Note that a `color` level covers every
+#'   trace of its species/mass, so it is only dropped when none of them is shown.
 #' @param scientific whether to format y axis labels in scientific notation
 #'   (default: `FALSE`)
 #' @param cycle_window optional numeric vector of length 2 giving the cycle axis
@@ -1444,14 +1592,14 @@ ir_plot_continuous_flow <- function(
 ir_plot_dual_inlet <- function(
   dataset,
   species = NULL,
-  mass = NULL,
-  ratio = NULL,
+  mass = everything(),
+  ratio = everything(),
   facet = NULL,
   data_type_as_facet = auto(),
   scales = "free",
   nrow = NULL,
   ncol = 1,
-  color = trace,
+  color = color,
   shape = type,
   linetype = NULL,
   color_values = palette.colors(),
@@ -1497,15 +1645,18 @@ ir_plot_dual_inlet <- function(
   # capture aesthetics before any data manipulation
   facet_quo <- rlang::enquo(facet)
   color_quo <- rlang::enquo(color)
+  mass_quo <- rlang::enquo(mass)
+  ratio_quo <- rlang::enquo(ratio)
   shape_quo <- rlang::enquo(shape)
   linetype_quo <- rlang::enquo(linetype)
 
   # build the plotting tibble (join, filter, trace/data_type/value, ratios)
-  plot_data <- ir_generate_cycles_tibble(
+  plot_data <- generate_plot_tibble(
     dataset,
+    "cycles",
     species = species,
-    mass = mass,
-    ratio = ratio
+    mass_quo = mass_quo,
+    ratio_quo = ratio_quo
   )
 
   use_dt_facet <- use_data_type_facet(facet_quo, data_type_as_facet, plot_data)
@@ -1569,11 +1720,8 @@ ir_plot_dual_inlet <- function(
       labels = if (scientific) label_scientific() else ggplot2::waiver()
     )
 
-  # additional aesthetics; when colouring by trace, share a colour across traces
-  # of the same species/mass (e.g. "CO2: 45" and "CO2: 45/44")
-  if (rlang::quo_is_symbol(color_quo, "trace")) {
-    color_values <- build_trace_color_values(plot_data, color_values)
-  }
+  # additional aesthetics; the default `color` column already groups traces of
+  # the same species/mass (e.g. "N2: 29" and "N2: 29/28") into one colour level
   p <- add_color_aes(p, color_quo, color_values, plot_data, drop_unused_levels)
   if (!rlang::quo_is_null(shape_quo)) {
     p <- p + ggplot2::aes(shape = !!shape_quo)

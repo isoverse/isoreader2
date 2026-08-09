@@ -1,6 +1,6 @@
 Package: isoreader2
 Title: Read Stable Isotope Data Files
-Version: 0.6.1
+Version: 0.6.2
 Authors@R: 
     c(
         person(
@@ -37,6 +37,7 @@ Imports:
     tibble,
     dplyr,
     tidyr,
+    tidyselect,
     purrr,
     withr,
     RcppSimdJson,
