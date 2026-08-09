@@ -77,8 +77,9 @@ These functions plot aggregated isofiles data.
   : Default isoreader2 plotting theme
 - [`ir_plot_scans()`](https://isoreader2.isoverse.org/reference/ir_plot_scans.md)
   : Plot scan data
-- [`ir_plot_continuous_flow()`](https://isoreader2.isoverse.org/reference/ir_plot_continuous_flow.md)
-  : Plot continuous flow data
+- [`ir_plot_traces()`](https://isoreader2.isoverse.org/reference/ir_plot_traces.md)
+  [`ir_plot_continuous_flow()`](https://isoreader2.isoverse.org/reference/ir_plot_traces.md)
+  : Plot trace data
 - [`ir_plot_dual_inlet()`](https://isoreader2.isoverse.org/reference/ir_plot_dual_inlet.md)
   : Plot dual inlet cycle data
 - [`ir_generate_traces_tibble()`](https://isoreader2.isoverse.org/reference/ir_generate_tibble.md)

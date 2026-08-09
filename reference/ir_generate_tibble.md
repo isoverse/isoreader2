@@ -1,7 +1,7 @@
 # Generate the tibble used by the plotting functions
 
 These helpers build the exact flat tibble that
-[`ir_plot_continuous_flow()`](https://isoreader2.isoverse.org/reference/ir_plot_continuous_flow.md)
+[`ir_plot_traces()`](https://isoreader2.isoverse.org/reference/ir_plot_traces.md)
 (`ir_generate_traces_tibble()`),
 [`ir_plot_dual_inlet()`](https://isoreader2.isoverse.org/reference/ir_plot_dual_inlet.md)
 (`ir_generate_cycles_tibble()`), and

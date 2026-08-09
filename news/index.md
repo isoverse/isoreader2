@@ -22,7 +22,7 @@
   (`ir_get_*()`).
 
 - Visualizes continuous flow, dual inlet, and scan data
-  ([`ir_plot_continuous_flow()`](https://isoreader2.isoverse.org/reference/ir_plot_continuous_flow.md),
+  ([`ir_plot_continuous_flow()`](https://isoreader2.isoverse.org/reference/ir_plot_traces.md),
   [`ir_plot_dual_inlet()`](https://isoreader2.isoverse.org/reference/ir_plot_dual_inlet.md),
   [`ir_plot_scans()`](https://isoreader2.isoverse.org/reference/ir_plot_scans.md)),
   and builds the underlying plotting tibbles directly
