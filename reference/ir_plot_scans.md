@@ -8,10 +8,10 @@ result or a plain data frame. The data is prepared with
 dataset with `$metadata`). The plot data must contain `species`, `x`,
 `scan_type`, `x_units`, `mass`, and an `intensity.*` column — an error
 is thrown if any are missing. A `trace` identifier
-(`"<species>: <mass>"`) is always regenerated and the plotted `value`
-together with a `data_type` label (`"intensity [UNITS]"`, or `"ratios"`
-for ratio rows) are added. `scan_type` and `x_units` are combined for
-the x axis label.
+(`"<species>: <mass>"`) and the matching `color` identifier are always
+regenerated and the plotted `value` together with a `data_type` label
+(`"intensity [UNITS]"`, or `"ratios"` for ratio rows) are added.
+`scan_type` and `x_units` are combined for the x axis label.
 
 ## Usage
 
@@ -20,14 +20,14 @@ ir_plot_scans(
   dataset,
   scan_type = NULL,
   species = NULL,
-  mass = NULL,
-  ratio = NULL,
+  mass = everything(),
+  ratio = everything(),
   facet = NULL,
   data_type_as_facet = auto(),
   scales = "free",
   nrow = NULL,
   ncol = 1,
-  color = trace,
+  color = color,
   linetype = NULL,
   color_values = palette.colors(),
   drop_unused_levels = FALSE,
@@ -62,25 +62,36 @@ ir_plot_scans(
 
 - mass:
 
-  which masses to include as intensity traces: `NULL` (default) shows
-  all masses, a vector (e.g. `44` or `c(44, 45)`) shows specific masses,
-  and a zero-length vector (`numeric(0)`/`character(0)`) shows none.
-  Note that [`c()`](https://rdrr.io/r/base/c.html) is `NULL` in R (i.e.
-  all masses).
+  which masses to show as intensity traces, as a
+  [tidyselect](https://tidyselect.r-lib.org/reference/language.html)
+  expression evaluated as if the masses present in the data were column
+  names. The default `everything()` shows every mass and `NULL` (or
+  [`c()`](https://rdrr.io/r/base/c.html)) shows none; beyond that any
+  tidyselect syntax works, e.g. `c("44", "45")` or `44:48` for specific
+  masses, `-"45"`/`!"45"` to exclude one, and helpers such as
+  `starts_with("4")`, `matches()`, `all_of()`, or `any_of()`. Unlike
+  plain tidyselect, numbers select by name rather than by position
+  (`44:48` means the masses 44 to 48, not the 44th to 48th mass).
+  Selecting a mass that is not in the data is an error that lists the
+  available masses; use `any_of()` to ignore missing ones.
 
 - ratio:
 
-  which ratios to additionally include (computed with
-  [`ir_calculate_ratios()`](https://isoreader2.isoverse.org/reference/ir_calculate_ratios.md)):
-  `NULL` (default) shows all available ratios, a character vector of
-  ratio names (e.g. `c("45/44", "46/44")`) shows specific ones, and
-  `character(0)` shows none. Requesting specific ratio names when ratios
-  have not been calculated is an error pointing to
+  which ratios to additionally show (computed with
+  [`ir_calculate_ratios()`](https://isoreader2.isoverse.org/reference/ir_calculate_ratios.md)),
+  as a
+  [tidyselect](https://tidyselect.r-lib.org/reference/language.html)
+  expression evaluated as if the ratio names present in the data were
+  column names - the same syntax as `mass`, e.g. `everything()` (the
+  default, all available ratios), `NULL` for none,
+  `c("45/44", "46/44")`, `-"45/44"`, or `starts_with("45")`. Selecting
+  specific ratios when ratios have not been calculated is an error
+  pointing to
   [`ir_calculate_ratios()`](https://isoreader2.isoverse.org/reference/ir_calculate_ratios.md)
-  (with `ratio = NULL` and no ratios present, none are simply added).
-  Ratio rows are plotted on the same `value` axis with
-  `data_type = "ratios"`; the default `facet = data_type` (with free
-  scales) separates them from the intensities.
+  (with the default `everything()`, or `NULL`, and no ratios present,
+  none are simply added). Ratio rows are plotted on the same `value`
+  axis with `data_type = "ratios"`; `data_type` is then used as a facet
+  row (see `data_type_as_facet`) to separate them from the intensities.
 
 - facet:
 
@@ -131,11 +142,13 @@ ir_plot_scans(
 
 - color:
 
-  column or expression for the colour aesthetic (default: `trace`, the
-  per-species/mass trace identifier, e.g. `"CO2: 44"`). When colouring
-  by `trace`, traces that share the same species and (numerator) mass
-  are given the same colour, so an intensity trace (`"N2: 29"`) and its
-  ratio traces (`"N2: 29/28"`) match.
+  column or expression for the colour aesthetic (default: the generated
+  `color` column, which holds all the traces that share a species and
+  (numerator) mass, e.g. `"N2: 29, 29/28"` for both the intensity trace
+  `"N2: 29"` and its ratio trace `"N2: 29/28"`, so they are drawn in the
+  same colour while remaining separate lines). The legend for it is
+  labelled `trace`; use `color = trace` to give every trace its own
+  colour instead.
 
 - linetype:
 
@@ -151,11 +164,13 @@ ir_plot_scans(
 
 - drop_unused_levels:
 
-  whether to drop unused `trace` factor levels (e.g. traces that are
+  whether to drop unused colour factor levels (e.g. traces that are
   absent after zooming to a window) from the colour scale and legend.
   Default `FALSE` keeps every level so the colour mapping stays stable
   across subsets of the same dataset; set to `TRUE` to show only the
-  levels actually present in the plotted data.
+  levels actually present in the plotted data. Note that a `color` level
+  covers every trace of its species/mass, so it is only dropped when
+  none of them is shown.
 
 - scientific:
 

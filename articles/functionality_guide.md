@@ -89,7 +89,7 @@ isofiles <- file_paths |> ir_read_isofiles()
 ```
 
 ``` fansi
-✔ [443ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+✔ [435ms] ir_read_isofiles() finished reading 2 isotope data files/archives
 ```
 
 ``` r
@@ -109,7 +109,7 @@ and 30); 1.34k time points for CO2 (masses 44, 45, and 46); 20 metadata columns
 3); 19 metadata columns
 ```
 
-#### bonus combine collections with `c()`
+#### bonus: combine collections with `c()`
 
 Multiple `ir_isofiles` collections can be combined into one with a
 simple [`c()`](https://rdrr.io/r/base/c.html), which row-binds them
@@ -136,7 +136,7 @@ and 30); 1.34k time points for CO2 (masses 44, 45, and 46); 20 metadata columns
 3); 19 metadata columns
 ```
 
-#### bonus `ir_save_isofiles()` / `ir_load_isofiles()`
+#### bonus: `ir_save_isofiles()` / `ir_load_isofiles()`
 
 You can store an entire `ir_isofiles` collection to disk (as an RDS
 file) and read it back exactly as it was, without re-reading the
@@ -149,7 +149,7 @@ isofiles |> ir_save_isofiles(file.path("tmp_examples", "my_isofiles"))
 ```
 
 ``` fansi
-✔ [51ms] ir_save_isofiles() saved 2 isofiles to tmp_examples/my_isofiles.rds
+✔ [48ms] ir_save_isofiles() saved 2 isofiles to tmp_examples/my_isofiles.rds
 ```
 
 ``` r
@@ -177,7 +177,7 @@ dataset <- isofiles |> ir_aggregate_isofiles()
 ```
 
 ``` fansi
-✔ [256ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+✔ [247ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 intensity in mV) from 2 files using the standard aggregator
 ```
 
@@ -210,7 +210,7 @@ aggregated: channel)
 → problems: has no issues
 ```
 
-#### bonus intensity units
+#### bonus: intensity units
 
 By default the raw signals are reported in millivolts (`mV`). Pass a
 different `intensity_units` to report voltage (`mV`, `V`), current
@@ -228,12 +228,12 @@ isofiles |>
 ```
 
 ``` fansi
-✔ [238ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+✔ [235ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 intensity in nA) from 2 files using the standard aggregator
 ```
 
 ``` fansi
-✔ [10ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [9ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
@@ -254,7 +254,7 @@ intensity in nA) from 2 files using the standard aggregator
 # ℹ 24,505 more rows
 ```
 
-#### bonus `ir_get_aggregator()`
+#### bonus: `ir_get_aggregator()`
 
 You can optionally use a different aggregator. Besides the default
 `standard` aggregator, the package ships (from smallest to largest) the
@@ -361,7 +361,7 @@ isofiles |> ir_aggregate_isofiles(aggregator = "extended")
 ```
 
 ``` fansi
-✔ [554ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
+✔ [531ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
 intensity in mV), resistors (8), and vendor_data_table (25) from 2 files using
 the extended aggregator
 ```
@@ -420,7 +420,7 @@ d 3H2/2H2 [per mil] (6 NA), R 2H/1H (6 NA), δ 2H/1H [per mil] (6 NA), AT% 2H/1H
 → problems: has no issues
 ```
 
-#### bonus `ir_register_aggregator()`
+#### bonus: `ir_register_aggregator()`
 
 Or build your own aggregator with
 [`ir_start_aggregator()`](https://isoreader2.isoverse.org/reference/ir_aggregator.md)
@@ -483,7 +483,7 @@ isofiles |> ir_aggregate_isofiles(aggregator = "my_aggregator")
 ```
 
 ``` fansi
-✔ [147ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+✔ [143ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 intensity in mV) from 2 files using the my_aggregator aggregator
 ```
 
@@ -508,7 +508,7 @@ aggregated: channel)
 → problems: has no issues
 ```
 
-#### bonus `ir_get_problems()` / `ir_show_problems()`
+#### bonus: `ir_get_problems()` / `ir_show_problems()`
 
 Reading and aggregation are designed to be fail-safe: instead of
 stopping at the first error, problems are collected and reported. There
@@ -653,7 +653,7 @@ dataset |> ir_get_metadata()
 ```
 
 ``` fansi
-✔ [5ms] ir_get_data() retrieved 2 records from metadata
+✔ [4ms] ir_get_data() retrieved 2 records from metadata
 ```
 
 ``` fansi
@@ -698,7 +698,7 @@ dataset |> ir_get_traces()
 # ℹ 24,505 more rows
 ```
 
-#### bonus `ir_get_vendor_data_table()`
+#### bonus: `ir_get_vendor_data_table()`
 
 Some file formats also store the vendor’s own computed results table
 (the table Isodat shows in its results view: per-peak or per-cycle
@@ -718,7 +718,7 @@ dataset_ext <- isofiles |> ir_aggregate_isofiles(aggregator = "extended")
 ```
 
 ``` fansi
-✔ [544ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
+✔ [533ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
 intensity in mV), resistors (8), and vendor_data_table (25) from 2 files using
 the extended aggregator
 ```
@@ -730,8 +730,8 @@ dataset_ext |> ir_get_vendor_data_table()
 ```
 
 ``` fansi
-✔ [8ms] ir_get_data() retrieved 25 records from the combination of metadata (2)
-and vendor_data_table (25) via uidx and analysis
+✔ [13ms] ir_get_data() retrieved 25 records from the combination of metadata
+(2) and vendor_data_table (25) via uidx and analysis
 ```
 
 ``` fansi
@@ -789,7 +789,7 @@ These functions also work directly on an unaggregated `ir_isofiles`
 object (applied individually to each file), though that is significantly
 slower than working on an aggregated dataset.
 
-#### bonus `ir_filter_for_continuous_flow()` / `ir_filter_for_dual_inlet()` / `ir_filter_for_scans()`
+#### bonus: `ir_filter_for_continuous_flow()` / `ir_filter_for_dual_inlet()` / `ir_filter_for_scans()`
 
 If a dataset mixes measurement types, these convenience filters keep
 only the files of one type (filtering on the metadata `type` field) and
@@ -816,7 +816,7 @@ dataset |>
 2     2        1 continuous_flow_gc_example cf   
 ```
 
-### bonus `ir_save_aggregated_data()` / `ir_load_aggregated_data()`
+### bonus: `ir_save_aggregated_data()` / `ir_load_aggregated_data()`
 
 Aggregated data can be stored to (and loaded from) a parquet file for
 fast, language-independent access. This requires the suggested **arrow**
@@ -846,7 +846,7 @@ dataset_ratios <- dataset |> ir_calculate_ratios()
 ```
 
 ``` fansi
-✔ [24ms] ir_calculate_ratios() calculated 13.5k ratios with additive offsets
+✔ [23ms] ir_calculate_ratios() calculated 13.5k ratios with additive offsets
 num_add.V = 100 and denom_add.V = 100 and added ratio_name and ratio columns to
 the traces
 ```
@@ -861,7 +861,7 @@ dataset_ratios |>
 ```
 
 ``` fansi
-✔ [9ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [10ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
@@ -882,7 +882,7 @@ dataset_ratios |>
 # ℹ 24,505 more rows
 ```
 
-#### bonus base mass, additive offsets, and normalization
+#### bonus: base mass, additive offsets, and normalization
 
 The base mass can be overridden per species by name (e.g. `N2 = 28`,
 `CO2 = 44`). For continuous flow (`traces`) and `scans` data a small
@@ -989,6 +989,63 @@ ratio_name and ratio columns to the traces
 
 ![](functionality_guide_files/figure-html/unnamed-chunk-25-1.png)
 
+#### bonus: selecting masses and ratios
+
+`mass` and `ratio` accept the full
+[tidyselect](https://tidyselect.r-lib.org/) syntax, evaluated as if the
+masses and ratio names in the data were column names. Here `-"46"` drops
+mass 46:
+
+``` r
+
+dataset |>
+  ir_calculate_ratios() |>
+  ir_plot_continuous_flow(
+    species = "CO2",
+    mass = -"46",
+    facet = file_name,
+    time_window.min = c(4.5, 8.5)
+  )
+```
+
+``` fansi
+✔ [20ms] ir_calculate_ratios() calculated 13.5k ratios with additive offsets
+num_add.V = 100 and denom_add.V = 100 and added ratio_name and ratio columns to
+the traces
+```
+
+![](functionality_guide_files/figure-html/unnamed-chunk-26-1.png)
+
+Both `mass` and `ratio` arguments default to
+[`everything()`](https://tidyselect.r-lib.org/reference/everything.html)
+and take [`c()`](https://rdrr.io/r/base/c.html) for none, so the same
+syntax covers everything from “all of them” to a single trace:
+
+``` r
+
+# ratios have to be calculated before they can be selected
+with_ratios <- dataset |> ir_calculate_ratios()
+
+# all masses and all available ratios (the default)
+with_ratios |> ir_plot_continuous_flow()
+# only the ratios, no intensity traces
+with_ratios |> ir_plot_continuous_flow(mass = c())
+# only the intensity traces, no ratios
+with_ratios |> ir_plot_continuous_flow(ratio = c())
+# a specific set, as names or (via as.character) as numbers
+dataset |> ir_plot_continuous_flow(mass = c("44", "45"))
+dataset |> ir_plot_continuous_flow(mass = 44:46)
+# everything except one
+ir_plot_continuous_flow(dataset, mass = -"30")
+# pattern matching helpers
+dataset |> ir_plot_continuous_flow(mass = starts_with("4"))
+with_ratios |> ir_plot_continuous_flow(mass = c(), ratio = matches("/44"))
+# tolerate masses/ratios that may not be in the data with any_of (a plain c() would error)
+dataset |> ir_plot_continuous_flow(mass = any_of(c("44", "47")))
+```
+
+#### bonus: ggplot modifications
+
 The plots are ordinary `ggplot` objects (the package theme
 [`ir_default_theme()`](https://isoreader2.isoverse.org/reference/ir_default_theme.md)
 is always applied), so you can keep customizing with ggplot2 layers -
@@ -1008,15 +1065,15 @@ dataset |>
   theme(legend.position = "bottom")
 ```
 
-![](functionality_guide_files/figure-html/unnamed-chunk-26-1.png)
+![](functionality_guide_files/figure-html/unnamed-chunk-28-1.png)
 
 #### bonus `ir_generate_traces_tibble()` / `ir_generate_cycles_tibble()` / `ir_generate_scans_tibble()`
 
 If you want the exact tibble that a plot would draw (e.g. to build your
 own plot or do further analysis), the `ir_generate_*_tibble()` helpers
 return it without plotting. They take the same `species`/`mass`/`ratio`
-arguments and add the `trace`, `data_type`, and `value` columns the
-plotting functions use.
+arguments and add the `trace`, `color`, `data_type`, and `value` columns
+the plotting functions use.
 
 ``` r
 
@@ -1024,7 +1081,7 @@ dataset |> ir_generate_traces_tibble(species = "CO2")
 ```
 
 ``` fansi
-# A tibble: 4,008 × 35
+# A tibble: 4,008 × 36
     uidx analysis species mass     tp time.s intensity.mV file_path    file_name
    <int>    <int> <chr>   <chr> <int>  <dbl>        <dbl> <chr>        <chr>    
  1     1        1 CO2     44        1   232.      26.6    tmp_example… continuo…
@@ -1038,7 +1095,7 @@ dataset |> ir_generate_traces_tibble(species = "CO2")
  9     1        1 CO2     44        9   233.      -0.0174 tmp_example… continuo…
 10     1        1 CO2     44       10   233.      -0.0231 tmp_example… continuo…
 # ℹ 3,998 more rows
-# ℹ 26 more variables: timestamp <dttm>, type <chr>, h3_factor <chr>,
+# ℹ 27 more variables: timestamp <dttm>, type <chr>, h3_factor <chr>,
 #   Row <chr>, `Peak Center` <chr>, `Check Ref. Dilution` <chr>,
 #   `H3 Stability` <chr>, `H3 Factor` <chr>, Amount <chr>, Type <chr>,
 #   `EA Method` <chr>, `Identifier 1` <chr>, `Identifier 2` <chr>,
@@ -1064,16 +1121,16 @@ di_dataset <-
 ```
 
 ``` fansi
-✔ [378ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+✔ [387ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 ```
 
 ``` fansi
-✔ [125ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+✔ [132ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
 intensity in V) from 1 file using the standard aggregator
 ```
 
 ``` fansi
-✔ [13ms] ir_calculate_ratios() calculated 85 ratios and added ratio_name and
+✔ [10ms] ir_calculate_ratios() calculated 85 ratios and added ratio_name and
 ratio columns to the cycles
 ```
 
@@ -1082,17 +1139,22 @@ ratio columns to the cycles
 di_dataset |> ir_plot_dual_inlet(facet = file_name)
 ```
 
-![](functionality_guide_files/figure-html/unnamed-chunk-28-1.png)
+![](functionality_guide_files/figure-html/unnamed-chunk-30-1.png)
 
 The same `species`/`mass`/`ratio` filters apply, and `cycle_window`
 zooms to a range of cycles:
 
 ``` r
 
-di_dataset |> ir_plot_dual_inlet(mass = c(44, 45, 46), facet = file_name)
+di_dataset |>
+  ir_plot_dual_inlet(
+    mass = 44:46,
+    ratio = c("45/44", "46/44"),
+    facet = file_name
+  )
 ```
 
-![](functionality_guide_files/figure-html/unnamed-chunk-29-1.png)
+![](functionality_guide_files/figure-html/unnamed-chunk-31-1.png)
 
 ### `ir_plot_scans()`
 
@@ -1115,15 +1177,15 @@ data_folder |>
 ```
 
 ``` fansi
-✔ [181ms] ir_read_isofiles() finished reading 4 isotope data files/archives
+✔ [165ms] ir_read_isofiles() finished reading 4 isotope data files/archives
 ```
 
 ``` fansi
-✔ [344ms] ir_aggregate_isofiles() aggregated metadata (4) and scans (17.8k,
+✔ [316ms] ir_aggregate_isofiles() aggregated metadata (4) and scans (17.8k,
 intensity in V) from 4 files using the standard aggregator
 ```
 
-![](functionality_guide_files/figure-html/unnamed-chunk-30-1.png)
+![](functionality_guide_files/figure-html/unnamed-chunk-32-1.png)
 
 ## Exporting data
 
@@ -1144,16 +1206,16 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [5ms] ir_get_data() retrieved 2 records from metadata
+✔ [4ms] ir_get_data() retrieved 2 records from metadata
 ```
 
 ``` fansi
-✔ [9ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [8ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
 ``` fansi
-✔ [1s] ir_export_to_excel() exported 2 rows of metadata and 24.5k rows of
+✔ [991ms] ir_export_to_excel() exported 2 rows of metadata and 24.5k rows of
 traces to tmp_examples/my_dataset.xlsx
 ```
 

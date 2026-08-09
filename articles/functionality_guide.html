@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">isoreader2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.6.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.6.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -134,7 +134,7 @@ stored in nested columns.</p>
 <pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[2ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> is finished, 0 files/archives required
 (re-)extraction
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[443ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 2 isotope data files/archives
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[435ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 2 isotope data files/archives
 </code></pre>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># show what was read</span></span>
@@ -147,7 +147,7 @@ and <span style="color: #00BB00;">30</span>); <span style="color: #00BBBB;">1.34
 <span style="color: #00BB00;">3</span>); <span style="color: #00BBBB;">19</span> metadata columns
 </code></pre>
 <div class="section level4">
-<h4 id="bonus-combine-collections-with-c">bonus combine collections with <code>c()</code><a class="anchor" aria-label="anchor" href="#bonus-combine-collections-with-c"></a>
+<h4 id="bonus-combine-collections-with-c">bonus: combine collections with <code>c()</code><a class="anchor" aria-label="anchor" href="#bonus-combine-collections-with-c"></a>
 </h4>
 <p>Multiple <code>ir_isofiles</code> collections can be combined into
 one with a simple <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code>, which row-binds them while
@@ -168,7 +168,7 @@ and <span style="color: #00BB00;">30</span>); <span style="color: #00BBBB;">1.34
 </code></pre>
 </div>
 <div class="section level4">
-<h4 id="bonus-ir_save_isofiles-ir_load_isofiles">bonus <code>ir_save_isofiles()</code> /
+<h4 id="bonus-ir_save_isofiles-ir_load_isofiles">bonus: <code>ir_save_isofiles()</code> /
 <code>ir_load_isofiles()</code><a class="anchor" aria-label="anchor" href="#bonus-ir_save_isofiles-ir_load_isofiles"></a>
 </h4>
 <p>You can store an entire <code>ir_isofiles</code> collection to disk
@@ -177,7 +177,7 @@ the original data files.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># save and reload the read isofiles</span></span>
 <span><span class="va">isofiles</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_isofiles_storage.html">ir_save_isofiles</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"tmp_examples"</span>, <span class="st">"my_isofiles"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[51ms]</span> <span style="font-weight: bold;">ir_save_isofiles()</span> saved 2 isofiles to <span style="color: #0000BB;">tmp_examples/my_isofiles.rds</span>
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[48ms]</span> <span style="font-weight: bold;">ir_save_isofiles()</span> saved 2 isofiles to <span style="color: #0000BB;">tmp_examples/my_isofiles.rds</span>
 </code></pre>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">reloaded</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ir_isofiles_storage.html">ir_load_isofiles</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"tmp_examples"</span>, <span class="st">"my_isofiles"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
@@ -200,7 +200,7 @@ that are easy to work with.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># aggregate the data</span></span>
 <span><span class="va">dataset</span> <span class="op">&lt;-</span> <span class="va">isofiles</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[256ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2) and <span style="color: #0000BB;">traces</span> (24.5k,
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[247ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2) and <span style="color: #0000BB;">traces</span> (24.5k,
 <span style="color: #00BB00;">intensity</span> in <span style="color: #BB00BB;">mV</span>) from 2 files using the <span style="font-weight: bold; font-style: italic;">standard</span> aggregator
 </code></pre>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
@@ -222,7 +222,7 @@ that are easy to work with.</p>
 <pre class="fansi fansi-message"><code>→ <span style="color: #0000BB;">problems</span>: has <span style="color: #00BB00;">no issues</span>
 </code></pre>
 <div class="section level4">
-<h4 id="bonus-intensity-units">bonus intensity units<a class="anchor" aria-label="anchor" href="#bonus-intensity-units"></a>
+<h4 id="bonus-intensity-units">bonus: intensity units<a class="anchor" aria-label="anchor" href="#bonus-intensity-units"></a>
 </h4>
 <p>By default the raw signals are reported in millivolts
 (<code>mV</code>). Pass a different <code>intensity_units</code> to
@@ -238,10 +238,10 @@ automatically (the same machinery is exposed as
 <span><span class="va">isofiles</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles</a></span><span class="op">(</span>intensity_units <span class="op">=</span> <span class="st">"nA"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/ir_get_data.html">ir_get_data</a></span><span class="op">(</span>traces <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"species"</span>, <span class="st">"mass"</span>, <span class="st">"time.s"</span>, <span class="st">"intensity.nA"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[238ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2) and <span style="color: #0000BB;">traces</span> (24.5k,
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[235ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2) and <span style="color: #0000BB;">traces</span> (24.5k,
 <span style="color: #00BB00;">intensity</span> in <span style="color: #BB00BB;">nA</span>) from 2 files using the <span style="font-weight: bold; font-style: italic;">standard</span> aggregator
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[10ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 24.5k records from the combination of <span style="color: #0000BB;">metadata</span>
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[9ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 24.5k records from the combination of <span style="color: #0000BB;">metadata</span>
 (2) and <span style="color: #0000BB;">traces</span> (24.5k) via <span style="color: #00BB00;">uidx</span> and <span style="color: #00BB00;">analysis</span>
 </code></pre>
 <pre class="fansi fansi-output"><code><span style="color: #949494;"># A tibble: 24,515 × 7</span>
@@ -261,7 +261,7 @@ automatically (the same machinery is exposed as
 </code></pre>
 </div>
 <div class="section level4">
-<h4 id="bonus-ir_get_aggregator">bonus <code>ir_get_aggregator()</code><a class="anchor" aria-label="anchor" href="#bonus-ir_get_aggregator"></a>
+<h4 id="bonus-ir_get_aggregator">bonus: <code>ir_get_aggregator()</code><a class="anchor" aria-label="anchor" href="#bonus-ir_get_aggregator"></a>
 </h4>
 <p>You can optionally use a different aggregator. Besides the default
 <code>standard</code> aggregator, the package ships (from smallest to
@@ -349,7 +349,7 @@ configuration and the vendor data table) from the data files.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># using the extended aggregator instead of the default (standard)</span></span>
 <span><span class="va">isofiles</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles</a></span><span class="op">(</span>aggregator <span class="op">=</span> <span class="st">"extended"</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[554ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2), <span style="color: #0000BB;">traces</span> (24.5k,
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[531ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2), <span style="color: #0000BB;">traces</span> (24.5k,
 <span style="color: #00BB00;">intensity</span> in <span style="color: #BB00BB;">mV</span>), <span style="color: #0000BB;">resistors</span> (8), and <span style="color: #0000BB;">vendor_data_table</span> (25) from 2 files using
 the <span style="font-weight: bold; font-style: italic;">extended</span> aggregator
 </code></pre>
@@ -397,7 +397,7 @@ the <span style="font-weight: bold; font-style: italic;">extended</span> aggrega
 </code></pre>
 </div>
 <div class="section level4">
-<h4 id="bonus-ir_register_aggregator">bonus <code>ir_register_aggregator()</code><a class="anchor" aria-label="anchor" href="#bonus-ir_register_aggregator"></a>
+<h4 id="bonus-ir_register_aggregator">bonus: <code>ir_register_aggregator()</code><a class="anchor" aria-label="anchor" href="#bonus-ir_register_aggregator"></a>
 </h4>
 <p>Or build your own aggregator with <code><a href="../reference/ir_aggregator.html">ir_start_aggregator()</a></code>
 and/or expand an existing one with <code><a href="../reference/ir_aggregator.html">ir_add_to_aggregator()</a></code>,
@@ -445,7 +445,7 @@ structure flowchart.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># use it</span></span>
 <span><span class="va">isofiles</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles</a></span><span class="op">(</span>aggregator <span class="op">=</span> <span class="st">"my_aggregator"</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[147ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2) and <span style="color: #0000BB;">traces</span> (24.5k,
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[143ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2) and <span style="color: #0000BB;">traces</span> (24.5k,
 <span style="color: #00BB00;">intensity</span> in <span style="color: #BB00BB;">mV</span>) from 2 files using the <span style="font-weight: bold; font-style: italic;">my_aggregator</span> aggregator
 </code></pre>
 <pre class="fansi fansi-message"><code>─ <span style="font-weight: bold;">aggregated data from 2 isofiles with 2 analyses - retrieve with ir_get_data(</span> ─
@@ -463,7 +463,7 @@ structure flowchart.</p>
 </code></pre>
 </div>
 <div class="section level4">
-<h4 id="bonus-ir_get_problems-ir_show_problems">bonus <code>ir_get_problems()</code> /
+<h4 id="bonus-ir_get_problems-ir_show_problems">bonus: <code>ir_get_problems()</code> /
 <code>ir_show_problems()</code><a class="anchor" aria-label="anchor" href="#bonus-ir_get_problems-ir_show_problems"></a>
 </h4>
 <p>Reading and aggregation are designed to be fail-safe: instead of
@@ -570,7 +570,7 @@ dataset.</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># all metadata columns</span></span>
 <span><span class="va">dataset</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_get_data.html">ir_get_metadata</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[5ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 2 records from <span style="color: #0000BB;">metadata</span>
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[4ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 2 records from <span style="color: #0000BB;">metadata</span>
 </code></pre>
 <pre class="fansi fansi-output"><code><span style="color: #949494;"># A tibble: 2 × 27</span>
    uidx analysis file_path   file_name timestamp           type  h3_factor Row  
@@ -607,7 +607,7 @@ dataset.</p>
 </code></pre>
 </div>
 <div class="section level4">
-<h4 id="bonus-ir_get_vendor_data_table">bonus <code>ir_get_vendor_data_table()</code><a class="anchor" aria-label="anchor" href="#bonus-ir_get_vendor_data_table"></a>
+<h4 id="bonus-ir_get_vendor_data_table">bonus: <code>ir_get_vendor_data_table()</code><a class="anchor" aria-label="anchor" href="#bonus-ir_get_vendor_data_table"></a>
 </h4>
 <p>Some file formats also store the vendor’s own computed results table
 (the table Isodat shows in its results view: per-peak or per-cycle
@@ -625,15 +625,15 @@ string/integer columns (e.g. <code>"Ref. Name"</code>,
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># aggregate with the extended aggregator so the vendor data table is included</span></span>
 <span><span class="va">dataset_ext</span> <span class="op">&lt;-</span> <span class="va">isofiles</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles</a></span><span class="op">(</span>aggregator <span class="op">=</span> <span class="st">"extended"</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[544ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2), <span style="color: #0000BB;">traces</span> (24.5k,
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[533ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2), <span style="color: #0000BB;">traces</span> (24.5k,
 <span style="color: #00BB00;">intensity</span> in <span style="color: #BB00BB;">mV</span>), <span style="color: #0000BB;">resistors</span> (8), and <span style="color: #0000BB;">vendor_data_table</span> (25) from 2 files using
 the <span style="font-weight: bold; font-style: italic;">extended</span> aggregator
 </code></pre>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># retrieve the vendor data table (joined with the file metadata)</span></span>
 <span><span class="va">dataset_ext</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_get_data.html">ir_get_vendor_data_table</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[8ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 25 records from the combination of <span style="color: #0000BB;">metadata</span> (2)
-and <span style="color: #0000BB;">vendor_data_table</span> (25) via <span style="color: #00BB00;">uidx</span> and <span style="color: #00BB00;">analysis</span>
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[13ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 25 records from the combination of <span style="color: #0000BB;">metadata</span>
+(2) and <span style="color: #0000BB;">vendor_data_table</span> (25) via <span style="color: #00BB00;">uidx</span> and <span style="color: #00BB00;">analysis</span>
 </code></pre>
 <pre class="fansi fansi-output"><code><span style="color: #949494;"># A tibble: 25 × 80</span>
     uidx analysis file_name               species `Start [s]` `Rt [s]` `End [s]`
@@ -686,7 +686,7 @@ sync.</p>
 though that is significantly slower than working on an aggregated
 dataset.</p>
 <div class="section level4">
-<h4 id="bonus-ir_filter_for_continuous_flow-ir_filter_for_dual_inlet-ir_filter_for_scans">bonus <code>ir_filter_for_continuous_flow()</code> /
+<h4 id="bonus-ir_filter_for_continuous_flow-ir_filter_for_dual_inlet-ir_filter_for_scans">bonus: <code>ir_filter_for_continuous_flow()</code> /
 <code>ir_filter_for_dual_inlet()</code> /
 <code>ir_filter_for_scans()</code><a class="anchor" aria-label="anchor" href="#bonus-ir_filter_for_continuous_flow-ir_filter_for_dual_inlet-ir_filter_for_scans"></a>
 </h4>
@@ -710,7 +710,7 @@ field) and cascade to all datasets, just like
 </div>
 </div>
 <div class="section level3">
-<h3 id="bonus-ir_save_aggregated_data-ir_load_aggregated_data">bonus <code>ir_save_aggregated_data()</code> /
+<h3 id="bonus-ir_save_aggregated_data-ir_load_aggregated_data">bonus: <code>ir_save_aggregated_data()</code> /
 <code>ir_load_aggregated_data()</code><a class="anchor" aria-label="anchor" href="#bonus-ir_save_aggregated_data-ir_load_aggregated_data"></a>
 </h3>
 <p>Aggregated data can be stored to (and loaded from) a parquet file for
@@ -738,7 +738,7 @@ is divided by the numerically lowest (“base”) mass of the same species
 at each time/cycle/scan position.</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dataset_ratios</span> <span class="op">&lt;-</span> <span class="va">dataset</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_calculate_ratios.html">ir_calculate_ratios</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[24ms]</span> <span style="font-weight: bold;">ir_calculate_ratios()</span> calculated 13.5k ratios with additive offsets
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[23ms]</span> <span style="font-weight: bold;">ir_calculate_ratios()</span> calculated 13.5k ratios with additive offsets
 <span style="color: #00BB00;">num_add.V = 100</span> and <span style="color: #00BB00;">denom_add.V = 100</span> and added <span style="color: #00BB00;">ratio_name</span> and <span style="color: #00BB00;">ratio</span> columns to
 the <span style="color: #0000BB;">traces</span>
 </code></pre>
@@ -748,7 +748,7 @@ the <span style="color: #0000BB;">traces</span>
 <span>    metadata <span class="op">=</span> <span class="st">"file_name"</span>,</span>
 <span>    traces <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"species"</span>, <span class="st">"mass"</span>, <span class="st">"time.s"</span>, <span class="st">"ratio_name"</span>, <span class="st">"ratio"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[9ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 24.5k records from the combination of <span style="color: #0000BB;">metadata</span>
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[10ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 24.5k records from the combination of <span style="color: #0000BB;">metadata</span>
 (2) and <span style="color: #0000BB;">traces</span> (24.5k) via <span style="color: #00BB00;">uidx</span> and <span style="color: #00BB00;">analysis</span>
 </code></pre>
 <pre class="fansi fansi-output"><code><span style="color: #949494;"># A tibble: 24,515 × 8</span>
@@ -767,7 +767,7 @@ the <span style="color: #0000BB;">traces</span>
 <span style="color: #949494;"># ℹ 24,505 more rows</span>
 </code></pre>
 <div class="section level4">
-<h4 id="bonus-base-mass-additive-offsets-and-normalization">bonus base mass, additive offsets, and normalization<a class="anchor" aria-label="anchor" href="#bonus-base-mass-additive-offsets-and-normalization"></a>
+<h4 id="bonus-base-mass-additive-offsets-and-normalization">bonus: base mass, additive offsets, and normalization<a class="anchor" aria-label="anchor" href="#bonus-base-mass-additive-offsets-and-normalization"></a>
 </h4>
 <p>The base mass can be overridden per species by name
 (e.g. <code>N2 = 28</code>, <code>CO2 = 44</code>). For continuous flow
@@ -859,12 +859,59 @@ split into facet rows (<code>data_type_as_facet = auto()</code>):</p>
 <span style="color: #00BB00;">ratio_name</span> and <span style="color: #00BB00;">ratio</span> columns to the <span style="color: #0000BB;">traces</span>
 </code></pre>
 <p><img src="functionality_guide_files/figure-html/unnamed-chunk-25-1.png" class="r-plt" alt="" width="768"></p>
+<div class="section level4">
+<h4 id="bonus-selecting-masses-and-ratios">bonus: selecting masses and ratios<a class="anchor" aria-label="anchor" href="#bonus-selecting-masses-and-ratios"></a>
+</h4>
+<p><code>mass</code> and <code>ratio</code> accept the full <a href="https://tidyselect.r-lib.org/" class="external-link">tidyselect</a> syntax, evaluated as
+if the masses and ratio names in the data were column names. Here
+<code>-"46"</code> drops mass 46:</p>
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">dataset</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/ir_calculate_ratios.html">ir_calculate_ratios</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/ir_plot_continuous_flow.html">ir_plot_continuous_flow</a></span><span class="op">(</span></span>
+<span>    species <span class="op">=</span> <span class="st">"CO2"</span>,</span>
+<span>    mass <span class="op">=</span> <span class="op">-</span><span class="st">"46"</span>,</span>
+<span>    facet <span class="op">=</span> <span class="va">file_name</span>,</span>
+<span>    time_window.min <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4.5</span>, <span class="fl">8.5</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[20ms]</span> <span style="font-weight: bold;">ir_calculate_ratios()</span> calculated 13.5k ratios with additive offsets
+<span style="color: #00BB00;">num_add.V = 100</span> and <span style="color: #00BB00;">denom_add.V = 100</span> and added <span style="color: #00BB00;">ratio_name</span> and <span style="color: #00BB00;">ratio</span> columns to
+the <span style="color: #0000BB;">traces</span>
+</code></pre>
+<p><img src="functionality_guide_files/figure-html/unnamed-chunk-26-1.png" class="r-plt" alt="" width="768"></p>
+<p>Both <code>mass</code> and <code>ratio</code> arguments default to
+<code><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything()</a></code> and take <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code> for none, so the
+same syntax covers everything from “all of them” to a single trace:</p>
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># ratios have to be calculated before they can be selected</span></span>
+<span><span class="va">with_ratios</span> <span class="op">&lt;-</span> <span class="va">dataset</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_calculate_ratios.html">ir_calculate_ratios</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># all masses and all available ratios (the default)</span></span>
+<span><span class="va">with_ratios</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_plot_continuous_flow.html">ir_plot_continuous_flow</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co"># only the ratios, no intensity traces</span></span>
+<span><span class="va">with_ratios</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_plot_continuous_flow.html">ir_plot_continuous_flow</a></span><span class="op">(</span>mass <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># only the intensity traces, no ratios</span></span>
+<span><span class="va">with_ratios</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_plot_continuous_flow.html">ir_plot_continuous_flow</a></span><span class="op">(</span>ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># a specific set, as names or (via as.character) as numbers</span></span>
+<span><span class="va">dataset</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_plot_continuous_flow.html">ir_plot_continuous_flow</a></span><span class="op">(</span>mass <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"44"</span>, <span class="st">"45"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">dataset</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_plot_continuous_flow.html">ir_plot_continuous_flow</a></span><span class="op">(</span>mass <span class="op">=</span> <span class="fl">44</span><span class="op">:</span><span class="fl">46</span><span class="op">)</span></span>
+<span><span class="co"># everything except one</span></span>
+<span><span class="fu"><a href="../reference/ir_plot_continuous_flow.html">ir_plot_continuous_flow</a></span><span class="op">(</span><span class="va">dataset</span>, mass <span class="op">=</span> <span class="op">-</span><span class="st">"30"</span><span class="op">)</span></span>
+<span><span class="co"># pattern matching helpers</span></span>
+<span><span class="va">dataset</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_plot_continuous_flow.html">ir_plot_continuous_flow</a></span><span class="op">(</span>mass <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"4"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">with_ratios</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_plot_continuous_flow.html">ir_plot_continuous_flow</a></span><span class="op">(</span>mass <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span>, ratio <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">matches</a></span><span class="op">(</span><span class="st">"/44"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># tolerate masses/ratios that may not be in the data with any_of (a plain c() would error)</span></span>
+<span><span class="va">dataset</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_plot_continuous_flow.html">ir_plot_continuous_flow</a></span><span class="op">(</span>mass <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">any_of</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"44"</span>, <span class="st">"47"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="bonus-ggplot-modifications">bonus: ggplot modifications<a class="anchor" aria-label="anchor" href="#bonus-ggplot-modifications"></a>
+</h4>
 <p>The plots are ordinary <code>ggplot</code> objects (the package theme
 <code><a href="../reference/ir_default_theme.html">ir_default_theme()</a></code> is always applied), so you can keep
 customizing with ggplot2 layers - and tune the aesthetics with arguments
 like <code>color</code>, <code>scientific</code>, <code>linetype</code>,
 or <code>color_values</code>:</p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="va">dataset</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/ir_plot_continuous_flow.html">ir_plot_continuous_flow</a></span><span class="op">(</span></span>
@@ -874,7 +921,8 @@ or <code>color_values</code>:</p>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"N2 traces"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="functionality_guide_files/figure-html/unnamed-chunk-26-1.png" class="r-plt" alt="" width="768"></p>
+<p><img src="functionality_guide_files/figure-html/unnamed-chunk-28-1.png" class="r-plt" alt="" width="768"></p>
+</div>
 <div class="section level4">
 <h4 id="bonus-ir_generate_traces_tibble-ir_generate_cycles_tibble-ir_generate_scans_tibble">bonus <code>ir_generate_traces_tibble()</code> /
 <code>ir_generate_cycles_tibble()</code> /
@@ -885,11 +933,11 @@ your own plot or do further analysis), the
 <code>ir_generate_*_tibble()</code> helpers return it without plotting.
 They take the same
 <code>species</code>/<code>mass</code>/<code>ratio</code> arguments and
-add the <code>trace</code>, <code>data_type</code>, and
-<code>value</code> columns the plotting functions use.</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+add the <code>trace</code>, <code>color</code>, <code>data_type</code>,
+and <code>value</code> columns the plotting functions use.</p>
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dataset</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_generate_tibble.html">ir_generate_traces_tibble</a></span><span class="op">(</span>species <span class="op">=</span> <span class="st">"CO2"</span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-output"><code><span style="color: #949494;"># A tibble: 4,008 × 35</span>
+<pre class="fansi fansi-output"><code><span style="color: #949494;"># A tibble: 4,008 × 36</span>
     uidx analysis species mass     tp time.s intensity.mV file_path    file_name
    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    
 <span style="color: #BCBCBC;"> 1</span>     1        1 CO2     44        1   232.      26.6    tmp_example… continuo…
@@ -903,7 +951,7 @@ add the <code>trace</code>, <code>data_type</code>, and
 <span style="color: #BCBCBC;"> 9</span>     1        1 CO2     44        9   233.      -<span style="color: #BB0000;">0.017</span><span style="color: #BB0000; text-decoration: underline;">4</span> tmp_example… continuo…
 <span style="color: #BCBCBC;">10</span>     1        1 CO2     44       10   233.      -<span style="color: #BB0000;">0.023</span><span style="color: #BB0000; text-decoration: underline;">1</span> tmp_example… continuo…
 <span style="color: #949494;"># ℹ 3,998 more rows</span>
-<span style="color: #949494;"># ℹ 26 more variables: timestamp &lt;dttm&gt;, type &lt;chr&gt;, h3_factor &lt;chr&gt;,</span>
+<span style="color: #949494;"># ℹ 27 more variables: timestamp &lt;dttm&gt;, type &lt;chr&gt;, h3_factor &lt;chr&gt;,</span>
 <span style="color: #949494;">#   Row &lt;chr&gt;, `Peak Center` &lt;chr&gt;, `Check Ref. Dilution` &lt;chr&gt;,</span>
 <span style="color: #949494;">#   `H3 Stability` &lt;chr&gt;, `H3 Factor` &lt;chr&gt;, Amount &lt;chr&gt;, Type &lt;chr&gt;,</span>
 <span style="color: #949494;">#   `EA Method` &lt;chr&gt;, `Identifier 1` &lt;chr&gt;, `Identifier 2` &lt;chr&gt;,</span>
@@ -916,7 +964,7 @@ add the <code>trace</code>, <code>data_type</code>, and
 <h3 id="ir_plot_dual_inlet">
 <code>ir_plot_dual_inlet()</code><a class="anchor" aria-label="anchor" href="#ir_plot_dual_inlet"></a>
 </h3>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">di_dataset</span> <span class="op">&lt;-</span></span>
 <span>  <span class="va">data_folder</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/ir_find_isofiles.html">ir_find_dual_inlet</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -926,23 +974,28 @@ add the <code>trace</code>, <code>data_type</code>, and
 <pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[1ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> is finished, 0 files/archives required
 (re-)extraction
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[378ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 1 isotope data file/archive
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[387ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 1 isotope data file/archive
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[125ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (1) and <span style="color: #0000BB;">cycles</span> (102,
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[132ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (1) and <span style="color: #0000BB;">cycles</span> (102,
 <span style="color: #00BB00;">intensity</span> in <span style="color: #BB00BB;">V</span>) from 1 file using the <span style="font-weight: bold; font-style: italic;">standard</span> aggregator
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[13ms]</span> <span style="font-weight: bold;">ir_calculate_ratios()</span> calculated 85 ratios and added <span style="color: #00BB00;">ratio_name</span> and
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[10ms]</span> <span style="font-weight: bold;">ir_calculate_ratios()</span> calculated 85 ratios and added <span style="color: #00BB00;">ratio_name</span> and
 <span style="color: #00BB00;">ratio</span> columns to the <span style="color: #0000BB;">cycles</span>
 </code></pre>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">di_dataset</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_plot_dual_inlet.html">ir_plot_dual_inlet</a></span><span class="op">(</span>facet <span class="op">=</span> <span class="va">file_name</span><span class="op">)</span></span></code></pre></div>
-<p><img src="functionality_guide_files/figure-html/unnamed-chunk-28-1.png" class="r-plt" alt="" width="768"></p>
+<p><img src="functionality_guide_files/figure-html/unnamed-chunk-30-1.png" class="r-plt" alt="" width="768"></p>
 <p>The same <code>species</code>/<code>mass</code>/<code>ratio</code>
 filters apply, and <code>cycle_window</code> zooms to a range of
 cycles:</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">di_dataset</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_plot_dual_inlet.html">ir_plot_dual_inlet</a></span><span class="op">(</span>mass <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">44</span>, <span class="fl">45</span>, <span class="fl">46</span><span class="op">)</span>, facet <span class="op">=</span> <span class="va">file_name</span><span class="op">)</span></span></code></pre></div>
-<p><img src="functionality_guide_files/figure-html/unnamed-chunk-29-1.png" class="r-plt" alt="" width="768"></p>
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">di_dataset</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/ir_plot_dual_inlet.html">ir_plot_dual_inlet</a></span><span class="op">(</span></span>
+<span>    mass <span class="op">=</span> <span class="fl">44</span><span class="op">:</span><span class="fl">46</span>,</span>
+<span>    ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"45/44"</span>, <span class="st">"46/44"</span><span class="op">)</span>,</span>
+<span>    facet <span class="op">=</span> <span class="va">file_name</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
+<p><img src="functionality_guide_files/figure-html/unnamed-chunk-31-1.png" class="r-plt" alt="" width="768"></p>
 </div>
 <div class="section level3">
 <h3 id="ir_plot_scans">
@@ -951,7 +1004,7 @@ cycles:</p>
 <p>For scan files with more than one scan type, specify which one to
 plot (<code>x_window</code> zooms the x axis the same way
 <code>time_window.s</code> does for continuous flow):</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data_folder</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/ir_find_isofiles.html">ir_find_scans</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/ir_read_isofiles.html">ir_read_isofiles</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -960,12 +1013,12 @@ plot (<code>x_window</code> zooms the x axis the same way
 <pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[1ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> is finished, 0 files/archives required
 (re-)extraction
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[181ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 4 isotope data files/archives
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[165ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 4 isotope data files/archives
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[344ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (4) and <span style="color: #0000BB;">scans</span> (17.8k,
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[316ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (4) and <span style="color: #0000BB;">scans</span> (17.8k,
 <span style="color: #00BB00;">intensity</span> in <span style="color: #BB00BB;">V</span>) from 4 files using the <span style="font-weight: bold; font-style: italic;">standard</span> aggregator
 </code></pre>
-<p><img src="functionality_guide_files/figure-html/unnamed-chunk-30-1.png" class="r-plt" alt="" width="768"></p>
+<p><img src="functionality_guide_files/figure-html/unnamed-chunk-32-1.png" class="r-plt" alt="" width="768"></p>
 </div>
 </div>
 <div class="section level2">
@@ -980,18 +1033,18 @@ with the <code>ir_get_*()</code> functions) to an Excel file, one sheet
 per data frame. Named arguments set the sheet names; unnamed ones use
 <code>"Sheet{position}"</code>. This requires the suggested
 <strong>openxlsx</strong> package.</p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ir_export_to_excel.html">ir_export_to_excel</a></span><span class="op">(</span></span>
 <span>  metadata <span class="op">=</span> <span class="va">dataset</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_get_data.html">ir_get_metadata</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  traces <span class="op">=</span> <span class="va">dataset</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_get_data.html">ir_get_traces</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  file <span class="op">=</span> <span class="st">"tmp_examples/my_dataset.xlsx"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[5ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 2 records from <span style="color: #0000BB;">metadata</span>
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[4ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 2 records from <span style="color: #0000BB;">metadata</span>
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[9ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 24.5k records from the combination of <span style="color: #0000BB;">metadata</span>
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[8ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 24.5k records from the combination of <span style="color: #0000BB;">metadata</span>
 (2) and <span style="color: #0000BB;">traces</span> (24.5k) via <span style="color: #00BB00;">uidx</span> and <span style="color: #00BB00;">analysis</span>
 </code></pre>
-<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[1s]</span> <span style="font-weight: bold;">ir_export_to_excel()</span> exported 2 rows of <span style="color: #00BB00;">metadata</span> and 24.5k rows of
+<pre class="fansi fansi-message"><code><span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[991ms]</span> <span style="font-weight: bold;">ir_export_to_excel()</span> exported 2 rows of <span style="color: #00BB00;">metadata</span> and 24.5k rows of
 <span style="color: #00BB00;">traces</span> to <span style="color: #0000BB;">tmp_examples/my_dataset.xlsx</span>
 </code></pre>
 </div>
@@ -1008,14 +1061,14 @@ reads one, and <code><a href="../reference/ir_options.html">ir_options()</a></co
 <code>debug = TRUE</code> disables the fail-safe error catching so
 problems surface with a full traceback, which is useful when
 troubleshooting a reader.</p>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># list available options and read one</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="../reference/ir_options.html">ir_get_options</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>[1] "aggregators"   "debug"         "auto_use_ansi"</code></pre>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ir_options.html">ir_get_option</a></span><span class="op">(</span><span class="st">"debug"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>[1] FALSE</code></pre>
-<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># set an option (here enable debug mode), then restore the default</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="fu"><a href="../reference/ir_options.html">ir_options</a></span><span class="op">(</span>debug <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/ir_options.html">ir_get_option</a></span><span class="op">(</span><span class="st">"debug"</span><span class="op">)</span></span></code></pre></div>

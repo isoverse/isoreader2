@@ -135,11 +135,11 @@ isofiles <- file_paths |> ir_read_isofiles()
 ```
 
 ``` fansi
-✔ [97ms] ir_extract_isofiles() finished extracting 1 file/archive
+✔ [94ms] ir_extract_isofiles() finished extracting 1 file/archive
 ```
 
 ``` fansi
-✔ [199ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+✔ [188ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 ```
 
 ``` r
@@ -167,7 +167,7 @@ dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
 ``` fansi
-✔ [40ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+✔ [55ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
 intensity in V) from 1 file using the standard aggregator
 ```
 
@@ -208,7 +208,7 @@ library(ggplot2)
 dataset |>
   ir_filter_metadata(file_name == "caf_dual_inlet_example") |>
   ir_calculate_ratios() |>
-  ir_plot_dual_inlet(mass = c(44:48)) +
+  ir_plot_dual_inlet(mass = 44:48, ratio = c("45/44", "46/44")) +
   # use ggplot2 to modify with custom theming (or any other ggplot elements)
   theme(strip.text = element_text(size = 30))
 ```
@@ -241,12 +241,12 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [4ms] ir_get_data() retrieved 102 records from the combination of metadata
+✔ [3ms] ir_get_data() retrieved 102 records from the combination of metadata
 (1) and cycles (102) via uidx and analysis
 ```
 
 ``` fansi
-✔ [265ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
+✔ [407ms] ir_export_to_excel() exported 1 row of metadata and 102 rows of
 cycles to my_export.xlsx
 ```
 

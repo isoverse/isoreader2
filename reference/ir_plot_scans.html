@@ -4,15 +4,19 @@ frame. The data is prepared with ir_generate_scans_tibble() (which, for an
 ir_aggregated_data object, inner-joins the $scans dataset with
 $metadata). The plot data must contain species, x, scan_type,
 x_units, mass, and an intensity.* column — an error is thrown if any are
-missing. A trace identifier ("&amp;lt;species&amp;gt;: &amp;lt;mass&amp;gt;") is always regenerated
-and the plotted value together with a data_type label ("intensity [UNITS]", or "ratios" for ratio rows) are added. scan_type and x_units
+missing. A trace identifier ("&amp;lt;species&amp;gt;: &amp;lt;mass&amp;gt;") and the matching
+color identifier are always regenerated and the plotted value together
+with a data_type label ("intensity [UNITS]", or "ratios" for ratio
+rows) are added. scan_type and x_units
 are combined for the x axis label.'><meta property="og:description" content='Plots scan data from an ir_aggregate_isofiles() result or a plain data
 frame. The data is prepared with ir_generate_scans_tibble() (which, for an
 ir_aggregated_data object, inner-joins the $scans dataset with
 $metadata). The plot data must contain species, x, scan_type,
 x_units, mass, and an intensity.* column — an error is thrown if any are
-missing. A trace identifier ("&amp;lt;species&amp;gt;: &amp;lt;mass&amp;gt;") is always regenerated
-and the plotted value together with a data_type label ("intensity [UNITS]", or "ratios" for ratio rows) are added. scan_type and x_units
+missing. A trace identifier ("&amp;lt;species&amp;gt;: &amp;lt;mass&amp;gt;") and the matching
+color identifier are always regenerated and the plotted value together
+with a data_type label ("intensity [UNITS]", or "ratios" for ratio
+rows) are added. scan_type and x_units
 are combined for the x axis label.'><meta property="og:image" content="https://isoreader2.isoverse.org/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
@@ -21,7 +25,7 @@ are combined for the x axis label.'><meta property="og:image" content="https://i
 
     <a class="navbar-brand me-2" href="../index.html">isoreader2</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.6.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.6.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,8 +55,10 @@ frame. The data is prepared with <code><a href="ir_generate_tibble.html">ir_gene
 <code>ir_aggregated_data</code> object, inner-joins the <code>$scans</code> dataset with
 <code>$metadata</code>). The plot data must contain <code>species</code>, <code>x</code>, <code>scan_type</code>,
 <code>x_units</code>, <code>mass</code>, and an <code>intensity.*</code> column — an error is thrown if any are
-missing. A <code>trace</code> identifier (<code>"&lt;species&gt;: &lt;mass&gt;"</code>) is always regenerated
-and the plotted <code>value</code> together with a <code>data_type</code> label (<code>"intensity [UNITS]"</code>, or <code>"ratios"</code> for ratio rows) are added. <code>scan_type</code> and <code>x_units</code>
+missing. A <code>trace</code> identifier (<code>"&lt;species&gt;: &lt;mass&gt;"</code>) and the matching
+<code>color</code> identifier are always regenerated and the plotted <code>value</code> together
+with a <code>data_type</code> label (<code>"intensity [UNITS]"</code>, or <code>"ratios"</code> for ratio
+rows) are added. <code>scan_type</code> and <code>x_units</code>
 are combined for the x axis label.</p>
     </div>
 
@@ -62,14 +68,14 @@ are combined for the x axis label.</p>
 <span>  <span class="va">dataset</span>,</span>
 <span>  scan_type <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  species <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  mass <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  ratio <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  mass <span class="op">=</span> <span class="fu">everything</span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  ratio <span class="op">=</span> <span class="fu">everything</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  facet <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  data_type_as_facet <span class="op">=</span> <span class="fu"><a href="auto.html">auto</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  scales <span class="op">=</span> <span class="st">"free"</span>,</span>
 <span>  nrow <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ncol <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  color <span class="op">=</span> <span class="va">trace</span>,</span>
+<span>  color <span class="op">=</span> <span class="va">color</span>,</span>
 <span>  linetype <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  color_values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/palette.html" class="external-link">palette.colors</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  drop_unused_levels <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -104,22 +110,30 @@ species (e.g. <code>"CO2"</code> or <code>c("N2", "CO2")</code>); default <code>
 
 
 <dt id="arg-mass">mass<a class="anchor" aria-label="anchor" href="#arg-mass"></a></dt>
-<dd><p>which masses to include as intensity traces: <code>NULL</code> (default)
-shows all masses, a vector (e.g. <code>44</code> or <code>c(44, 45)</code>) shows specific masses,
-and a zero-length vector (<code>numeric(0)</code>/<code>character(0)</code>) shows none. Note that
-<code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code> is <code>NULL</code> in R (i.e. all masses).</p></dd>
+<dd><p>which masses to show as intensity traces, as a
+<a href="https://tidyselect.r-lib.org/reference/language.html" class="external-link">tidyselect</a> expression evaluated as if the masses
+present in the data were column names. The default <code>everything()</code> shows
+every mass and <code>NULL</code> (or <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code>) shows none; beyond that any tidyselect
+syntax works, e.g. <code>c("44", "45")</code> or <code>44:48</code> for specific masses,
+<code>-"45"</code>/<code>!"45"</code> to exclude one, and helpers such as <code>starts_with("4")</code>,
+<code>matches()</code>, <code>all_of()</code>, or <code>any_of()</code>. Unlike plain tidyselect, numbers
+select by name rather than by position (<code>44:48</code> means the masses 44 to 48,
+not the 44th to 48th mass). Selecting a mass that is not in the data is an
+error that lists the available masses; use <code>any_of()</code> to ignore missing ones.</p></dd>
 
 
 <dt id="arg-ratio">ratio<a class="anchor" aria-label="anchor" href="#arg-ratio"></a></dt>
-<dd><p>which ratios to additionally include (computed with
-<code><a href="ir_calculate_ratios.html">ir_calculate_ratios()</a></code>): <code>NULL</code> (default) shows all available ratios, a
-character vector of ratio names (e.g. <code>c("45/44", "46/44")</code>) shows specific
-ones, and <code>character(0)</code> shows none. Requesting specific ratio names when
-ratios have not been calculated is an error pointing to
-<code><a href="ir_calculate_ratios.html">ir_calculate_ratios()</a></code> (with <code>ratio = NULL</code> and no ratios present, none are
-simply added). Ratio rows are plotted on the same <code>value</code> axis with
-<code>data_type = "ratios"</code>; the default <code>facet = data_type</code> (with free scales)
-separates them from the intensities.</p></dd>
+<dd><p>which ratios to additionally show (computed with
+<code><a href="ir_calculate_ratios.html">ir_calculate_ratios()</a></code>), as a <a href="https://tidyselect.r-lib.org/reference/language.html" class="external-link">tidyselect</a> expression
+evaluated as if the ratio names present in the data were column names - the
+same syntax as <code>mass</code>, e.g. <code>everything()</code> (the default, all available
+ratios), <code>NULL</code> for none, <code>c("45/44", "46/44")</code>, <code>-"45/44"</code>, or
+<code>starts_with("45")</code>. Selecting specific ratios when ratios have not been
+calculated is an error pointing to <code><a href="ir_calculate_ratios.html">ir_calculate_ratios()</a></code> (with the default
+<code>everything()</code>, or <code>NULL</code>, and no ratios present, none are simply added).
+Ratio rows are plotted on the same <code>value</code> axis with <code>data_type = "ratios"</code>;
+<code>data_type</code> is then used as a facet row (see <code>data_type_as_facet</code>) to
+separate them from the intensities.</p></dd>
 
 
 <dt id="arg-facet">facet<a class="anchor" aria-label="anchor" href="#arg-facet"></a></dt>
@@ -161,11 +175,12 @@ them explicitly.</p></dd>
 
 
 <dt id="arg-color">color<a class="anchor" aria-label="anchor" href="#arg-color"></a></dt>
-<dd><p>column or expression for the colour aesthetic (default:
-<code>trace</code>, the per-species/mass trace identifier, e.g. <code>"CO2: 44"</code>). When
-colouring by <code>trace</code>, traces that share the same species and (numerator)
-mass are given the same colour, so an intensity trace (<code>"N2: 29"</code>) and its
-ratio traces (<code>"N2: 29/28"</code>) match.</p></dd>
+<dd><p>column or expression for the colour aesthetic (default: the
+generated <code>color</code> column, which holds all the traces that share a species
+and (numerator) mass, e.g. <code>"N2: 29, 29/28"</code> for both the intensity trace
+<code>"N2: 29"</code> and its ratio trace <code>"N2: 29/28"</code>, so they are drawn in the same
+colour while remaining separate lines). The legend for it is labelled
+<code>trace</code>; use <code>color = trace</code> to give every trace its own colour instead.</p></dd>
 
 
 <dt id="arg-linetype">linetype<a class="anchor" aria-label="anchor" href="#arg-linetype"></a></dt>
@@ -180,11 +195,12 @@ colour palette (default: <code><a href="https://rdrr.io/r/grDevices/palette.html
 
 
 <dt id="arg-drop-unused-levels">drop_unused_levels<a class="anchor" aria-label="anchor" href="#arg-drop-unused-levels"></a></dt>
-<dd><p>whether to drop unused <code>trace</code> factor levels (e.g.
+<dd><p>whether to drop unused colour factor levels (e.g.
 traces that are absent after zooming to a window) from the colour scale and
 legend. Default <code>FALSE</code> keeps every level so the colour mapping stays stable
 across subsets of the same dataset; set to <code>TRUE</code> to show only the levels
-actually present in the plotted data.</p></dd>
+actually present in the plotted data. Note that a <code>color</code> level covers every
+trace of its species/mass, so it is only dropped when none of them is shown.</p></dd>
 
 
 <dt id="arg-scientific">scientific<a class="anchor" aria-label="anchor" href="#arg-scientific"></a></dt>
