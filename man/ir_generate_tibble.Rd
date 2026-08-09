@@ -7,11 +7,26 @@
 \alias{ir_generate_scans_tibble}
 \title{Generate the tibble used by the plotting functions}
 \usage{
-ir_generate_traces_tibble(dataset, species = NULL, mass = NULL, ratio = NULL)
+ir_generate_traces_tibble(
+  dataset,
+  species = NULL,
+  mass = everything(),
+  ratio = everything()
+)
 
-ir_generate_cycles_tibble(dataset, species = NULL, mass = NULL, ratio = NULL)
+ir_generate_cycles_tibble(
+  dataset,
+  species = NULL,
+  mass = everything(),
+  ratio = everything()
+)
 
-ir_generate_scans_tibble(dataset, species = NULL, mass = NULL, ratio = NULL)
+ir_generate_scans_tibble(
+  dataset,
+  species = NULL,
+  mass = everything(),
+  ratio = everything()
+)
 }
 \arguments{
 \item{dataset}{an \code{ir_aggregated_data} object from \code{\link[=ir_aggregate_isofiles]{ir_aggregate_isofiles()}}
@@ -21,20 +36,28 @@ function)}
 \item{species}{optional vector to filter to specific species (e.g. \code{"CO2"} or
 \code{c("N2", "CO2")}); default \code{NULL} keeps all species.}
 
-\item{mass}{which masses to include as intensity traces: \code{NULL} (default) for
-all masses, a vector (e.g. \code{44} or \code{c(44, 45)}) for specific masses, or a
-zero-length vector (\code{numeric(0)}/\code{character(0)}) for none. Note that \code{c()}
-is \code{NULL} in R, i.e. all masses.}
+\item{mass}{which masses to include as intensity traces, as a
+\link[tidyselect:language]{tidyselect} expression evaluated as if the masses
+present in the data were column names. The default \code{everything()} includes
+every mass and \code{NULL} (or \code{c()}) includes none; beyond that any tidyselect
+syntax works, e.g. \code{c("44", "45")} or \code{44:48} for specific masses,
+\code{-"45"}/\code{!"45"} to exclude one, and helpers such as \code{starts_with("4")},
+\code{matches()}, \code{all_of()}, or \code{any_of()}. Unlike plain tidyselect, numbers
+select by name rather than by position (\code{44:48} means the masses 44 to 48,
+not the 44th to 48th mass). Selecting a mass that is not in the data is an
+error that lists the available masses; use \code{any_of()} to ignore missing ones.}
 
-\item{ratio}{which ratios to include (computed with \code{\link[=ir_calculate_ratios]{ir_calculate_ratios()}}):
-\code{NULL} (default) for all available ratios, a character vector of ratio names
-(e.g. \code{c("45/44", "46/44")}) for specific ones, or \code{character(0)} for none.
-Requesting specific ratio names when ratios have not been calculated is an
-error pointing to \code{\link[=ir_calculate_ratios]{ir_calculate_ratios()}}; with \code{ratio = NULL} and no ratios
-present none are simply added.}
+\item{ratio}{which ratios to include (computed with \code{\link[=ir_calculate_ratios]{ir_calculate_ratios()}}),
+as a \link[tidyselect:language]{tidyselect} expression evaluated as if the ratio
+names present in the data were column names - the same syntax as \code{mass},
+e.g. \code{everything()} (the default, all available ratios), \code{NULL} for none,
+\code{c("45/44", "46/44")}, \code{-"45/44"}, or \code{starts_with("45")}. Selecting
+specific ratios when ratios have not been calculated is an error pointing to
+\code{\link[=ir_calculate_ratios]{ir_calculate_ratios()}}; with the default \code{everything()} (or \code{NULL}) and no
+ratios present, none are simply added.}
 }
 \value{
-a tibble with the prepared data plus the \code{trace}, \code{data_type}, and
+a tibble with the prepared data plus the \code{trace}, \code{color}, \code{data_type}, and
 \code{value} columns described above.
 }
 \description{
@@ -46,12 +69,21 @@ independently of producing a plot. The \code{dataset} is prepared exactly as for
 the plotting functions (an \code{ir_aggregated_data} object has its \code{traces} /
 \code{cycles} / \code{scans} dataset inner-joined with \verb{$metadata}; a plain data frame
 is used as is), filtered by \code{species}, and then split into intensity rows and
-(optionally) ratio rows, each augmented with three columns:
+(optionally) ratio rows, each augmented with four columns:
 \itemize{
 \item \code{trace} - the identifier \code{"<species>: <mass>"} for intensity rows
 (e.g. \code{"CO2: 44"}) or \code{"<species>: <ratio_name>"} for ratio rows (e.g.
 \code{"CO2: 45/44"}), always (re)generated and returned as a factor sorted by
-species and numerical (numerator) mass.
+species and numerical (numerator) mass. This is what the plotting
+functions group their lines by. Rows whose \code{species} is \code{NA} get the bare
+mass/ratio name instead (\code{"44"}, \code{"45/44"}) rather than an \code{"NA: "} prefix.
+\item \code{color} - the colour identifier, a factor listing every trace that
+shares a species and (numerator) mass: both \code{"CO2: 45"} and \code{"CO2: 45/44"}
+get \code{"CO2: 45, 45/44"} (or \code{"45, 45/44"} for an \code{NA} species). Mapping the
+colour aesthetic to this column (the plotting functions' default) is what
+draws an intensity trace and its ratios in the same colour while keeping
+them separate lines. Its levels follow the \code{trace} order, so the legend
+runs by ascending species/mass.
 \item \code{data_type} - \code{"intensity [UNITS]"} (e.g. \code{"intensity [mV]"}) for the
 intensity rows, or \code{"ratios"} for ratio rows.
 \item \code{value} - the value to plot: the intensity for intensity rows, or the

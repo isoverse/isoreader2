@@ -7,14 +7,14 @@
 ir_plot_dual_inlet(
   dataset,
   species = NULL,
-  mass = NULL,
-  ratio = NULL,
+  mass = everything(),
+  ratio = everything(),
   facet = NULL,
   data_type_as_facet = auto(),
   scales = "free",
   nrow = NULL,
   ncol = 1,
-  color = trace,
+  color = color,
   shape = type,
   linetype = NULL,
   color_values = palette.colors(),
@@ -33,20 +33,28 @@ or a plain data frame with \code{species}, \code{cycle}, \code{type}, \code{mass
 \item{species}{optional vector to filter the displayed data to specific
 species (e.g. \code{"CO2"} or \code{c("N2", "CO2")}); default \code{NULL} shows all species.}
 
-\item{mass}{which masses to include as intensity traces: \code{NULL} (default)
-shows all masses, a vector (e.g. \code{44} or \code{c(44, 45)}) shows specific masses,
-and a zero-length vector (\code{numeric(0)}/\code{character(0)}) shows none. Note that
-\code{c()} is \code{NULL} in R (i.e. all masses).}
+\item{mass}{which masses to show as intensity traces, as a
+\link[tidyselect:language]{tidyselect} expression evaluated as if the masses
+present in the data were column names. The default \code{everything()} shows
+every mass and \code{NULL} (or \code{c()}) shows none; beyond that any tidyselect
+syntax works, e.g. \code{c("44", "45")} or \code{44:48} for specific masses,
+\code{-"45"}/\code{!"45"} to exclude one, and helpers such as \code{starts_with("4")},
+\code{matches()}, \code{all_of()}, or \code{any_of()}. Unlike plain tidyselect, numbers
+select by name rather than by position (\code{44:48} means the masses 44 to 48,
+not the 44th to 48th mass). Selecting a mass that is not in the data is an
+error that lists the available masses; use \code{any_of()} to ignore missing ones.}
 
-\item{ratio}{which ratios to additionally include (computed with
-\code{\link[=ir_calculate_ratios]{ir_calculate_ratios()}}): \code{NULL} (default) shows all available ratios, a
-character vector of ratio names (e.g. \code{c("45/44", "46/44")}) shows specific
-ones, and \code{character(0)} shows none. Requesting specific ratio names when
-ratios have not been calculated is an error pointing to
-\code{\link[=ir_calculate_ratios]{ir_calculate_ratios()}} (with \code{ratio = NULL} and no ratios present, none are
-simply added). Ratio rows are plotted on the same \code{value} axis with
-\code{data_type = "ratios"}; the default \code{facet = data_type} (with free scales)
-separates them from the intensities.}
+\item{ratio}{which ratios to additionally show (computed with
+\code{\link[=ir_calculate_ratios]{ir_calculate_ratios()}}), as a \link[tidyselect:language]{tidyselect} expression
+evaluated as if the ratio names present in the data were column names - the
+same syntax as \code{mass}, e.g. \code{everything()} (the default, all available
+ratios), \code{NULL} for none, \code{c("45/44", "46/44")}, \code{-"45/44"}, or
+\code{starts_with("45")}. Selecting specific ratios when ratios have not been
+calculated is an error pointing to \code{\link[=ir_calculate_ratios]{ir_calculate_ratios()}} (with the default
+\code{everything()}, or \code{NULL}, and no ratios present, none are simply added).
+Ratio rows are plotted on the same \code{value} axis with \code{data_type = "ratios"};
+\code{data_type} is then used as a facet row (see \code{data_type_as_facet}) to
+separate them from the intensities.}
 
 \item{facet}{column or expression to facet by (default: \code{NULL}, no extra
 faceting). When
@@ -78,11 +86,12 @@ expression (faceted with \code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}
 formula (faceted with \code{\link[ggplot2:facet_grid]{ggplot2::facet_grid()}}), with a warning if you set
 them explicitly.}
 
-\item{color}{column or expression for the colour aesthetic (default:
-\code{trace}, the per-species/mass trace identifier, e.g. \code{"CO2: 44"}). When
-colouring by \code{trace}, traces that share the same species and (numerator)
-mass are given the same colour, so an intensity trace (\code{"CO2: 45"}) and its
-ratio traces (\code{"CO2: 45/44"}) match.}
+\item{color}{column or expression for the colour aesthetic (default: the
+generated \code{color} column, which holds all the traces that share a species
+and (numerator) mass, e.g. \code{"N2: 29, 29/28"} for both the intensity trace
+\code{"N2: 29"} and its ratio trace \code{"N2: 29/28"}, so they are drawn in the same
+colour while remaining separate lines). The legend for it is labelled
+\code{trace}; use \code{color = trace} to give every trace its own colour instead.}
 
 \item{shape}{column or expression for the point shape aesthetic (default:
 \code{type}, distinguishing \code{"standard"} from \code{"sample"} cycles)}
@@ -94,11 +103,12 @@ ratio traces (\code{"CO2: 45/44"}) match.}
 \code{\link[ggplot2:scale_color_manual]{ggplot2::scale_color_manual()}}, or \code{NULL} to use the ggplot2 default
 colour palette (default: \code{\link[=palette.colors]{palette.colors()}})}
 
-\item{drop_unused_levels}{whether to drop unused \code{trace} factor levels (e.g.
+\item{drop_unused_levels}{whether to drop unused colour factor levels (e.g.
 traces that are absent after zooming to a window) from the colour scale and
 legend. Default \code{FALSE} keeps every level so the colour mapping stays stable
 across subsets of the same dataset; set to \code{TRUE} to show only the levels
-actually present in the plotted data.}
+actually present in the plotted data. Note that a \code{color} level covers every
+trace of its species/mass, so it is only dropped when none of them is shown.}
 
 \item{scientific}{whether to format y axis labels in scientific notation
 (default: \code{FALSE})}
@@ -127,7 +137,7 @@ frame. The data is prepared with \code{\link[=ir_generate_cycles_tibble]{ir_gene
 \code{ir_aggregated_data} object, inner-joins the \verb{$cycles} dataset with
 \verb{$metadata}). The plot data must contain \code{species}, \code{cycle}, \code{type}, \code{mass},
 and an \verb{intensity.*} column — an error is thrown if any are missing. A \code{trace}
-identifier (\code{"<species>: <mass>"}) is always regenerated and the plotted
-\code{value} together with a \code{data_type} label (\code{"intensity [UNITS]"}, or
-\code{"ratios"} for ratio rows) are added.
+identifier (\code{"<species>: <mass>"}) and the matching \code{color} identifier are
+always regenerated and the plotted \code{value} together with a \code{data_type} label
+(\code{"intensity [UNITS]"}, or \code{"ratios"} for ratio rows) are added.
 }

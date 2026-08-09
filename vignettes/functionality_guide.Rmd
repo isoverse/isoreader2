@@ -71,7 +71,7 @@ isofiles <- file_paths |> ir_read_isofiles()
 isofiles
 ```
 
-### bonus combine collections with `c()`
+### bonus: combine collections with `c()`
 
 Multiple `ir_isofiles` collections can be combined into one with a simple `c()`, which row-binds them while preserving the object type.
 
@@ -80,7 +80,7 @@ Multiple `ir_isofiles` collections can be combined into one with a simple `c()`,
 c(isofiles, isofiles)
 ```
 
-### bonus `ir_save_isofiles()` / `ir_load_isofiles()`
+### bonus: `ir_save_isofiles()` / `ir_load_isofiles()`
 
 You can store an entire `ir_isofiles` collection to disk (as an RDS file) and read it back exactly as it was, without re-reading the original data files.
 
@@ -105,7 +105,7 @@ dataset <- isofiles |> ir_aggregate_isofiles()
 dataset
 ```
 
-### bonus intensity units
+### bonus: intensity units
 
 By default the raw signals are reported in millivolts (`mV`). Pass a different
 `intensity_units` to report voltage (`mV`, `V`), current (`fA`, `pA`, `nA`,
@@ -120,7 +120,7 @@ isofiles |>
   ir_get_data(traces = c("species", "mass", "time.s", "intensity.nA"))
 ```
 
-### bonus `ir_get_aggregator()`
+### bonus: `ir_get_aggregator()`
 
 You can optionally use a different aggregator. Besides the default `standard` aggregator, the package ships (from smallest to largest) the `metadata` aggregator (metadata only), the `minimal` aggregator (metadata plus the core data series), and the `extended` aggregator, which is more elaborate and provides access to additional columns (such as the resistor/cup configuration and the vendor data table) from the data files.
 
@@ -133,7 +133,7 @@ ir_get_aggregator("extended")
 isofiles |> ir_aggregate_isofiles(aggregator = "extended")
 ```
 
-### bonus `ir_register_aggregator()`
+### bonus: `ir_register_aggregator()`
 
 Or build your own aggregator with `ir_start_aggregator()` and/or expand an existing one with `ir_add_to_aggregator()`, then register it via `ir_register_aggregator()`. This functionality is rarely needed and thus not part of the package structure flowchart.
 
@@ -151,7 +151,7 @@ my_agg
 isofiles |> ir_aggregate_isofiles(aggregator = "my_aggregator")
 ```
 
-### bonus `ir_get_problems()` / `ir_show_problems()`
+### bonus: `ir_get_problems()` / `ir_show_problems()`
 
 Reading and aggregation are designed to be fail-safe: instead of stopping at the first error, problems are collected and reported. There were no problems with these example files so the result is empty, but this can be very helpful for figuring out what went wrong.
 
@@ -200,7 +200,7 @@ dataset |> ir_get_metadata()
 dataset |> ir_get_traces()
 ```
 
-### bonus `ir_get_vendor_data_table()`
+### bonus: `ir_get_vendor_data_table()`
 
 Some file formats also store the vendor's own computed results table (the table Isodat shows in its results view: per-peak or per-cycle intensities, retention times, ratios, deltas, etc.). This `vendor_data_table` is **only available from a few formats** — the isodat `.dxf`, `.cf`, `.did`, and `.caf` files — and it is **only aggregated by the `"extended"` aggregator** (it is dropped by the default `"standard"` aggregator as well as the `"minimal"` and `"metadata"` aggregators). Its columns are kept under their original names (with units, e.g. `"Rt [s]"`), numeric by default with the rare string/integer columns (e.g. `"Ref. Name"`, `"Nr."`) kept as-is.
 
@@ -226,7 +226,7 @@ dataset |>
 
 These functions also work directly on an unaggregated `ir_isofiles` object (applied individually to each file), though that is significantly slower than working on an aggregated dataset.
 
-### bonus `ir_filter_for_continuous_flow()` / `ir_filter_for_dual_inlet()` / `ir_filter_for_scans()`
+### bonus: `ir_filter_for_continuous_flow()` / `ir_filter_for_dual_inlet()` / `ir_filter_for_scans()`
 
 If a dataset mixes measurement types, these convenience filters keep only the files of one type (filtering on the metadata `type` field) and cascade to all datasets, just like `ir_filter_metadata()`.
 
@@ -237,7 +237,7 @@ dataset |>
   ir_get_metadata(metadata = c("file_name", "type"))
 ```
 
-## bonus `ir_save_aggregated_data()` / `ir_load_aggregated_data()`
+## bonus: `ir_save_aggregated_data()` / `ir_load_aggregated_data()`
 
 Aggregated data can be stored to (and loaded from) a parquet file for fast, language-independent access. This requires the suggested **arrow** package.
 
@@ -263,7 +263,7 @@ dataset_ratios |>
   )
 ```
 
-### bonus base mass, additive offsets, and normalization
+### bonus: base mass, additive offsets, and normalization
 
 The base mass can be overridden per species by name (e.g. `N2 = 28`, `CO2 = 44`). For continuous flow (`traces`) and `scans` data a small additive offset is added to numerator and denominator before dividing, which stabilizes the ratio where the signal is near the baseline; it is configurable per unit family (`num_add.V`/`denom_add.V` for voltage, `num_add.nA`/`denom_add.nA` for current, `num_add.cps`/`denom_add.cps` for counts) and is always `0` for dual inlet `cycles`. Finally, `normalize_ratios` can divide each ratio by a per-file summary function such as `mean`, `median`, `min`, or `max`.
 
@@ -319,6 +319,52 @@ dataset |>
   )
 ```
 
+### bonus: selecting masses and ratios
+
+`mass` and `ratio` accept the full [tidyselect](https://tidyselect.r-lib.org/)
+syntax, evaluated as if the masses and ratio names in the data were column
+names. Here `-"46"` drops mass 46:
+
+```{r}
+#| fig.width: 8
+#| fig.height: 6
+dataset |>
+  ir_calculate_ratios() |>
+  ir_plot_continuous_flow(
+    species = "CO2",
+    mass = -"46",
+    facet = file_name,
+    time_window.min = c(4.5, 8.5)
+  )
+```
+
+Both `mass` and `ratio` arguments default to `everything()` and take `c()` for none, so the same syntax covers everything from "all of them" to a single trace:
+
+```{r}
+#| eval: false
+# ratios have to be calculated before they can be selected
+with_ratios <- dataset |> ir_calculate_ratios()
+
+# all masses and all available ratios (the default)
+with_ratios |> ir_plot_continuous_flow()
+# only the ratios, no intensity traces
+with_ratios |> ir_plot_continuous_flow(mass = c())
+# only the intensity traces, no ratios
+with_ratios |> ir_plot_continuous_flow(ratio = c())
+# a specific set, as names or (via as.character) as numbers
+dataset |> ir_plot_continuous_flow(mass = c("44", "45"))
+dataset |> ir_plot_continuous_flow(mass = 44:46)
+# everything except one
+ir_plot_continuous_flow(dataset, mass = -"30")
+# pattern matching helpers
+dataset |> ir_plot_continuous_flow(mass = starts_with("4"))
+with_ratios |> ir_plot_continuous_flow(mass = c(), ratio = matches("/44"))
+# tolerate masses/ratios that may not be in the data with any_of (a plain c() would error)
+dataset |> ir_plot_continuous_flow(mass = any_of(c("44", "47")))
+```
+
+### bonus: ggplot modifications
+
 The plots are ordinary `ggplot` objects (the package theme `ir_default_theme()`
 is always applied), so you can keep customizing with ggplot2 layers - and tune
 the aesthetics with arguments like `color`, `scientific`, `linetype`, or
@@ -340,7 +386,7 @@ dataset |>
 
 ### bonus `ir_generate_traces_tibble()` / `ir_generate_cycles_tibble()` / `ir_generate_scans_tibble()`
 
-If you want the exact tibble that a plot would draw (e.g. to build your own plot or do further analysis), the `ir_generate_*_tibble()` helpers return it without plotting. They take the same `species`/`mass`/`ratio` arguments and add the `trace`, `data_type`, and `value` columns the plotting functions use.
+If you want the exact tibble that a plot would draw (e.g. to build your own plot or do further analysis), the `ir_generate_*_tibble()` helpers return it without plotting. They take the same `species`/`mass`/`ratio` arguments and add the `trace`, `color`, `data_type`, and `value` columns the plotting functions use.
 
 ```{r}
 dataset |> ir_generate_traces_tibble(species = "CO2")
@@ -367,7 +413,12 @@ range of cycles:
 ```{r}
 #| fig.width: 8
 #| fig.height: 5
-di_dataset |> ir_plot_dual_inlet(mass = c(44, 45, 46), facet = file_name)
+di_dataset |>
+  ir_plot_dual_inlet(
+    mass = 44:46,
+    ratio = c("45/44", "46/44"),
+    facet = file_name
+  )
 ```
 
 ## `ir_plot_scans()`

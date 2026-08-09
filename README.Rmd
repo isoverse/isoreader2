@@ -186,7 +186,7 @@ library(ggplot2)
 dataset |>
   ir_filter_metadata(file_name == "caf_dual_inlet_example") |>
   ir_calculate_ratios() |>
-  ir_plot_dual_inlet(mass = c(44:48)) +
+  ir_plot_dual_inlet(mass = 44:48, ratio = c("45/44", "46/44")) +
   # use ggplot2 to modify with custom theming (or any other ggplot elements)
   theme(strip.text = element_text(size = 30))
 ```
