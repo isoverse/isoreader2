@@ -521,8 +521,19 @@ eval_trace_selection <- function(
   # "could not be evaluated" - helpers like `everything()` are only meaningful
   # inside a selection context and error out here, and must not be mistaken for
   # a NULL selection.
+  # This evaluation is only a probe (the selection is always resolved properly
+  # below), so the deprecation warning tidyselect raises for helpers that DO
+  # evaluate outside a selection context - `all_of()`/`any_of()` return their
+  # argument with a "used outside of a selecting function" warning - must not
+  # reach the user. Only that class of condition is muffled, everything the
+  # user's own expression might signal is left alone.
   evaluated <- tryCatch(
-    list(value = rlang::eval_tidy(quo)),
+    withCallingHandlers(
+      list(value = rlang::eval_tidy(quo)),
+      lifecycle_warning_deprecated = function(w) {
+        rlang::cnd_muffle(w)
+      }
+    ),
     error = function(e) NULL
   )
   # NULL means "select nothing" however it is written - literally, as `c()`, or
@@ -1502,7 +1513,7 @@ ir_plot_traces <- function(
 #' @export
 ir_plot_continuous_flow <- function(...) {
   lifecycle::deprecate_soft(
-    when = "0.6.2",
+    when = "0.7.0",
     what = "ir_plot_continuous_flow()",
     with = "ir_plot_traces()"
   )

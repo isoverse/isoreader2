@@ -15,6 +15,11 @@
 #' @importFrom utils tail
 #' @importFrom stats setNames
 #' @importFrom dplyr everything
+# `all_of` is used as a bare symbol in the mass/ratio selections built by
+# eval_trace_selection() (tidyselect resolves it from its own selection mask, a
+# namespaced tidyselect::all_of() is not evaluable there), so it has to be
+# available in the namespace like `everything`
+#' @importFrom dplyr all_of
 ## usethis namespace: end
 utils::globalVariables(c("data_type", "file_name", "mass", "species", "type"))
 NULL

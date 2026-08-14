@@ -67,6 +67,7 @@ reference:
   contents:
   - ir_metadata
   - ir_filter_for
+  - ir_filter_masses
 
 - title: Visualize isofiles data
   desc: >

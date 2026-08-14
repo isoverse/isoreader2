@@ -237,6 +237,28 @@ dataset |>
   ir_get_metadata(metadata = c("file_name", "type"))
 ```
 
+## `ir_filter_masses()`
+
+While `ir_filter_metadata()` selects *files*, `ir_filter_masses()` selects *masses*: it keeps only the requested masses in the `traces`, `cycles`, and `scans`, using the same tidyselect syntax as the `mass` argument of the plotting functions. Any record left without data afterwards is removed from the metadata, and that removal cascades to the other datasets just like `ir_filter_metadata()`.
+
+```{r}
+# keep only the CO2 masses
+dataset |>
+  ir_filter_masses(44:46) |>
+  ir_get_data(metadata = "file_name", traces = c("species", "mass")) |>
+  distinct()
+```
+
+Any tidyselect expression works, and the selection is resolved once against the whole dataset, so a mass that only some of the files contain works fine (the others simply end up without data and are dropped).
+
+```{r}
+# everything except mass 45
+dataset |>
+  ir_filter_masses(-"45") |>
+  ir_get_data(metadata = "file_name", traces = "mass") |>
+  distinct()
+```
+
 ## bonus: `ir_save_aggregated_data()` / `ir_load_aggregated_data()`
 
 Aggregated data can be stored to (and loaded from) a parquet file for fast, language-independent access. This requires the suggested **arrow** package.

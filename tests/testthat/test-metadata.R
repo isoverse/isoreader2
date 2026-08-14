@@ -134,6 +134,186 @@ test_that("ir_join_metadata() on ir_isofiles applies per row", {
     expect_error("duplicated rows")
 })
 
+# an aggregated dataset covering all three mass datasets: file 1 (uidx 1) has
+# traces, file 2 cycles, file 3 scans - i.e. no mass is shared by all of them
+make_mass_agg <- function() {
+  structure(
+    list(
+      metadata = tibble(
+        uidx = 1:3,
+        analysis = 1L,
+        file_name = c("cf", "di", "scn")
+      ),
+      traces = tibble(
+        uidx = 1L,
+        analysis = 1L,
+        mass = c("28", "29", "44", "45"),
+        time.s = 1,
+        intensity.mV = 1:4
+      ),
+      cycles = tibble(
+        uidx = 2L,
+        analysis = 1L,
+        mass = c("44", "45", "46"),
+        cycle = 1L,
+        intensity.mV = 1:3
+      ),
+      scans = tibble(
+        uidx = 3L,
+        analysis = 1L,
+        mass = c("17", "18"),
+        x = 1,
+        intensity.mV = 1:2
+      ),
+      resistors = tibble(uidx = 1:3, mass = c("28", "44", "17"), Ohm = 3e8),
+      problems = tibble(uidx = integer(0), message = character(0))
+    ),
+    class = "ir_aggregated_data"
+  )
+}
+
+# a mixed ir_isofiles collection: the datasets a file type does not have are NULL
+# in that row (exactly how ir_read_isofiles() returns a mixed collection)
+make_mass_isofiles <- function() {
+  structure(
+    tibble(
+      file_path = c("a.dxf", "b.caf"),
+      metadata = list(
+        tibble(file_name = "a", analysis = 1L),
+        tibble(file_name = "b", analysis = 1L)
+      ),
+      traces = list(
+        tibble(analysis = 1L, mass = c("28", "44"), intensity.V = 1:2),
+        NULL
+      ),
+      cycles = list(
+        NULL,
+        tibble(analysis = 1L, mass = c("45", "46"), intensity.V = 1:2)
+      ),
+      problems = list(tibble(), tibble())
+    ),
+    class = c("ir_isofiles", "tbl_df", "tbl", "data.frame")
+  )
+}
+
+test_that("ir_filter_masses() input checks", {
+  ir_filter_masses() |>
+    expect_error("must be a set of aggregated isofiles.*collection")
+  ir_filter_masses(42, 44) |>
+    expect_error("must be a set of aggregated isofiles.*collection")
+  # the mass selection is required
+  make_mass_agg() |> ir_filter_masses() |> expect_error("must be provided")
+  # a selection that keeps nothing would empty the object
+  make_mass_agg() |> ir_filter_masses(NULL) |> expect_error("selects no masses")
+  make_mass_agg() |> ir_filter_masses(c()) |> expect_error("selects no masses")
+  # a mass that is not in the data errors and lists what is available
+  make_mass_agg() |>
+    ir_filter_masses(99) |>
+    expect_error("not a valid mass selection")
+  # nothing to filter without any mass-carrying dataset
+  structure(
+    list(metadata = tibble(uidx = 1L, file_name = "x")),
+    class = "ir_aggregated_data"
+  ) |>
+    ir_filter_masses(44) |>
+    expect_error("no traces.*cycles.*or scans data")
+})
+
+test_that("ir_filter_masses() filters all mass datasets of ir_aggregated_data", {
+  out <- make_mass_agg() |>
+    ir_filter_masses(c("44", "45")) |>
+    suppressMessages()
+  expect_s3_class(out, "ir_aggregated_data")
+  # every mass dataset is filtered to the selection
+  expect_equal(out$traces$mass, c("44", "45"))
+  expect_equal(out$cycles$mass, c("44", "45"))
+  expect_equal(nrow(out$scans), 0L) # 17/18 not selected
+  # the scan record has no data left -> dropped from the metadata ...
+  expect_equal(out$metadata$file_name, c("cf", "di"))
+  # ... and the removal cascades to resistors (by uidx)
+  expect_equal(out$resistors$uidx, 1:2)
+  # resistors themselves are NOT filtered by mass (they are instrument config)
+  expect_equal(out$resistors$mass, c("28", "44"))
+})
+
+test_that("ir_filter_masses() resolves the selection across all datasets", {
+  # "28" only exists in traces and "18" only in scans - selecting both must work
+  # and simply leaves the cycles record without data
+  out <- make_mass_agg() |>
+    ir_filter_masses(c("28", "18")) |>
+    suppressMessages()
+  expect_equal(out$traces$mass, "28")
+  expect_equal(out$scans$mass, "18")
+  expect_equal(nrow(out$cycles), 0L)
+  expect_equal(out$metadata$file_name, c("cf", "scn"))
+})
+
+test_that("ir_filter_masses() supports the tidyselect syntax", {
+  masses <- function(sel) {
+    out <- suppressMessages(ir_filter_masses(make_mass_agg(), !!sel))
+    unique(c(out$traces$mass, out$cycles$mass, out$scans$mass))
+  }
+  expect_equal(
+    masses(quote(everything())),
+    c("28", "29", "44", "45", "46", "17", "18")
+  )
+  expect_equal(masses(quote(44:46)), c("44", "45", "46"))
+  expect_equal(masses(quote(-c("28", "29"))), c("44", "45", "46", "17", "18"))
+  expect_equal(masses(quote(starts_with("4"))), c("44", "45", "46"))
+  expect_equal(masses(quote(any_of(c("44", "99")))), "44")
+  # a bare vector held in a variable selects by name, not by position
+  wanted <- c("29", "45")
+  expect_equal(masses(quote(all_of(wanted))), c("29", "45"))
+})
+
+test_that("ir_filter_masses() keeps ratios with their numerator mass", {
+  agg <- make_mass_agg()
+  # ratios sit on the rows of their numerator mass (45/44 on the mass 45 rows)
+  agg$traces$ratio_name <- c(NA, "29/28", NA, "45/44")
+  agg$traces$ratio <- c(NA, 0.5, NA, 0.25)
+
+  kept <- agg |> ir_filter_masses(c("44", "45")) |> suppressMessages()
+  expect_equal(kept$traces$ratio_name, c(NA, "45/44"))
+
+  # dropping mass 45 drops its 45/44 ratio; the columns are then all NA and are
+  # removed like any other all-NA column (as in ir_filter_metadata())
+  base_only <- agg |> ir_filter_masses("44") |> suppressMessages()
+  expect_false(any(c("ratio_name", "ratio") %in% names(base_only$traces)))
+})
+
+test_that("ir_filter_masses() works per file on ir_isofiles", {
+  out <- make_mass_isofiles() |>
+    ir_filter_masses(c("44", "45")) |>
+    suppressMessages()
+  expect_s3_class(out, "ir_isofiles")
+  expect_equal(nrow(out), 2L)
+  expect_equal(out$traces[[1]]$mass, "44")
+  expect_equal(out$cycles[[2]]$mass, "45")
+  # datasets a file type does not have stay NULL (and keep their position)
+  expect_null(out$cycles[[1]])
+  expect_null(out$traces[[2]])
+
+  # the selection is resolved across the WHOLE collection, so a mass present in
+  # only one of the files works and leaves the other one without data -> dropped
+  only_a <- make_mass_isofiles() |> ir_filter_masses("28") |> suppressMessages()
+  expect_equal(nrow(only_a), 1L)
+  expect_equal(only_a$metadata[[1]]$file_name, "a")
+  expect_equal(only_a$traces[[1]]$mass, "28")
+})
+
+test_that("nested dataset operations reach mixed ir_isofiles collections", {
+  # traces/cycles are NULL in the rows of the file type that does not have them;
+  # they must still be recognized as nested dataset columns (and hence filtered)
+  iso <- make_mass_isofiles()
+  expect_setequal(
+    isofiles_dataset_cols(iso),
+    c("metadata", "traces", "cycles", "problems")
+  )
+  # so ir_filter_metadata() also cascades into them for a mixed collection
+  out <- iso |> ir_filter_metadata(analysis == 99) |> suppressMessages()
+  expect_equal(nrow(out), 0L)
+})
+
 test_that("ir_filter_for_*() keep only the requested measurement type", {
   iso <- structure(
     tibble(

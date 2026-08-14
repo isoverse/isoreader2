@@ -1,19 +1,12 @@
 ## Submission
 
-This is a resubmission of a new package. It addresses the reviewer feedback:
+This is a minor update of an existing package (0.6.1 -> 0.7.0).
 
-* Removed the single quotes around the software and file-format names in the
-  Description field.
-* Added a reference describing the methods to the Description field:
-  Kopf et al. (2021) <doi:10.21105/joss.02878>.
-* Replaced `\dontrun{}` in the examples: `ir_copy_examples()` is now unwrapped
-  (it runs in < 5s, writing to a temporary directory) and `ir_export_to_excel()`
-  uses `\donttest{}` (it needs the suggested 'openxlsx' package and writes to a
-  temporary directory).
-* The package no longer installs any packages: the previous automatic
-  `install.packages()` calls for the suggested 'openxlsx' and 'arrow' packages
-  were removed; the functions now error with a message asking the user to
-  install the package themselves.
+It adds a new filtering function (`ir_filter_masses()`), gives the `mass` and
+`ratio` arguments of the plotting functions full tidyselect support, renames
+`ir_plot_continuous_flow()` to `ir_plot_traces()` (the old name is kept as a
+soft-deprecated alias), and fixes a few bugs. The breaking changes for existing
+users are summarized at the top of NEWS.md.
 
 ## Test environments
 
@@ -25,6 +18,8 @@ This is a resubmission of a new package. It addresses the reviewer feedback:
 
 ## R CMD check results
 
-0 errors | 0 warnings | 1 note
+0 errors | 0 warnings | 0 notes
 
-This is a new submission.
+## Reverse dependencies
+
+There are no reverse dependencies.

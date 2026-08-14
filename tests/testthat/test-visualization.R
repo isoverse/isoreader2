@@ -862,6 +862,41 @@ test_that("mass/ratio accept the full tidyselect syntax", {
   expect_match(err, "28")
 })
 
+test_that("selection helpers do not leak tidyselect deprecation warnings", {
+  # the selection is probed by evaluating it outside a selection context to tell
+  # a plain vector from a helper; `all_of()`/`any_of()` evaluate there but warn
+  # ("used outside of a selecting function"), which must not reach the user
+  wanted <- c("28", "29")
+  expect_no_warning(
+    ir_generate_traces_tibble(
+      cf_ratio_data(),
+      mass = all_of(wanted),
+      ratio = NULL
+    )
+  )
+  expect_no_warning(
+    ir_generate_traces_tibble(
+      cf_ratio_data(),
+      mass = any_of(c("28", "99")),
+      ratio = NULL
+    )
+  )
+  expect_no_warning(suppressMessages(
+    ir_plot_traces(cf_ratio_data(), mass = all_of(wanted), ratio = NULL)
+  ))
+  # the selections are still resolved correctly
+  expect_equal(
+    sort(as.character(unique(
+      ir_generate_traces_tibble(
+        cf_ratio_data(),
+        mass = all_of(wanted),
+        ratio = NULL
+      )$trace
+    ))),
+    c("N2: 28", "N2: 29")
+  )
+})
+
 test_that("a ratio plots even when its numerator mass is excluded by `mass`", {
   # mass = "28" excludes mass 29, but ratio "29/28" (numerator 29) must still plot
   # because the mass filter only drops intensity rows, never ratio rows
