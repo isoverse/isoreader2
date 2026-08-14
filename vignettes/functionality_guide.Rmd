@@ -86,8 +86,8 @@ You can store an entire `ir_isofiles` collection to disk (as an RDS file) and re
 
 ```{r}
 # save and reload the read isofiles
-isofiles |> ir_save_isofiles(file.path("tmp_examples", "my_isofiles"))
-reloaded <- ir_load_isofiles(file.path("tmp_examples", "my_isofiles"))
+isofiles |> ir_save_isofiles("tmp_examples/my_isofiles.rds")
+reloaded <- ir_load_isofiles("tmp_examples/my_isofiles.rds")
 ```
 
 # Aggregating data
