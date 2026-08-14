@@ -31,6 +31,70 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.0" id="isoreader2-070">isoreader2 0.7.0<a class="anchor" aria-label="anchor" href="#isoreader2-070"></a></h2>
+<div class="section level3">
+<h3 id="syntax-changes-0-7-0">Syntax changes<a class="anchor" aria-label="anchor" href="#syntax-changes-0-7-0"></a></h3>
+<p>Reading, aggregating, and all data operations behave exactly as in 0.6. However, there are three syntax changes to the plotting functions (and the corresponding <code>ir_generate_*_tibble()</code> helpers):</p>
+<table class="table"><colgroup><col width="50%"><col width="50%"></colgroup><thead><tr><th>0.6</th>
+<th>0.7</th>
+</tr></thead><tbody><tr><td>
+<code>mass = NULL</code> / <code>ratio = NULL</code> selected <strong>all</strong>
+</td>
+<td>they now select <strong>none</strong>; use <code><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything()</a></code> (or just drop the argument) for all</td>
+</tr><tr><td>a partly matching <code>mass = c(44, 99)</code> silently kept <code>44</code>
+</td>
+<td>it is now an error listing the available masses; use <code><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">any_of()</a></code> to ignore missing ones</td>
+</tr><tr><td>the colour aesthetic defaulted to <code>trace</code>
+</td>
+<td>it defaults to the new <code>color</code> column, so a trace and its ratios share one legend entry; pass <code>color = trace</code> for the old behavior</td>
+</tr></tbody></table></div>
+<div class="section level3">
+<h3 id="new-features-and-fixes-0-7-0">New features and fixes<a class="anchor" aria-label="anchor" href="#new-features-and-fixes-0-7-0"></a></h3>
+<ul><li>
+<p>New <code><a href="../reference/ir_plot_traces.html">ir_plot_traces()</a></code>, the preferred name for what used to be <code><a href="../reference/ir_plot_traces.html">ir_plot_continuous_flow()</a></code>. It is the same function with the same arguments and return value, just named after the data it plots (<code>traces</code>) rather than the acquisition mode, which leaves room for trace data from other kinds of files in the future.</p>
+<p><code><a href="../reference/ir_plot_traces.html">ir_plot_continuous_flow()</a></code> keeps working as an alias but is now soft-deprecated and passes everything on to <code><a href="../reference/ir_plot_traces.html">ir_plot_traces()</a></code>. Calling it directly warns (at most once every 8 hours):</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">dataset</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_plot_traces.html">ir_plot_traces</a></span><span class="op">(</span>facet <span class="op">=</span> <span class="va">file_name</span><span class="op">)</span>          <span class="co"># preferred</span></span>
+<span><span class="va">dataset</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_plot_traces.html">ir_plot_continuous_flow</a></span><span class="op">(</span>facet <span class="op">=</span> <span class="va">file_name</span><span class="op">)</span> <span class="co"># deprecated</span></span></code></pre></div>
+</li>
+<li>
+<p>The <code>mass</code> and <code>ratio</code> arguments of <code><a href="../reference/ir_plot_traces.html">ir_plot_traces()</a></code>, <code><a href="../reference/ir_plot_dual_inlet.html">ir_plot_dual_inlet()</a></code>, <code><a href="../reference/ir_plot_scans.html">ir_plot_scans()</a></code>, and the <code>ir_generate_*_tibble()</code> helpers now accept the full <strong>tidyselect</strong> syntax, evaluated as if the masses and ratio names present in the data were column names:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/ir_plot_traces.html">ir_plot_traces</a></span><span class="op">(</span><span class="va">dataset</span>, mass <span class="op">=</span> <span class="fl">44</span><span class="op">:</span><span class="fl">48</span><span class="op">)</span>              <span class="co"># a range of masses</span></span>
+<span><span class="fu"><a href="../reference/ir_plot_traces.html">ir_plot_traces</a></span><span class="op">(</span><span class="va">dataset</span>, mass <span class="op">=</span> <span class="op">-</span><span class="st">"45"</span><span class="op">)</span>              <span class="co"># all but mass 45</span></span>
+<span><span class="fu"><a href="../reference/ir_plot_traces.html">ir_plot_traces</a></span><span class="op">(</span><span class="va">dataset</span>, ratio <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"45"</span><span class="op">)</span><span class="op">)</span> <span class="co"># all 45/x ratios</span></span></code></pre></div>
+<p>Both default to <code><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything()</a></code> (all masses / all available ratios) and both take <code>NULL</code> (or <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code>) for none. Unlike plain tidyselect, numbers select by name rather than by position, so <code>mass = 44:48</code> means the masses 44 to 48, not the 44th to 48th mass; a bare vector held in a variable also works without wrapping it in <code><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of()</a></code>.</p>
+<p><strong>This inverts the previous meaning of <code>NULL</code></strong>, which used to select <em>all</em> masses/ratios: replace <code>mass = NULL</code> with <code>mass = everything()</code> (or just drop it, since it is the default) to keep the old behavior.</p>
+</li>
+<li><p><code><a href="../reference/ir_generate_tibble.html">ir_generate_traces_tibble()</a></code>, <code><a href="../reference/ir_generate_tibble.html">ir_generate_cycles_tibble()</a></code>, and <code><a href="../reference/ir_generate_tibble.html">ir_generate_scans_tibble()</a></code> now also add a <code>color</code> column alongside <code>trace</code>. It groups every trace that shares a species and (numerator) mass into a single factor level labelled with all of them, so <code>"CO2: 45"</code> and <code>"CO2: 45/44"</code> both get <code>"CO2: 45, 45/44"</code>. Its levels follow the <code>trace</code> order (ascending species/mass).</p></li>
+<li><p><code><a href="../reference/ir_plot_traces.html">ir_plot_traces()</a></code>, <code><a href="../reference/ir_plot_dual_inlet.html">ir_plot_dual_inlet()</a></code>, and <code><a href="../reference/ir_plot_scans.html">ir_plot_scans()</a></code> now map the colour aesthetic to that <code>color</code> column by default (previously <code>trace</code>). An intensity trace and its ratios are still drawn in the same colour and still as separate lines, but they now share <strong>one</strong> legend entry (<code>"CO2: 45, 45/44"</code>) instead of appearing as separate entries with a repeated colour. Pass <code>color = trace</code> to give every trace its own colour and legend entry.</p></li>
+<li><p><code>drop_unused_levels</code> now applies at colour-group granularity: a group stays in the legend as long as any of its traces is visible, and keeps its full label.</p></li>
+<li>
+<p>New <code><a href="../reference/ir_filter_masses.html">ir_filter_masses()</a></code>, which keeps only the requested masses in the <code>traces</code>, <code>cycles</code>, and <code>scans</code> of a dataset. Where <code><a href="../reference/ir_metadata.html">ir_filter_metadata()</a></code> selects files, this selects masses, <strong>tidyselect</strong> syntax is allowed:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">dataset</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_filter_masses.html">ir_filter_masses</a></span><span class="op">(</span><span class="fl">44</span><span class="op">:</span><span class="fl">46</span><span class="op">)</span>                  <span class="co"># the CO2 masses</span></span>
+<span><span class="va">dataset</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/ir_filter_masses.html">ir_filter_masses</a></span><span class="op">(</span><span class="op">-</span><span class="st">"45"</span><span class="op">)</span>                  <span class="co"># all but mass 45</span></span></code></pre></div>
+<p>Any metadata record left without data afterwards is removed, and that removal cascades to the other datasets exactly as in <code><a href="../reference/ir_metadata.html">ir_filter_metadata()</a></code>. Like the metadata operations it works on both <code>ir_aggregated_data</code> (from <code><a href="../reference/ir_aggregate_isofiles.html">ir_aggregate_isofiles()</a></code>) and <code>ir_isofiles</code> (from <code><a href="../reference/ir_read_isofiles.html">ir_read_isofiles()</a></code>) objects. The selection is resolved once against the whole object, so a mass that only some of the files or datasets contain is fine - the others simply end up without data. <code>resistors</code> are not filtered by mass since they describe the instrument configuration rather than measured data.</p>
+</li>
+<li><p>Fixed the metadata operations (<code><a href="../reference/ir_metadata.html">ir_filter_metadata()</a></code>, <code><a href="../reference/ir_metadata.html">ir_mutate_metadata()</a></code>, <code><a href="../reference/ir_metadata.html">ir_join_metadata()</a></code>) silently skipping the <code>traces</code>, <code>cycles</code>, and <code>scans</code> of an <code>ir_isofiles</code> collection that <strong>mixes measurement types</strong>. Since a dataset only some of the file types have is <code>NULL</code> in the other rows (e.g. <code>traces</code> for a dual inlet file), such a column was not recognized as a nested dataset at all, so <code><a href="../reference/ir_metadata.html">ir_filter_metadata()</a></code> did not cascade its filter into it. Reading a single measurement type at a time was unaffected.</p></li>
+<li><p>Fixed deprecation warnings from using the <code>.data</code> pronoun in tidyselect expressions (e.g. in <code><a href="../reference/ir_read_isofiles.html">ir_read_isofiles()</a></code>).</p></li>
+<li><p>Fixed <code>mass</code>/<code>ratio</code> selections that mean “none” only being recognized when written as a literal <code>NULL</code>. <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code>, and any expression evaluating to <code>NULL</code> (e.g. a variable holding it, or an argument forwarded on with <code>{{ }}</code>), now behave identically: they select nothing, no longer error with “calculate ratios first” when the <code>ratio_name</code>/<code>ratio</code> columns are absent, and no longer trigger tidyselect’s “external vector in selections” deprecation warning.</p></li>
+<li><p>Fixed the plotting functions and <code>ir_generate_*_tibble()</code> erroring with “Can’t combine <code>..1$trace</code> &lt;character&gt; and <code>..2$trace</code> &lt;logical&gt;” on data whose <code>ratio_name</code>/<code>ratio</code> columns are present but hold no ratios at all - for example after <code><a href="../reference/ir_calculate_ratios.html">ir_calculate_ratios()</a></code> on a species with only a single mass, where the one row is the base mass and its <code>ratio_name</code> is <code>NA</code>.</p></li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.6.1" id="isoreader2-061">isoreader2 0.6.1<a class="anchor" aria-label="anchor" href="#isoreader2-061"></a></h2><p class="text-muted">CRAN release: 2026-07-10</p>
+<ul><li>
+<p>Addressed CRAN feedback on the initial submission:</p>
+<ul><li><p><code><a href="../reference/ir_export_to_excel.html">ir_export_to_excel()</a></code>, <code><a href="../reference/ir_storage.html">ir_save_aggregated_data()</a></code>, and <code><a href="../reference/ir_storage.html">ir_load_aggregated_data()</a></code> no longer try to install their suggested packages (<code>openxlsx</code> and <code>arrow</code>) automatically. They now fail with an informative error telling you to run <code><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages()</a></code> yourself.</p></li>
+<li><p>The examples for <code><a href="../reference/ir_examples_folder.html">ir_copy_examples()</a></code> and <code><a href="../reference/ir_export_to_excel.html">ir_export_to_excel()</a></code> are now runnable (writing to <code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir()</a></code>) instead of wrapped in <code>\dontrun{}</code>.</p></li>
+<li><p>The package description now cites Kopf et al. (2021) <a href="doi:10.21105/joss.02878" class="uri">doi:10.21105/joss.02878</a>.</p></li>
+</ul></li>
+<li><p>Added a full <code>LICENSE.md</code> for the AGPL (&gt;= 3) license.</p></li>
+<li><p><code><a href="../reference/ir_calculate_ratios.html">ir_calculate_ratios()</a></code> now reports the parameters it used in its info message: any non-zero additive offsets (for traces and scans) and the normalization function, if one was given (<a href="https://github.com/isoverse/isoreader2/issues/3" class="external-link">#3</a>).</p></li>
+<li><p>Fixed the aggregated data print output listing each mass (or channel) once per cycle and per standard/sample instead of once in total (<a href="https://github.com/isoverse/isoreader2/issues/2" class="external-link">#2</a>).</p></li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.0" id="isoreader2-060">isoreader2 0.6.0<a class="anchor" aria-label="anchor" href="#isoreader2-060"></a></h2>
 <ul><li><p>Initial CRAN release.</p></li>
 <li><p>Reads stable isotope data files from many vendor formats: Isodat (<code>.dxf</code>, <code>.cf</code>, <code>.did</code>, <code>.caf</code>, <code>.scn</code>), IonOS (<code>.iarc</code>), LyticOS (<code>.larc</code>), Callisto (<code>.bch</code>), and Qtegra (<code>.imexp</code>), via the external <code>isoextract</code> helper (<code><a href="../reference/ir_read_isofiles.html">ir_read_isofiles()</a></code>, <code><a href="../reference/ir_extract_isofiles.html">ir_extract_isofiles()</a></code>).</p></li>
@@ -38,7 +102,8 @@
 <li><p>Visualizes continuous flow, dual inlet, and scan data (<code><a href="../reference/ir_plot_traces.html">ir_plot_continuous_flow()</a></code>, <code><a href="../reference/ir_plot_dual_inlet.html">ir_plot_dual_inlet()</a></code>, <code><a href="../reference/ir_plot_scans.html">ir_plot_scans()</a></code>), and builds the underlying plotting tibbles directly (<code>ir_generate_*_tibble()</code>).</p></li>
 <li><p>Saves/loads data and exports to Excel (<code><a href="../reference/ir_isofiles_storage.html">ir_save_isofiles()</a></code>, <code><a href="../reference/ir_isofiles_storage.html">ir_load_isofiles()</a></code>, <code><a href="../reference/ir_export_to_excel.html">ir_export_to_excel()</a></code>).</p></li>
 </ul></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
