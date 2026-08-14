@@ -94,9 +94,10 @@ dataset <-
 dataset |> ir_plot_traces(facet = file_name)
 ```
 
-<PRE class="fansi fansi-error"><CODE><span style='color: #BBBB00; font-weight: bold;'>Error</span><span style='font-weight: bold;'> in `ir_plot_traces()`:</span>
-<span style='color: #BBBB00;'>!</span> could not find function &quot;ir_plot_traces&quot;
-</CODE></PRE>
+<div class="figure">
+<img src="man/figures/README-continuous_flow_example-1.png" alt="Plot of continuous flow examples" width="100%" />
+<p class="caption">Plot of continuous flow examples</p>
+</div>
 
 
 ``` r
@@ -109,9 +110,10 @@ dataset |>
   )
 ```
 
-<PRE class="fansi fansi-error"><CODE><span style='color: #BBBB00; font-weight: bold;'>Error</span><span style='font-weight: bold;'> in `ir_plot_traces()`:</span>
-<span style='color: #BBBB00;'>!</span> could not find function &quot;ir_plot_traces&quot;
-</CODE></PRE>
+<div class="figure">
+<img src="man/figures/README-continuous_flow_example_w_ratios-1.png" alt="Time slice of continuous flow examples with ratios" width="100%" />
+<p class="caption">Time slice of continuous flow examples with ratios</p>
+</div>
 
 ## Show me more details
 
@@ -135,8 +137,8 @@ file_paths <- data_folder |> ir_find_dual_inlet()
 isofiles <- file_paths |> ir_read_isofiles()
 ```
 
-<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[83ms]</span> <span style='font-weight: bold;'>ir_extract_isofiles()</span> finished extracting 1 file/archive
-</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[191ms]</span> <span style='font-weight: bold;'>ir_read_isofiles()</span> finished reading 1 isotope data file/archive
+<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[96ms]</span> <span style='font-weight: bold;'>ir_extract_isofiles()</span> finished extracting 1 file/archive
+</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[229ms]</span> <span style='font-weight: bold;'>ir_read_isofiles()</span> finished reading 1 isotope data file/archive
 </CODE></PRE>
 
 ``` r
@@ -158,7 +160,7 @@ isofiles
 dataset <- isofiles |> ir_aggregate_isofiles("V")
 ```
 
-<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[37ms]</span> <span style='font-weight: bold;'>ir_aggregate_isofiles()</span> aggregated <span style='color: #0000BB;'>metadata</span> (1) and <span style='color: #0000BB;'>cycles</span> (102,
+<PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[45ms]</span> <span style='font-weight: bold;'>ir_aggregate_isofiles()</span> aggregated <span style='color: #0000BB;'>metadata</span> (1) and <span style='color: #0000BB;'>cycles</span> (102,
 <span style='color: #00BB00;'>intensity</span> in <span style='color: #BB00BB;'>V</span>) from 1 file using the <span style='font-weight: bold; font-style: italic;'>standard</span> aggregator
 </CODE></PRE>
 
@@ -216,7 +218,7 @@ ir_export_to_excel(
 <PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[2ms]</span> <span style='font-weight: bold;'>ir_get_data()</span> retrieved 1 records from <span style='color: #0000BB;'>metadata</span>
 </CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[3ms]</span> <span style='font-weight: bold;'>ir_get_data()</span> retrieved 102 records from the combination of <span style='color: #0000BB;'>metadata</span>
 (1) and <span style='color: #0000BB;'>cycles</span> (102) via <span style='color: #00BB00;'>uidx</span> and <span style='color: #00BB00;'>analysis</span>
-</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[208ms]</span> <span style='font-weight: bold;'>ir_export_to_excel()</span> exported 1 row of <span style='color: #00BB00;'>metadata</span> and 102 rows of
+</CODE></PRE><PRE class="fansi fansi-message"><CODE><span style='color: #00BB00;'>✔</span> <span style='color: #B2B2B2;'>[209ms]</span> <span style='font-weight: bold;'>ir_export_to_excel()</span> exported 1 row of <span style='color: #00BB00;'>metadata</span> and 102 rows of
 <span style='color: #00BB00;'>cycles</span> to <span style='color: #0000BB;'>my_export.xlsx</span>
 </CODE></PRE>
 
@@ -245,7 +247,7 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
 ```{=html}
 <?xml version="1.0" encoding="UTF-8"?>
 <svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 765.22 959.06">
-  <!-- Generator: Adobe Illustrator 30.5.1, SVG Export Plug-In . SVG Version: 2.1.4 Build 3)  -->
+  <!-- Generator: Adobe Illustrator 30.7.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 114)  -->
   <defs>
     <style>
       .st0 {
@@ -380,13 +382,13 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
       }
     </style>
   </defs>
-  <rect class="st22" width="765.22" height="959.06"/>
+  <rect class="st22" x="-.09" y="0" width="765.22" height="959.06"/>
   <g>
     <g>
-      <rect class="st23" x="459.17" y="759.88" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
-      <rect class="st6" x="459.17" y="759.88" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
+      <rect class="st23" x="459.17" y="808.01" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
+      <rect class="st6" x="459.17" y="808.01" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
     </g>
-    <path class="st0" d="M473.49,780.84l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
+    <path class="st0" d="M473.49,828.97l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
     <g class="st19">
       <g class="st19">
         <g class="st19">
@@ -396,7 +398,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                 <g class="st19">
                   <g class="st19">
                     <g class="st19">
-                      <text class="st16" transform="translate(498.03 785.37)"><tspan x="0" y="0">ir_filter</tspan></text>
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st16" transform="translate(498.03 833.5)"><tspan x="0" y="0">ir_filter</tspan></text>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
@@ -409,10 +415,10 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
   </g>
   <g>
     <g>
-      <rect class="st23" x="459.17" y="808" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
-      <rect class="st6" x="459.17" y="808" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
+      <rect class="st23" x="459.17" y="856.13" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
+      <rect class="st6" x="459.17" y="856.13" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
     </g>
-    <path class="st0" d="M473.49,828.96l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
+    <path class="st0" d="M473.49,877.09l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
     <g class="st19">
       <g class="st19">
         <g class="st19">
@@ -422,7 +428,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                 <g class="st19">
                   <g class="st19">
                     <g class="st19">
-                      <text class="st16" transform="translate(498.03 833.49)"><tspan x="0" y="0">ir_join_metadata</tspan></text>
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st16" transform="translate(498.03 881.62)"><tspan x="0" y="0">ir_join_metadata</tspan></text>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
@@ -448,7 +458,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                 <g class="st19">
                   <g class="st19">
                     <g class="st19">
-                      <text class="st16" transform="translate(48.41 646.07)"><tspan x="0" y="0">ir_export_data_to_excel</tspan></text>
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st16" transform="translate(48.41 646.07)"><tspan x="0" y="0">ir_export_data_to_excel</tspan></text>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
@@ -474,7 +488,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                 <g class="st19">
                   <g class="st19">
                     <g class="st19">
-                      <text class="st16" transform="translate(466.18 519.37)"><tspan x="0" y="0">ir_save_aggregated_data</tspan></text>
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st16" transform="translate(466.18 519.37)"><tspan x="0" y="0">ir_save_aggregated_data</tspan></text>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
@@ -500,7 +518,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                 <g class="st19">
                   <g class="st19">
                     <g class="st19">
-                      <text class="st16" transform="translate(466.18 619.92)"><tspan x="0" y="0">ir_load_aggregated_data</tspan></text>
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st16" transform="translate(466.18 619.92)"><tspan x="0" y="0">ir_load_aggregated_data</tspan></text>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
@@ -513,10 +535,10 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
   </g>
   <g>
     <g>
-      <rect class="st23" x="459.17" y="711.74" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
-      <rect class="st6" x="459.17" y="711.74" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
+      <rect class="st23" x="459.17" y="759.87" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
+      <rect class="st6" x="459.17" y="759.87" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
     </g>
-    <path class="st0" d="M473.49,732.7l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
+    <path class="st0" d="M473.49,780.83l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
     <g class="st19">
       <g class="st19">
         <g class="st19">
@@ -526,7 +548,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                 <g class="st19">
                   <g class="st19">
                     <g class="st19">
-                      <text class="st16" transform="translate(498.03 737.23)"><tspan x="0" y="0">ir_filter_metadata</tspan></text>
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st16" transform="translate(498.03 785.36)"><tspan x="0" y="0">ir_filter_metadata</tspan></text>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
@@ -539,10 +565,10 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
   </g>
   <g>
     <g>
-      <rect class="st23" x="459.17" y="759.86" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
-      <rect class="st6" x="459.17" y="759.86" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
+      <rect class="st23" x="459.17" y="807.99" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
+      <rect class="st6" x="459.17" y="807.99" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
     </g>
-    <path class="st0" d="M473.49,780.82l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
+    <path class="st0" d="M473.49,828.95l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
     <g class="st19">
       <g class="st19">
         <g class="st19">
@@ -552,7 +578,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                 <g class="st19">
                   <g class="st19">
                     <g class="st19">
-                      <text class="st16" transform="translate(498.03 785.35)"><tspan x="0" y="0">ir_mutate_metadata</tspan></text>
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st16" transform="translate(498.03 833.48)"><tspan x="0" y="0">ir_mutate_metadata</tspan></text>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
@@ -580,28 +610,66 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
     <polygon class="st13" points="371.55 397 383.51 417.72 395.48 397 371.55 397"/>
   </g>
   <g>
-    <line class="st1" x1="386.19" y1="820.59" x2="442.72" y2="820.59"/>
-    <polygon class="st13" points="439.8 830.56 457.08 820.59 439.8 810.62 439.8 830.56"/>
+    <line class="st1" x1="386.19" y1="868.72" x2="442.72" y2="868.72"/>
+    <polygon class="st13" points="439.8 878.69 457.08 868.72 439.8 858.75 439.8 878.69"/>
   </g>
   <g>
-    <line class="st1" x1="458.36" y1="836.04" x2="401.84" y2="836.04"/>
-    <polygon class="st13" points="404.74 826.07 387.48 836.04 404.74 846.01 404.74 826.07"/>
+    <line class="st1" x1="458.36" y1="884.17" x2="401.84" y2="884.17"/>
+    <polygon class="st13" points="404.74 874.2 387.48 884.17 404.74 894.14 404.74 874.2"/>
   </g>
   <g>
-    <line class="st1" x1="386.19" y1="773.61" x2="442.72" y2="773.61"/>
-    <polygon class="st13" points="439.8 783.58 457.08 773.61 439.8 763.64 439.8 783.58"/>
+    <line class="st1" x1="386.19" y1="821.74" x2="442.72" y2="821.74"/>
+    <polygon class="st13" points="439.8 831.71 457.08 821.74 439.8 811.77 439.8 831.71"/>
   </g>
   <g>
-    <line class="st1" x1="458.36" y1="789.06" x2="401.84" y2="789.06"/>
-    <polygon class="st13" points="404.74 779.09 387.48 789.06 404.74 799.03 404.74 779.09"/>
+    <line class="st1" x1="458.36" y1="837.19" x2="401.84" y2="837.19"/>
+    <polygon class="st13" points="404.74 827.22 387.48 837.19 404.74 847.16 404.74 827.22"/>
   </g>
   <g>
-    <line class="st1" x1="386.19" y1="727.88" x2="442.72" y2="727.88"/>
-    <polygon class="st13" points="439.8 737.85 457.08 727.88 439.8 717.91 439.8 737.85"/>
+    <line class="st1" x1="386.19" y1="776.01" x2="442.72" y2="776.01"/>
+    <polygon class="st13" points="439.8 785.98 457.08 776.01 439.8 766.04 439.8 785.98"/>
   </g>
   <g>
-    <line class="st1" x1="458.36" y1="743.33" x2="401.84" y2="743.33"/>
-    <polygon class="st13" points="404.74 733.36 387.48 743.33 404.74 753.3 404.74 733.36"/>
+    <line class="st1" x1="458.36" y1="791.46" x2="401.84" y2="791.46"/>
+    <polygon class="st13" points="404.74 781.49 387.48 791.46 404.74 801.43 404.74 781.49"/>
+  </g>
+  <g>
+    <g>
+      <rect class="st23" x="459.17" y="704.56" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
+      <rect class="st6" x="459.17" y="704.56" width="200.29" height="41.92" rx="4.23" ry="4.23"/>
+    </g>
+    <path class="st0" d="M473.49,725.52l1.12-10.98c.08-.77.61-1.35,1.25-1.35h6.61c.59,0,1.06.58,1.06,1.3,0,.15-.02.31-.07.46l-1.81,5.94h5.46c.79,0,1.44.79,1.44,1.77,0,.36-.09.7-.25,1l-7.53,13.53c-.23.41-.61.66-1.01.66h-.11c-.62,0-1.12-.62-1.12-1.37,0-.11,0-.22.04-.33l1.84-9.08h-5.64c-.69,0-1.25-.69-1.25-1.54h-.03,0Z"/>
+    <g class="st19">
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <g class="st19">
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st16" transform="translate(498.03 730.05)"><tspan x="0" y="0">ir_filter_masses</tspan></text>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+  <g>
+    <line class="st1" x1="386.19" y1="720.7" x2="442.72" y2="720.7"/>
+    <polygon class="st13" points="439.8 730.67 457.08 720.7 439.8 710.73 439.8 730.67"/>
+  </g>
+  <g>
+    <line class="st1" x1="458.36" y1="736.15" x2="401.84" y2="736.15"/>
+    <polygon class="st13" points="404.74 726.18 387.48 736.15 404.74 746.12 404.74 726.18"/>
   </g>
   <g>
     <g>
@@ -618,7 +686,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                 <g class="st19">
                   <g class="st19">
                     <g class="st19">
-                      <text class="st16" transform="translate(498.03 673.95)"><tspan x="0" y="0">ir_calculate_ratios</tspan></text>
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st16" transform="translate(498.03 673.95)"><tspan x="0" y="0">ir_calculate_ratios</tspan></text>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
@@ -684,14 +756,22 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                 <g class="st19">
                   <g class="st19">
                     <g class="st19">
-                      <text class="st16" transform="translate(616.13 440.65)"><tspan x="0" y="0">V or A</tspan></text>
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st16" transform="translate(616.13 440.65)"><tspan x="0" y="0">V or A</tspan></text>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
                 <g class="st19">
                   <g class="st19">
                     <g class="st19">
-                      <text class="st16" transform="translate(616.13 461.05)"><tspan x="0" y="0">or cps</tspan></text>
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st16" transform="translate(616.13 461.05)"><tspan x="0" y="0">or cps</tspan></text>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
@@ -717,7 +797,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                 <g class="st19">
                   <g class="st19">
                     <g class="st19">
-                      <text class="st14" transform="translate(63.55 334.76)"><tspan x="0" y="0">information functions</tspan></text>
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st14" transform="translate(63.55 334.76)"><tspan x="0" y="0">information functions</tspan></text>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
@@ -736,7 +820,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                 <g class="st19">
                   <g class="st19">
                     <g class="st19">
-                      <text class="st14" transform="translate(63.55 295.32)"><tspan x="0" y="0">processing functions</tspan></text>
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st14" transform="translate(63.55 295.32)"><tspan x="0" y="0">processing functions</tspan></text>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
@@ -755,7 +843,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                 <g class="st19">
                   <g class="st19">
                     <g class="st19">
-                      <text class="st14" transform="translate(62.35 208.94)"><tspan x="0" y="0">isoreader core functions</tspan></text>
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st14" transform="translate(62.35 208.94)"><tspan x="0" y="0">isoreader core functions</tspan></text>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
@@ -774,7 +866,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                 <g class="st19">
                   <g class="st19">
                     <g class="st19">
-                      <text class="st14" transform="translate(62.35 238.7)"><tspan x="0" y="0">auxiliary functions</tspan></text>
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st14" transform="translate(62.35 238.7)"><tspan x="0" y="0">auxiliary functions</tspan></text>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
@@ -791,26 +887,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                 <g class="st19">
                   <g class="st19">
                     <g class="st19">
-                      <text class="st14" transform="translate(62.35 262.63)"><tspan x="0" y="0">(optional)</tspan></text>
-                    </g>
-                  </g>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-    </g>
-    <g class="st19">
-      <g class="st19">
-        <g class="st19">
-          <g class="st19">
-            <g class="st19">
-              <g class="st19">
-                <g class="st19">
-                  <g class="st19">
-                    <g class="st19">
-                      <text class="st14" transform="translate(63.55 374.93)"><tspan x="0" y="0">visualization functions</tspan></text>
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st14" transform="translate(62.35 262.63)"><tspan x="0" y="0">(optional)</tspan></text>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
@@ -829,7 +910,34 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                 <g class="st19">
                   <g class="st19">
                     <g class="st19">
-                      <text class="st14" transform="translate(63.55 409.71)"><tspan x="0" y="0">core functions, essential</tspan></text>
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st14" transform="translate(63.55 374.93)"><tspan x="0" y="0">visualization functions</tspan></text>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g class="st19">
+      <g class="st19">
+        <g class="st19">
+          <g class="st19">
+            <g class="st19">
+              <g class="st19">
+                <g class="st19">
+                  <g class="st19">
+                    <g class="st19">
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st14" transform="translate(63.55 409.71)"><tspan x="0" y="0">core functions, essential</tspan></text>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
@@ -846,7 +954,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                 <g class="st19">
                   <g class="st19">
                     <g class="st19">
-                      <text class="st14" transform="translate(63.55 433.64)"><tspan x="0" y="0">input from user</tspan></text>
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st14" transform="translate(63.55 433.64)"><tspan x="0" y="0">input from user</tspan></text>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
@@ -880,7 +992,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                 <g class="st19">
                   <g class="st19">
                     <g class="st19">
-                      <text class="st14" transform="translate(63.48 166.75)"><tspan x="0" y="0">data files</tspan></text>
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st14" transform="translate(63.48 166.75)"><tspan x="0" y="0">data files</tspan></text>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
@@ -911,7 +1027,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                   <g class="st19">
                     <g class="st19">
                       <g class="st19">
-                        <text class="st16" transform="translate(340.22 219.91)"><tspan x="0" y="0">ir_read_isofiles</tspan></text>
+                        <g class="st19">
+                          <g class="st19">
+                            <text class="st16" transform="translate(340.22 219.91)"><tspan x="0" y="0">ir_read_isofiles</tspan></text>
+                          </g>
+                        </g>
                       </g>
                     </g>
                   </g>
@@ -939,7 +1059,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                   <g class="st19">
                     <g class="st19">
                       <g class="st19">
-                        <text class="st16" transform="translate(340.22 133.36)"><tspan x="0" y="0">ir_find_isofiles</tspan></text>
+                        <g class="st19">
+                          <g class="st19">
+                            <text class="st16" transform="translate(340.22 133.36)"><tspan x="0" y="0">ir_find_isofiles</tspan></text>
+                          </g>
+                        </g>
                       </g>
                     </g>
                   </g>
@@ -967,7 +1091,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                   <g class="st19">
                     <g class="st19">
                       <g class="st19">
-                        <text class="st16" transform="translate(339.03 449.46)"><tspan x="0" y="0">ir_aggregate_isofiles</tspan></text>
+                        <g class="st19">
+                          <g class="st19">
+                            <text class="st16" transform="translate(339.03 449.46)"><tspan x="0" y="0">ir_aggregate_isofiles</tspan></text>
+                          </g>
+                        </g>
                       </g>
                     </g>
                   </g>
@@ -982,8 +1110,8 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
   <a xlink:href="https://isoreader2.isoverse.org/reference/ir_plot_scans.html">
     <g>
       <g>
-        <path class="st23" d="M72.65,569.79h215.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H72.65c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
-        <path class="st6" d="M72.65,569.79h215.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H72.65c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
+        <path class="st23" d="M112.65,569.79h175.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H112.65c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
+        <path class="st6" d="M112.65,569.79h175.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H112.65c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
       </g>
       <g class="st19">
         <g class="st19">
@@ -994,7 +1122,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                   <g class="st19">
                     <g class="st19">
                       <g class="st19">
-                        <text class="st16" transform="translate(111.85 595.28)"><tspan x="0" y="0">ir_plot_scans</tspan></text>
+                        <g class="st19">
+                          <g class="st19">
+                            <text class="st16" transform="translate(151.85 595.28)"><tspan x="0" y="0">ir_plot_scans</tspan></text>
+                          </g>
+                        </g>
                       </g>
                     </g>
                   </g>
@@ -1004,7 +1136,7 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
           </g>
         </g>
       </g>
-      <path class="st0" d="M77.29,580.58c0-.92-.74-1.66-1.66-1.66s-1.66.74-1.66,1.66v17.47c0,2.3,1.86,4.16,4.16,4.16h20.8c.92,0,1.66-.74,1.66-1.66s-.74-1.66-1.66-1.66h-20.8c-.46,0-.83-.37-.83-.83v-17.47h-.01,0ZM98.43,585.08c.65-.65.65-1.71,0-2.36s-1.71-.65-2.36,0l-5.47,5.48-2.98-2.98c-.65-.65-1.71-.65-2.36,0l-5.82,5.82c-.65.65-.65,1.71,0,2.36s1.71.65,2.36,0l4.65-4.64,2.98,2.98c.65.65,1.71.65,2.36,0l6.65-6.65h-.01Z"/>
+      <path class="st0" d="M117.29,580.58c0-.92-.74-1.66-1.66-1.66s-1.66.74-1.66,1.66v17.47c0,2.3,1.86,4.16,4.16,4.16h20.8c.92,0,1.66-.74,1.66-1.66s-.74-1.66-1.66-1.66h-20.8c-.46,0-.83-.37-.83-.83v-17.47h-.01,0ZM138.43,585.08c.65-.65.65-1.71,0-2.36s-1.71-.65-2.36,0l-5.47,5.48-2.98-2.98c-.65-.65-1.71-.65-2.36,0l-5.82,5.82c-.65.65-.65,1.71,0,2.36s1.71.65,2.36,0l4.65-4.64,2.98,2.98c.65.65,1.71.65,2.36,0l6.65-6.65h-.01Z"/>
     </g>
   </a>
   <g>
@@ -1014,8 +1146,8 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
   <a xlink:href="https://isoreader2.isoverse.org/reference/ir_plot_dual_inlet.html">
     <g>
       <g>
-        <path class="st23" d="M72.65,520.99h215.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H72.65c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
-        <path class="st6" d="M72.65,520.99h215.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H72.65c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
+        <path class="st23" d="M112.65,520.99h175.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H112.65c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
+        <path class="st6" d="M112.65,520.99h175.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H112.65c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
       </g>
       <g class="st19">
         <g class="st19">
@@ -1026,7 +1158,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                   <g class="st19">
                     <g class="st19">
                       <g class="st19">
-                        <text class="st16" transform="translate(111.85 546.48)"><tspan x="0" y="0">ir_plot_dual_inlet</tspan></text>
+                        <g class="st19">
+                          <g class="st19">
+                            <text class="st16" transform="translate(151.85 546.48)"><tspan x="0" y="0">ir_plot_dual_inlet</tspan></text>
+                          </g>
+                        </g>
                       </g>
                     </g>
                   </g>
@@ -1036,7 +1172,7 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
           </g>
         </g>
       </g>
-      <path class="st0" d="M77.29,531.78c0-.92-.74-1.66-1.66-1.66s-1.66.74-1.66,1.66v17.47c0,2.3,1.86,4.16,4.16,4.16h20.8c.92,0,1.66-.74,1.66-1.66s-.74-1.66-1.66-1.66h-20.8c-.46,0-.83-.37-.83-.83v-17.47h-.01,0ZM98.43,536.28c.65-.65.65-1.71,0-2.36s-1.71-.65-2.36,0l-5.47,5.48-2.98-2.98c-.65-.65-1.71-.65-2.36,0l-5.82,5.82c-.65.65-.65,1.71,0,2.36s1.71.65,2.36,0l4.65-4.64,2.98,2.98c.65.65,1.71.65,2.36,0l6.65-6.65h-.01Z"/>
+      <path class="st0" d="M117.29,531.78c0-.92-.74-1.66-1.66-1.66s-1.66.74-1.66,1.66v17.47c0,2.3,1.86,4.16,4.16,4.16h20.8c.92,0,1.66-.74,1.66-1.66s-.74-1.66-1.66-1.66h-20.8c-.46,0-.83-.37-.83-.83v-17.47h-.01,0ZM138.43,536.28c.65-.65.65-1.71,0-2.36s-1.71-.65-2.36,0l-5.47,5.48-2.98-2.98c-.65-.65-1.71-.65-2.36,0l-5.82,5.82c-.65.65-.65,1.71,0,2.36s1.71.65,2.36,0l4.65-4.64,2.98,2.98c.65.65,1.71.65,2.36,0l6.65-6.65h-.01Z"/>
     </g>
   </a>
   <g>
@@ -1046,8 +1182,8 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
   <a xlink:href="https://isoreader2.isoverse.org/reference/ir_plot_traces.html">
     <g>
       <g>
-        <path class="st23" d="M72.65,473.11h215.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H72.65c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
-        <path class="st6" d="M72.65,473.11h215.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H72.65c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
+        <path class="st23" d="M112.65,473.11h175.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H112.65c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
+        <path class="st6" d="M112.65,473.11h175.03c3.12,0,11.65,2.53,11.65,5.65v30.62c0,3.12-8.53,5.65-11.65,5.65H112.65c-3.12,0-5.65-2.53-5.65-5.65v-30.62c0-3.12,2.53-5.65,5.65-5.65Z"/>
       </g>
       <g class="st19">
         <g class="st19">
@@ -1058,7 +1194,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                   <g class="st19">
                     <g class="st19">
                       <g class="st19">
-                        <text class="st16" transform="translate(111.85 498.6)"><tspan x="0" y="0">ir_plot_traces</tspan></text>
+                        <g class="st19">
+                          <g class="st19">
+                            <text class="st16" transform="translate(151.85 498.6)"><tspan x="0" y="0">ir_plot_traces</tspan></text>
+                          </g>
+                        </g>
                       </g>
                     </g>
                   </g>
@@ -1068,7 +1208,7 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
           </g>
         </g>
       </g>
-      <path class="st0" d="M77.29,483.9c0-.92-.74-1.66-1.66-1.66s-1.66.74-1.66,1.66v17.47c0,2.3,1.86,4.16,4.16,4.16h20.8c.92,0,1.66-.74,1.66-1.66s-.74-1.66-1.66-1.66h-20.8c-.46,0-.83-.37-.83-.83v-17.47h-.01,0ZM98.43,488.4c.65-.65.65-1.71,0-2.36s-1.71-.65-2.36,0l-5.47,5.48-2.98-2.98c-.65-.65-1.71-.65-2.36,0l-5.82,5.82c-.65.65-.65,1.71,0,2.36s1.71.65,2.36,0l4.65-4.64,2.98,2.98c.65.65,1.71.65,2.36,0l6.65-6.65h-.01Z"/>
+      <path class="st0" d="M117.29,483.9c0-.92-.74-1.66-1.66-1.66s-1.66.74-1.66,1.66v17.47c0,2.3,1.86,4.16,4.16,4.16h20.8c.92,0,1.66-.74,1.66-1.66s-.74-1.66-1.66-1.66h-20.8c-.46,0-.83-.37-.83-.83v-17.47h-.01,0ZM138.43,488.4c.65-.65.65-1.71,0-2.36s-1.71-.65-2.36,0l-5.47,5.48-2.98-2.98c-.65-.65-1.71-.65-2.36,0l-5.82,5.82c-.65.65-.65,1.71,0,2.36s1.71.65,2.36,0l4.65-4.64,2.98,2.98c.65.65,1.71.65,2.36,0l6.65-6.65h-.01Z"/>
     </g>
   </a>
   <a xlink:href="https://isoreader2.isoverse.org/reference/ir_find_isofiles.html">
@@ -1087,7 +1227,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                   <g class="st19">
                     <g class="st19">
                       <g class="st19">
-                        <text class="st16" transform="translate(565.99 121.72)"><tspan x="0" y="0">ir_find_continuous_flow</tspan></text>
+                        <g class="st19">
+                          <g class="st19">
+                            <text class="st16" transform="translate(565.99 121.72)"><tspan x="0" y="0">ir_find_continuous_flow</tspan></text>
+                          </g>
+                        </g>
                       </g>
                     </g>
                   </g>
@@ -1115,7 +1259,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                   <g class="st19">
                     <g class="st19">
                       <g class="st19">
-                        <text class="st16" transform="translate(75.48 75.6)"><tspan x="0" y="0">ir_examples_folder</tspan></text>
+                        <g class="st19">
+                          <g class="st19">
+                            <text class="st16" transform="translate(75.48 75.6)"><tspan x="0" y="0">ir_examples_folder</tspan></text>
+                          </g>
+                        </g>
                       </g>
                     </g>
                   </g>
@@ -1143,7 +1291,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                   <g class="st19">
                     <g class="st19">
                       <g class="st19">
-                        <text class="st16" transform="translate(566.05 172.1)"><tspan x="0" y="0">ir_find_dual_inlet</tspan></text>
+                        <g class="st19">
+                          <g class="st19">
+                            <text class="st16" transform="translate(566.05 172.1)"><tspan x="0" y="0">ir_find_dual_inlet</tspan></text>
+                          </g>
+                        </g>
                       </g>
                     </g>
                   </g>
@@ -1171,7 +1323,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                   <g class="st19">
                     <g class="st19">
                       <g class="st19">
-                        <text class="st16" transform="translate(569.3 223.18)"><tspan x="0" y="0">ir_find_scans</tspan></text>
+                        <g class="st19">
+                          <g class="st19">
+                            <text class="st16" transform="translate(569.3 223.18)"><tspan x="0" y="0">ir_find_scans</tspan></text>
+                          </g>
+                        </g>
                       </g>
                     </g>
                   </g>
@@ -1198,7 +1354,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                   <g class="st19">
                     <g class="st19">
                       <g class="st19">
-                        <text class="st16" transform="translate(160.66 697.91)"><tspan x="0" y="0">ir_get_data</tspan></text>
+                        <g class="st19">
+                          <g class="st19">
+                            <text class="st16" transform="translate(160.66 697.91)"><tspan x="0" y="0">ir_get_data</tspan></text>
+                          </g>
+                        </g>
                       </g>
                     </g>
                   </g>
@@ -1226,7 +1386,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                   <g class="st19">
                     <g class="st19">
                       <g class="st19">
-                        <text class="st16" transform="translate(160.66 747.76)"><tspan x="0" y="0">ir_get_metadata</tspan></text>
+                        <g class="st19">
+                          <g class="st19">
+                            <text class="st16" transform="translate(160.66 747.76)"><tspan x="0" y="0">ir_get_metadata</tspan></text>
+                          </g>
+                        </g>
                       </g>
                     </g>
                   </g>
@@ -1254,7 +1418,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                   <g class="st19">
                     <g class="st19">
                       <g class="st19">
-                        <text class="st16" transform="translate(160.66 797.61)"><tspan x="0" y="0">ir_get_traces/cycles/scans</tspan></text>
+                        <g class="st19">
+                          <g class="st19">
+                            <text class="st16" transform="translate(160.66 797.61)"><tspan x="0" y="0">ir_get_traces/cycles/scans</tspan></text>
+                          </g>
+                        </g>
                       </g>
                     </g>
                   </g>
@@ -1282,7 +1450,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                   <g class="st19">
                     <g class="st19">
                       <g class="st19">
-                        <text class="st16" transform="translate(160.66 845.65)"><tspan x="0" y="0">ir_get_resistors</tspan></text>
+                        <g class="st19">
+                          <g class="st19">
+                            <text class="st16" transform="translate(160.66 845.65)"><tspan x="0" y="0">ir_get_resistors</tspan></text>
+                          </g>
+                        </g>
                       </g>
                     </g>
                   </g>
@@ -1309,7 +1481,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                 <g class="st19">
                   <g class="st19">
                     <g class="st19">
-                      <text class="st16" transform="translate(314.27 57.15)"><tspan x="0" y="0">isotope data files/archives</tspan></text>
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st16" transform="translate(314.27 57.15)"><tspan x="0" y="0">isotope data files/archives</tspan></text>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
@@ -1328,7 +1504,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st20" transform="translate(317.15 38.54) rotate(-90)"><tspan x="0" y="0">dxf</tspan></text>
+                    <g class="st19">
+                      <g class="st19">
+                        <text class="st20" transform="translate(317.15 38.54) rotate(-90)"><tspan x="0" y="0">dxf</tspan></text>
+                      </g>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -1346,7 +1526,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st20" transform="translate(340.89 38.53) rotate(-90)"><tspan x="0" y="0">cf</tspan></text>
+                    <g class="st19">
+                      <g class="st19">
+                        <text class="st20" transform="translate(340.89 38.53) rotate(-90)"><tspan x="0" y="0">cf</tspan></text>
+                      </g>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -1364,7 +1548,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st20" transform="translate(364.79 38.53) rotate(-90)"><tspan x="0" y="0">bch</tspan></text>
+                    <g class="st19">
+                      <g class="st19">
+                        <text class="st20" transform="translate(364.79 38.53) rotate(-90)"><tspan x="0" y="0">bch</tspan></text>
+                      </g>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -1382,7 +1570,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st20" transform="translate(389.01 38.54) rotate(-90)"><tspan x="0" y="0">iarc</tspan></text>
+                    <g class="st19">
+                      <g class="st19">
+                        <text class="st20" transform="translate(389.01 38.54) rotate(-90)"><tspan x="0" y="0">iarc</tspan></text>
+                      </g>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -1400,7 +1592,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st20" transform="translate(413.09 38.54) rotate(-90)"><tspan x="0" y="0">larc</tspan></text>
+                    <g class="st19">
+                      <g class="st19">
+                        <text class="st20" transform="translate(413.09 38.54) rotate(-90)"><tspan x="0" y="0">larc</tspan></text>
+                      </g>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -1418,7 +1614,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st21" transform="translate(434.83 38.53) rotate(-90)"><tspan x="0" y="0">imexp</tspan></text>
+                    <g class="st19">
+                      <g class="st19">
+                        <text class="st21" transform="translate(434.83 38.53) rotate(-90)"><tspan x="0" y="0">imexp</tspan></text>
+                      </g>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -1436,7 +1636,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st20" transform="translate(460.73 38.53) rotate(-90)"><tspan x="0" y="0">did</tspan></text>
+                    <g class="st19">
+                      <g class="st19">
+                        <text class="st20" transform="translate(460.73 38.53) rotate(-90)"><tspan x="0" y="0">did</tspan></text>
+                      </g>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -1454,7 +1658,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st20" transform="translate(484.94 38.54) rotate(-90)"><tspan x="0" y="0">caf</tspan></text>
+                    <g class="st19">
+                      <g class="st19">
+                        <text class="st20" transform="translate(484.94 38.54) rotate(-90)"><tspan x="0" y="0">caf</tspan></text>
+                      </g>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -1472,7 +1680,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st20" transform="translate(508.6 38.54) rotate(-90)"><tspan x="0" y="0">scn</tspan></text>
+                    <g class="st19">
+                      <g class="st19">
+                        <text class="st20" transform="translate(508.6 38.54) rotate(-90)"><tspan x="0" y="0">scn</tspan></text>
+                      </g>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -1495,7 +1707,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st16" transform="translate(586.93 569.68)"><tspan x="0" y="0">storage file (parquet)</tspan></text>
+                    <g class="st19">
+                      <g class="st19">
+                        <text class="st16" transform="translate(586.93 569.68)"><tspan x="0" y="0">storage file (parquet)</tspan></text>
+                      </g>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -1534,7 +1750,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st16" transform="translate(49.55 905.35)"><tspan x="0" y="0">output spreadsheet (xlsx)</tspan></text>
+                    <g class="st19">
+                      <g class="st19">
+                        <text class="st16" transform="translate(49.55 905.35)"><tspan x="0" y="0">output spreadsheet (xlsx)</tspan></text>
+                      </g>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -1561,7 +1781,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st18" transform="translate(30.57 910.05) rotate(-90)"><tspan x="0" y="0">xlsx</tspan></text>
+                    <g class="st19">
+                      <g class="st19">
+                        <text class="st18" transform="translate(30.57 910.05) rotate(-90)"><tspan x="0" y="0">xlsx</tspan></text>
+                      </g>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -1580,7 +1804,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st15" transform="translate(257.19 949.52)"><tspan x="0" y="0">to downstream processing</tspan></text>
+                    <g class="st19">
+                      <g class="st19">
+                        <text class="st15" transform="translate(257.19 949.52)"><tspan x="0" y="0">to downstream processing</tspan></text>
+                      </g>
+                    </g>
                   </g>
                 </g>
               </g>
@@ -1609,7 +1837,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                 <g class="st19">
                   <g class="st19">
                     <g class="st19">
-                      <text class="st16" transform="translate(466.18 277.95)"><tspan x="0" y="0">ir_save_isofiles</tspan></text>
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st16" transform="translate(466.18 277.95)"><tspan x="0" y="0">ir_save_isofiles</tspan></text>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
@@ -1635,7 +1867,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
                 <g class="st19">
                   <g class="st19">
                     <g class="st19">
-                      <text class="st16" transform="translate(466.18 379.5)"><tspan x="0" y="0">ir_load_isofiles</tspan></text>
+                      <g class="st19">
+                        <g class="st19">
+                          <text class="st16" transform="translate(466.18 379.5)"><tspan x="0" y="0">ir_load_isofiles</tspan></text>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
@@ -1671,7 +1907,11 @@ example_files |> isoexplorer::ie_explore_continuous_flow()
               <g class="st19">
                 <g class="st19">
                   <g class="st19">
-                    <text class="st16" transform="translate(586.93 329.26)"><tspan x="0" y="0">storage file (rds)</tspan></text>
+                    <g class="st19">
+                      <g class="st19">
+                        <text class="st16" transform="translate(586.93 329.26)"><tspan x="0" y="0">storage file (rds)</tspan></text>
+                      </g>
+                    </g>
                   </g>
                 </g>
               </g>
