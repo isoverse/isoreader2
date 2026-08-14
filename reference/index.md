@@ -68,6 +68,8 @@ isofiles.
   [`ir_filter_for_dual_inlet()`](https://isoreader2.isoverse.org/reference/ir_filter_for.md)
   [`ir_filter_for_scans()`](https://isoreader2.isoverse.org/reference/ir_filter_for.md)
   : Filter isofiles by measurement type
+- [`ir_filter_masses()`](https://isoreader2.isoverse.org/reference/ir_filter_masses.md)
+  : Filter isofiles by mass
 
 ## Visualize isofiles data
 
