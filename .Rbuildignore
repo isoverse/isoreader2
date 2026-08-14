@@ -2,7 +2,6 @@
 ^\.Rproj\.user$
 ^[.]?air[.]toml$
 ^\.vscode$
-^LICENSE\.md$
 ^README\.Rmd$
 ^README\.html$
 ^_pkgdown\.yml$
@@ -11,5 +10,8 @@
 ^\.github$
 ^cache$
 ^tmp$
+^examples$
+^cran-comments\.md$
 CNAME
-inst/extdata/*.json
+^CRAN-SUBMISSION$
+^LICENSE\.md$
