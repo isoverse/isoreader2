@@ -107,6 +107,9 @@ Reading, aggregating, and all data operations behave exactly as in 0.6. However,
   example after `ir_calculate_ratios()` on a species with only a single mass,
   where the one row is the base mass and its `ratio_name` is `NA`.
 
+* Upgraded to `isoextract` version 0.3.2 to enable successful reading of files generated with Isodat systems that use a GC II-III Interface
+
+
 # isoreader2 0.6.1
 
 * Addressed CRAN feedback on the initial submission:
