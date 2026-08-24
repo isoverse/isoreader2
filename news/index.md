@@ -2,6 +2,8 @@
 
 ## isoreader2 0.7.0
 
+CRAN release: 2026-08-24
+
 ### Syntax changes
 
 Reading, aggregating, and all data operations behave exactly as in 0.6.
@@ -150,6 +152,9 @@ the corresponding `ir_generate_*_tibble()` helpers):
   [`ir_calculate_ratios()`](https://isoreader2.isoverse.org/reference/ir_calculate_ratios.md)
   on a species with only a single mass, where the one row is the base
   mass and its `ratio_name` is `NA`.
+
+- Upgraded to `isoextract` version 0.3.2 to enable successful reading of
+  files generated with Isodat systems that use a GC II-III Interface
 
 ## isoreader2 0.6.1
 

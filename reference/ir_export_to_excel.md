@@ -82,15 +82,15 @@ if (requireNamespace("openxlsx", quietly = TRUE)) {
     file = file.path(tempdir(), "my_export.xlsx")
   )
 }
-#> ✔ [0ms] ir_extract_isofiles() is finished, 0 files/archives required
+#> ✔ [1ms] ir_extract_isofiles() is finished, 0 files/archives required
 #> (re-)extraction
-#> ✔ [326ms] ir_read_isofiles() finished reading 2 isotope data files/archives
-#> ✔ [198ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+#> ✔ [434ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+#> ✔ [228ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 #> intensity in mV) from 2 files using the standard aggregator
-#> ✔ [3ms] ir_get_data() retrieved 2 records from metadata
-#> ✔ [7ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+#> ✔ [4ms] ir_get_data() retrieved 2 records from metadata
+#> ✔ [8ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 #> (2) and traces (24.5k) via uidx and analysis
-#> ✔ [694ms] ir_export_to_excel() exported 2 rows of metadata and 24.5k rows of
-#> traces to /tmp/RtmpYh0iAP/my_export.xlsx
+#> ✔ [986ms] ir_export_to_excel() exported 2 rows of metadata and 24.5k rows of
+#> traces to /tmp/RtmpTKTP2r/my_export.xlsx
 # }
 ```

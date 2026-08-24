@@ -31,7 +31,7 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.7.0" id="isoreader2-070">isoreader2 0.7.0<a class="anchor" aria-label="anchor" href="#isoreader2-070"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.7.0" id="isoreader2-070">isoreader2 0.7.0<a class="anchor" aria-label="anchor" href="#isoreader2-070"></a></h2><p class="text-muted">CRAN release: 2026-08-24</p>
 <div class="section level3">
 <h3 id="syntax-changes-0-7-0">Syntax changes<a class="anchor" aria-label="anchor" href="#syntax-changes-0-7-0"></a></h3>
 <p>Reading, aggregating, and all data operations behave exactly as in 0.6. However, there are three syntax changes to the plotting functions (and the corresponding <code>ir_generate_*_tibble()</code> helpers):</p>
@@ -80,6 +80,7 @@
 <li><p>Fixed deprecation warnings from using the <code>.data</code> pronoun in tidyselect expressions (e.g. in <code><a href="../reference/ir_read_isofiles.html">ir_read_isofiles()</a></code>).</p></li>
 <li><p>Fixed <code>mass</code>/<code>ratio</code> selections that mean “none” only being recognized when written as a literal <code>NULL</code>. <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code>, and any expression evaluating to <code>NULL</code> (e.g. a variable holding it, or an argument forwarded on with <code>{{ }}</code>), now behave identically: they select nothing, no longer error with “calculate ratios first” when the <code>ratio_name</code>/<code>ratio</code> columns are absent, and no longer trigger tidyselect’s “external vector in selections” deprecation warning.</p></li>
 <li><p>Fixed the plotting functions and <code>ir_generate_*_tibble()</code> erroring with “Can’t combine <code>..1$trace</code> &lt;character&gt; and <code>..2$trace</code> &lt;logical&gt;” on data whose <code>ratio_name</code>/<code>ratio</code> columns are present but hold no ratios at all - for example after <code><a href="../reference/ir_calculate_ratios.html">ir_calculate_ratios()</a></code> on a species with only a single mass, where the one row is the base mass and its <code>ratio_name</code> is <code>NA</code>.</p></li>
+<li><p>Upgraded to <code>isoextract</code> version 0.3.2 to enable successful reading of files generated with Isodat systems that use a GC II-III Interface</p></li>
 </ul></div>
 </div>
     <div class="section level2">
