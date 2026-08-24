@@ -8,7 +8,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/isoverse/isoreader2/blob/main/inst/CITATION)
+[`inst/CITATION`](https://github.com/isoverse/isoreader2/blob/v0.7.0/inst/CITATION)
 
 Kopf, Sebastian, Davidheiser-Kroll, Brett, Kocken, Ilja (2021).
 “Isoreader: An R package to read stable isotope data files for
