@@ -9,7 +9,7 @@ ir_check_isoextract(
   install_if_missing = !on_cran(),
   reinstall_if_outdated = !on_cran(),
   reinstall_always = FALSE,
-  min_version = "0.3.1",
+  min_version = "0.3.2",
   show_version = TRUE,
   ask_permission = TRUE,
   source =
