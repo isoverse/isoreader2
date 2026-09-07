@@ -13,18 +13,19 @@ development:
 
 navbar:
   title: isoreader2
-  type: default
-  left:
-  - text: Quick Start
-    href: index.html#show-me-some-code
-  - text: Functionality Guide
-    href: articles/functionality_guide.html
-  - text: Reference
-    href: reference/index.html
-  right:
-  - icon: fa-github fa-lg
-    href: https://github.com/isoverse/isoreader2
-    aria-label: View on GitHub
+  # `structure` + `components` (rather than plain `left:`/`right:` lists) keeps
+  # pkgdown's built-in navbar items -- the search box, the changelog, and the
+  # GitHub icon -- instead of replacing them with only what is listed here
+  structure:
+    left: [quickstart, guide, reference, news]
+    right: [search, github]
+  components:
+    quickstart:
+      text: Quick Start
+      href: index.html#show-me-some-code
+    guide:
+      text: Functionality Guide
+      href: articles/functionality_guide.html
 
 reference:
 - title: Read isofiles
