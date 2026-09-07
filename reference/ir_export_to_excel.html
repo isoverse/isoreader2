@@ -13,7 +13,7 @@ a sheet named after their position (e.g. the 3rd unnamed data frame goes into
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="default" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="../index.html">isoreader2</a>
 
@@ -28,7 +28,10 @@ a sheet named after their position (e.g. the 3rd unnamed data frame goes into
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../index.html#show-me-some-code">Quick Start</a></li>
 <li class="nav-item"><a class="nav-link" href="../articles/functionality_guide.html">Functionality Guide</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-      </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/isoverse/isoreader2" aria-label="View on GitHub"><span class="fa fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
+      </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/isoverse/isoreader2/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
 
 
@@ -37,7 +40,7 @@ a sheet named after their position (e.g. the 3rd unnamed data frame goes into
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Export data to Excel</h1>
-      <small class="dont-index">Source: <a href="https://github.com/isoverse/isoreader2/blob/v0.7.0/R/export.R" class="external-link"><code>R/export.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/isoverse/isoreader2/blob/main/R/export.R" class="external-link"><code>R/export.R</code></a></small>
       <div class="d-none name"><code>ir_export_to_excel.Rd</code></div>
     </div>
 
@@ -121,14 +124,14 @@ provided, otherwise the list of data frames), for use in pipes</p>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[1ms]</span> <span style="font-weight: bold;">ir_extract_isofiles()</span> is finished, 0 files/archives required</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> (re-)extraction</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[450ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 2 isotope data files/archives</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[245ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2) and <span style="color: #0000BB;">traces</span> (24.5k,</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[476ms]</span> <span style="font-weight: bold;">ir_read_isofiles()</span> finished reading 2 isotope data files/archives</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[273ms]</span> <span style="font-weight: bold;">ir_aggregate_isofiles()</span> aggregated <span style="color: #0000BB;">metadata</span> (2) and <span style="color: #0000BB;">traces</span> (24.5k,</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">intensity</span> in <span style="color: #BB00BB;">mV</span>) from 2 files using the <span style="font-weight: bold; font-style: italic;">standard</span> aggregator</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[4ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 2 records from <span style="color: #0000BB;">metadata</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[9ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 24.5k records from the combination of <span style="color: #0000BB;">metadata</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[5ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 2 records from <span style="color: #0000BB;">metadata</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[10ms]</span> <span style="font-weight: bold;">ir_get_data()</span> retrieved 24.5k records from the combination of <span style="color: #0000BB;">metadata</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> (2) and <span style="color: #0000BB;">traces</span> (24.5k) via <span style="color: #00BB00;">uidx</span> and <span style="color: #00BB00;">analysis</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> <span style="color: #B2B2B2;">[1s]</span> <span style="font-weight: bold;">ir_export_to_excel()</span> exported 2 rows of <span style="color: #00BB00;">metadata</span> and 24.5k rows of</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">traces</span> to <span style="color: #0000BB;">/tmp/Rtmpc4zSzv/my_export.xlsx</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">traces</span> to <span style="color: #0000BB;">/tmp/RtmpFe7qIR/my_export.xlsx</span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
