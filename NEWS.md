@@ -24,6 +24,9 @@
 * `ir_filter_metadata()` (and the `ir_filter_for_*()` and `ir_filter_masses()`
   functions built on it) now also filters the `vendor_data_table` (available
   with the `extended` aggregator) to the remaining analyses.
+* New `ir_remove_from_aggregator()` to remove a single column entry or all
+  entries of a dataset from an aggregator (e.g. to drop the `vendor_data_table`
+  from a copy of the `extended` aggregator).
 
 # isoreader2 0.7.0
 
