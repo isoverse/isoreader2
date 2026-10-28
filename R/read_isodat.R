@@ -83,16 +83,52 @@ read_isodat_nominal_resistors <- function(
   )
 }
 
-# Parse an ISO 8601 datetime string (with optional timezone offset) to POSIXct UTC.
-parse_iso8601_datetime <- function(x) {
-  if (is_empty(x)) {
-    return(as.POSIXct(NA))
+# regex for the UTC offset suffix of an ISO 8601 datetime ("Z", "+01:00", "-0800")
+.iso8601_offset_regex <- "(Z|[+-]\\d{2}:?\\d{2})$"
+
+# Parse ISO 8601 datetime strings to POSIXct UTC. A trailing "Z" or "+HH:MM" /
+# "-HH:MM" offset is honored (converted to UTC). Values without an offset are
+# interpreted as local times at `default_offset` (an offset string such as
+# "-08:00", e.g. taken from another timestamp in the same file) or, if that is
+# NA, assumed to already be in UTC.
+parse_iso8601_datetime <- function(x, default_offset = NA_character_) {
+  if (is_empty(x) || json_missing(x)) {
+    return(as.POSIXct(NA, tz = "UTC"))
   }
+  x <- as.character(x)
+  offset <- extract_utc_offset(x)
+  offset[is.na(offset)] <- default_offset
   as.POSIXct(
-    sub("[+-]\\d{2}:\\d{2}$", "", x),
+    sub(.iso8601_offset_regex, "", x),
     format = "%Y-%m-%dT%H:%M:%OS",
     tz = "UTC"
+  ) -
+    utc_offset_to_secs(offset)
+}
+
+# Extract the UTC offset suffix ("Z", "+01:00", ...) of ISO 8601 datetime
+# strings, NA where there is none.
+extract_utc_offset <- function(x) {
+  offset <- rep(NA_character_, length(x))
+  has_offset <- !is.na(x) & grepl(.iso8601_offset_regex, x)
+  offset[has_offset] <- regmatches(
+    x[has_offset],
+    regexpr(.iso8601_offset_regex, x[has_offset])
   )
+  offset
+}
+
+# Convert UTC offset strings ("Z", "+01:00", "-0800") to seconds ahead of UTC.
+# NA offsets count as 0 (i.e. UTC).
+utc_offset_to_secs <- function(offset) {
+  parts <- regmatches(offset, regexec("^([+-])(\\d{2}):?(\\d{2})$", offset))
+  purrr::map_dbl(parts, function(p) {
+    if (length(p) == 0) {
+      return(0)
+    }
+    (if (p[2] == "-") -1 else 1) *
+      (as.numeric(p[3]) * 3600 + as.numeric(p[4]) * 60)
+  })
 }
 
 # Read datetime (POSIXct UTC).

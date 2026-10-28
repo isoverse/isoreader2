@@ -362,3 +362,39 @@ test_that("ir_read_isofiles() reads every isodat example type", {
     expect_equal(sc$metadata[[i]]$type, "scan")
   }
 })
+
+test_that("parse_iso8601_datetime() converts offsets to UTC", {
+  utc <- function(x) as.POSIXct(x, tz = "UTC")
+  # explicit UTC (isodat "+00:00", imexp "Z" with 100ns precision)
+  expect_equal(
+    parse_iso8601_datetime("2018-07-14T23:34:17.0000000+00:00"),
+    utc("2018-07-14 23:34:17")
+  )
+  expect_equal(
+    parse_iso8601_datetime("2023-10-17T18:23:53.2781050Z"),
+    utc("2023-10-17 18:23:53.278105")
+  )
+  # offsets are converted (with and without colon)
+  expect_equal(
+    parse_iso8601_datetime(c(
+      "2020-02-13T06:06:38-08:00",
+      "2015-04-16T09:24:13+0100"
+    )),
+    utc(c("2020-02-13 14:06:38", "2015-04-16 08:24:13"))
+  )
+  # no offset: assumed UTC unless a default offset is given
+  expect_equal(
+    parse_iso8601_datetime("2014-10-08T14:14:35"),
+    utc("2014-10-08 14:14:35")
+  )
+  expect_equal(
+    parse_iso8601_datetime(
+      c("2014-10-08T14:14:35", NA, "2014-10-08T14:00:00Z"),
+      "+01:00"
+    ),
+    utc(c("2014-10-08 13:14:35", NA, "2014-10-08 14:00:00"))
+  )
+  # missing values
+  expect_true(is.na(parse_iso8601_datetime(NULL)))
+  expect_true(is.na(parse_iso8601_datetime(NA_complex_)))
+})

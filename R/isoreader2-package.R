@@ -32,7 +32,18 @@ NULL
     "caf",
     "scn"
   ),
-  min_isoextract_version = "0.3.0",
+  # imexp: 0.3.3 adds the UTC acquisition_start used as the timestamp
+  min_isoextract_version = c(
+    "0.3.0",
+    "0.3.0",
+    "0.3.0",
+    "0.3.0",
+    "0.3.0",
+    "0.3.3",
+    "0.3.0",
+    "0.3.0",
+    "0.3.0"
+  ),
   vendor_software = c(
     "Isodat",
     "Isodat",
