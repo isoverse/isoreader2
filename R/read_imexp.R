@@ -142,11 +142,13 @@ read_imexp_metadata <- function(json_path) {
 
   samples <- dplyr::bind_cols(samples, params_wide)
 
-  # entry data: session_time → timestamp, settings_id → config, h3_factor per guid
+  # entry data: acquisition_start (UTC) → timestamp, settings_id → config,
+  # h3_factor per guid. note: session_time is NOT used, it is only the local-time
+  # timestamp of the snapshot folder the entry is stored in.
   entries <- query_json(json_path, "/entries", list_as_tibble = TRUE)
   entry_data <- tibble(
     guid = as.character(entries$guid),
-    timestamp = parse_iso8601_datetime(entries$session_time),
+    timestamp = parse_iso8601_datetime(entries$acquisition_start),
     settings_id = as.character(entries$settings_id),
     h3_factor = purrr::map_dbl(entries$additional_data, function(ad) {
       rr <- ad$linearity_correction$ratio_results

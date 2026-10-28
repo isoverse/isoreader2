@@ -50,12 +50,14 @@ read_iarc_json <- function(json_path) {
 # reader is the same
 read_larc_json <- read_iarc_json
 
-# Parses ISO 8601 datetime with timezone offset (e.g. "+01:00") to POSIXct UTC.
-# %z in strptime requires the compact "+HHMM" form, so the colon must be stripped.
-parse_liarc_datetime <- function(x) {
-  x <- sub("\\.[0-9]+([+-])", "\\1", x)
-  x <- sub("([+-][0-9]{2}):([0-9]{2})$", "\\1\\2", x)
-  as.POSIXct(x, format = "%Y-%m-%dT%H:%M:%S%z", tz = "UTC")
+# The archive's created_date carries a UTC offset but the task acquisition
+# dates do not (they are local times of the acquisition computer). Returns the
+# created_date offset (e.g. "-08:00") to interpret them with, or NA (= read as
+# UTC) if there is none. Note this assumes the archive was created in the same
+# timezone (and daylight saving period) as the acquisitions.
+read_liarc_utc_offset <- function(json_path) {
+  query_json(json_path, "/created_date", required = FALSE) |>
+    extract_utc_offset()
 }
 
 # Reads h3_correction_value from systems/species across all systems.
@@ -136,14 +138,16 @@ read_liarc_metadata <- function(json_path) {
   # method name lookup (id → Method)
   methods <- query_json(json_path, "/methods", list_as_tibble = TRUE)
 
-  # timestamp
-  ts <- query_json(json_path, "/created_date")
+  # acquisition start/end (local times, converted to UTC via created_date offset)
+  offset <- read_liarc_utc_offset(json_path)
+  start <- parse_iso8601_datetime(tasks$acquisition_start, offset)
+  end <- parse_iso8601_datetime(tasks$acquisition_end, offset)
 
   # base: system, sequence, id, name, sample type, method
   result <- tibble(
     analysis = seq_len(nrow(tasks)),
     type = "cf",
-    timestamp = parse_liarc_datetime(ts),
+    timestamp = start,
     h3_factor = read_liarc_h3_factor(json_path),
     System = (tasks[["system_description"]] %||% NA) |> as.character(),
     processing_list_guid = (tasks[["processing_list_guid"]] %||% NA) |>
@@ -199,8 +203,8 @@ read_liarc_metadata <- function(json_path) {
   result |>
     dplyr::select(-dplyr::any_of(c("processing_list_guid", "method_id"))) |>
     dplyr::mutate(
-      Start = parse_iso8601_datetime(tasks$acquisition_start),
-      End = parse_iso8601_datetime(tasks$acquisition_end),
+      Start = start,
+      End = end,
       Completion = (tasks[["completion_state"]] %||% NA) |> as.character()
     )
 }

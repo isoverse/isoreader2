@@ -43,6 +43,35 @@ test_that("read_liarc_metadata() numbers analysis in Id order", {
   expect_equal(md$Name, c("A", "B", "C"))
 })
 
+test_that("read_liarc_metadata() converts local acquisition times to UTC via the created_date offset", {
+  # acquisition dates carry no offset (local time); created_date does (-08:00)
+  f <- liarc_fixture(paste0(
+    '{"created_date":"2020-02-27T14:01:37.914382-08:00",',
+    '"processing_lists":[],"methods":[],',
+    '"tasks":[',
+    '{"id":1,"name":"A","acquisition_start":"2020-02-27T13:05:50.5","acquisition_end":"2020-02-27T13:23:03"}',
+    ']}'
+  ))
+  md <- read_liarc_metadata(f)
+  expect_equal(
+    md$Start,
+    as.POSIXct("2020-02-27 21:05:50.5", tz = "UTC")
+  )
+  expect_equal(md$End, as.POSIXct("2020-02-27 21:23:03", tz = "UTC"))
+  # timestamp is the acquisition start, not the archive creation date
+  expect_equal(md$timestamp, md$Start)
+})
+
+test_that("read_liarc_metadata() reads acquisition times as UTC without created_date", {
+  f <- liarc_fixture(paste0(
+    '{"processing_lists":[],"methods":[],"tasks":[',
+    '{"id":1,"name":"A","acquisition_start":"2020-02-27T13:05:50","acquisition_end":"2020-02-27T13:23:03"}',
+    ']}'
+  ))
+  md <- read_liarc_metadata(f)
+  expect_equal(md$timestamp, as.POSIXct("2020-02-27 13:05:50", tz = "UTC"))
+})
+
 test_that("read_liarc_traces() numbers analysis in Id order (matching metadata)", {
   # tasks given as ids 2, 1; the id=1 task carries beam1 = 10, id=2 carries 20.
   # After ordering by Id, analysis 1 must map to the id=1 task (intensity 10).

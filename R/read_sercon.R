@@ -51,6 +51,8 @@ read_bch_json <- function(json_path) {
 
 # Reads per-block sequence metadata from /data/blocks.
 read_bch_metadata <- function(json_path) {
+  # the .prn header timestamp has no timezone information and the original
+  # timezone cannot be recovered -> it is read as if it were recorded in UTC
   ts <- query_json(json_path, "/header/timestamp")
   blocks <- query_json(json_path, "/data/blocks")
   tibble(

@@ -36,21 +36,21 @@ print.ir_isofiles <- function(x, ...) {
         purrr::map_chr(.data$metadata, get_metadata_info)
       },
       has_traces = if ("traces" %in% names(x)) {
-        !purrr::map_lgl(.data$traces, is.null)
+        purrr::map_lgl(.data$traces, has_data_rows)
       } else {
         FALSE
       },
       trace_info = (if ("traces" %in% names(x)) .data$traces else list(NULL)) |>
         purrr::map_chr(get_trace_info),
       has_cycles = if ("cycles" %in% names(x)) {
-        !purrr::map_lgl(.data$cycles, is.null)
+        purrr::map_lgl(.data$cycles, has_data_rows)
       } else {
         FALSE
       },
       cycle_info = (if ("cycles" %in% names(x)) .data$cycles else list(NULL)) |>
         purrr::map_chr(get_cycle_info),
       has_scans = if ("scans" %in% names(x)) {
-        !purrr::map_lgl(.data$scans, is.null)
+        purrr::map_lgl(.data$scans, has_data_rows)
       } else {
         FALSE
       },
@@ -93,7 +93,7 @@ print.ir_isofiles <- function(x, ...) {
         if (.data$has_cycles[1] || .data$has_traces[1] || .data$has_scans[1]) {
           " with "
         } else {
-          "; no data available; "
+          paste0(if (!.data$all_single[1]) "; ", "no data available; ")
         },
         if (.data$has_cycles[1]) {
           .data$cycle_info |> paste0("; ")
@@ -119,9 +119,14 @@ knit_print.ir_isofiles <- function(x, ...) {
   print(x, ...)
 }
 
+# helper function to check whether a dataset has any rows (e.g. not an aborted acquisition)
+has_data_rows <- function(dataset) {
+  is.data.frame(dataset) && nrow(dataset) > 0
+}
+
 # helper function to summarize information about a set of traces
 get_trace_info <- function(traces) {
-  if (!is.data.frame(traces)) {
+  if (!has_data_rows(traces)) {
     return("no data available")
   }
   traces |>
@@ -146,7 +151,7 @@ get_trace_info <- function(traces) {
 
 # helper function to summarize information about a set of cycles
 get_cycle_info <- function(cycles) {
-  if (!is.data.frame(cycles)) {
+  if (!has_data_rows(cycles)) {
     return("no data available")
   }
   cycles |>
@@ -168,7 +173,7 @@ get_cycle_info <- function(cycles) {
 
 # helper function to summarize information about a set of scans
 get_scans_info <- function(scans, metadata = NULL) {
-  if (!is.data.frame(scans)) {
+  if (!has_data_rows(scans)) {
     return("no data available")
   }
   scans |>
@@ -235,7 +240,9 @@ print.ir_aggregated_data <- function(x, ...) {
                   "{symbol$arrow_right} check with {.strong ir_show_problems(x)} / {.strong ir_get_problems(x)}"
                 }
               )
-            )
+            ) |>
+              # summarize_cnds wraps long lines, rejoin so cli_bullets can re-wrap
+              paste(collapse = " ")
           )
         }
 
