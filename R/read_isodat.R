@@ -155,6 +155,19 @@ read_isodat_h3_factor <- function(json_path, gas_config_ptrs) {
 
 # Parse a trace matrix into a long-format tibble.
 parse_isodat_traces <- function(x, traces) {
+  # no data recorded (e.g. an aborted acquisition)
+  if (is.null(x) || is.null(traces) || length(traces) == 0) {
+    cli_warn(
+      "no {.field trace data} recorded (the raw data block is empty, the acquisition may have been aborted)"
+    )
+    return(tibble(
+      analysis = integer(),
+      channel = integer(),
+      x = numeric(),
+      intensity.V = numeric()
+    ))
+  }
+
   traces |>
     nrow() |>
     seq_len() |>
@@ -262,6 +275,9 @@ match_channels_to_masses <- function(data, resistors) {
   # is there data?
   if (is.null(data)) {
     return(NULL)
+  }
+  if (nrow(data) == 0) {
+    return(data |> dplyr::mutate(mass = character(), .after = "channel"))
   }
 
   # are there resistors?
