@@ -8,8 +8,8 @@
 #'
 #' For `ir_aggregated_data`, the operation is applied once to the combined
 #' `$metadata` data frame. For `ir_filter_metadata()`, the filter then cascades
-#' to all other datasets: `traces`, `cycles`, and `scans` are filtered by the
-#' remaining `uidx` + `analysis` combinations; `resistors` and `problems` are
+#' to all other datasets: `traces`, `cycles`, `scans`, and `vendor_data_table` (if aggregated)
+#' are filtered by the remaining `uidx` + `analysis` combinations; `resistors` and `problems` are
 #' filtered by the remaining `uidx` values.
 #'
 #' For `ir_isofiles`, the same operation is instead applied **individually to
@@ -147,8 +147,11 @@ cascade_metadata_filter <- function(datasets) {
     NULL
   }
 
-  # traces/cycles/scans: filter by uidx + analysis (whichever are present)
-  for (ds in intersect(c("traces", "cycles", "scans"), names(datasets))) {
+  # traces/cycles/scans/vendor_data_table: filter by uidx + analysis (whichever are present)
+  for (ds in intersect(
+    c("traces", "cycles", "scans", "vendor_data_table"),
+    names(datasets)
+  )) {
     by <- intersect(c("uidx", "analysis"), names(datasets[[ds]]))
     if (length(by) > 0) {
       datasets[[ds]] <- dplyr::semi_join(datasets[[ds]], remaining, by = by)

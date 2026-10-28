@@ -21,6 +21,9 @@
   emits a `max()` warning and reports "no data available" for it.
 * Printing `ir_aggregated_data` with problems no longer fails with
   "Result must be length 1, not 2" in narrow consoles.
+* `ir_filter_metadata()` (and the `ir_filter_for_*()` and `ir_filter_masses()`
+  functions built on it) now also filters the `vendor_data_table` (available
+  with the `extended` aggregator) to the remaining analyses.
 
 # isoreader2 0.7.0
 
