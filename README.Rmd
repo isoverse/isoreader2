@@ -95,10 +95,10 @@ if (!requireNamespace("pkgbuild", quietly = TRUE)) {
 pkgbuild::check_build_tools()
 
 # installs the latest isoreader2 package from GitHub
-if (!requireNamespace("pak", quietly = TRUE)) {
-  install.packages("pak")
+if (!requireNamespace("remotes", quietly = TRUE)) {
+  install.packages("remotes")
 }
-pak::pak("isoverse/isoreader2")
+remotes::install_github("isoverse/isoreader2")
 
 # check/install isoextract
 isoreader2::ir_check_isoextract()
