@@ -1,5 +1,33 @@
 # Changelog
 
+## isoreader2 0.7.1
+
+- Requires `isoextract` \>= 0.3.3 which fixes a small floating-point
+  jitter (~µs) in `.imexp` trace timestamps.
+- All metadata `timestamp`s are now consistently in UTC:
+  - `.imexp`: `timestamp` is now each analysis’s acquisition start (UTC)
+    instead of the local-time `session_time` of the notebook snapshot
+    folder, which was shared by many analyses.
+  - `.iarc`/`.larc`: `timestamp` is now each analysis’s acquisition
+    start (previously the archive creation date). The acquisition
+    `Start`/`End` times are recorded in local time without an offset and
+    are converted to UTC assuming the UTC offset of the archive creation
+    date.
+  - `.bch`: the original time zone is not recorded in the files;
+    timestamps are read as if they were in UTC.
+  - Isodat files (`.dxf`, `.cf`, `.did`, `.caf`, `.scn`) were already in
+    UTC.
+- Isodat files without any recorded data (e.g. an aborted acquisition)
+  no longer fail with an uninformative
+  [`seq_len()`](https://rdrr.io/r/base/seq.html) error when reading
+  traces/scans. They are now read with their metadata and resistors, an
+  empty `traces`, and a warning that no trace data was recorded.
+- Printing an `ir_isofiles` collection that contains such a file no
+  longer emits a [`max()`](https://rdrr.io/r/base/Extremes.html) warning
+  and reports “no data available” for it.
+- Printing `ir_aggregated_data` with problems no longer fails with
+  “Result must be length 1, not 2” in narrow consoles.
+
 ## isoreader2 0.7.0
 
 CRAN release: 2026-08-24

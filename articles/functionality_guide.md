@@ -36,7 +36,7 @@ ir_get_supported_file_types()
 3 iarc      0.3.0                  IonOS          
 4 larc      0.3.0                  LyticOS        
 5 bch       0.3.0                  Callisto       
-6 imexp     0.3.0                  Qtegra         
+6 imexp     0.3.3                  Qtegra         
 7 did       0.3.0                  Isodat         
 8 caf       0.3.0                  Isodat         
 9 scn       0.3.0                  Isodat         
@@ -84,12 +84,12 @@ isofiles <- file_paths |> ir_read_isofiles()
 ```
 
 ``` fansi
-✔ [2ms] ir_extract_isofiles() is finished, 0 files/archives required
+✔ [1ms] ir_extract_isofiles() is finished, 0 files/archives required
 (re-)extraction
 ```
 
 ``` fansi
-✔ [464ms] ir_read_isofiles() finished reading 2 isotope data files/archives
+✔ [448ms] ir_read_isofiles() finished reading 2 isotope data files/archives
 ```
 
 ``` r
@@ -149,7 +149,7 @@ isofiles |> ir_save_isofiles("tmp_examples/my_isofiles.rds")
 ```
 
 ``` fansi
-✔ [54ms] ir_save_isofiles() saved 2 isofiles to tmp_examples/my_isofiles.rds
+✔ [50ms] ir_save_isofiles() saved 2 isofiles to tmp_examples/my_isofiles.rds
 ```
 
 ``` r
@@ -158,7 +158,7 @@ reloaded <- ir_load_isofiles("tmp_examples/my_isofiles.rds")
 ```
 
 ``` fansi
-✔ [7ms] ir_load_isofiles() loaded 2 isofiles from tmp_examples/my_isofiles.rds
+✔ [6ms] ir_load_isofiles() loaded 2 isofiles from tmp_examples/my_isofiles.rds
 ```
 
 ## Aggregating data
@@ -177,7 +177,7 @@ dataset <- isofiles |> ir_aggregate_isofiles()
 ```
 
 ``` fansi
-✔ [294ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+✔ [271ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 intensity in mV) from 2 files using the standard aggregator
 ```
 
@@ -228,12 +228,12 @@ isofiles |>
 ```
 
 ``` fansi
-✔ [283ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+✔ [265ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 intensity in nA) from 2 files using the standard aggregator
 ```
 
 ``` fansi
-✔ [11ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [9ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
@@ -361,7 +361,7 @@ isofiles |> ir_aggregate_isofiles(aggregator = "extended")
 ```
 
 ``` fansi
-✔ [639ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
+✔ [587ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
 intensity in mV), resistors (8), and vendor_data_table (25) from 2 files using
 the extended aggregator
 ```
@@ -483,7 +483,7 @@ isofiles |> ir_aggregate_isofiles(aggregator = "my_aggregator")
 ```
 
 ``` fansi
-✔ [174ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
+✔ [157ms] ir_aggregate_isofiles() aggregated metadata (2) and traces (24.5k,
 intensity in mV) from 2 files using the my_aggregator aggregator
 ```
 
@@ -614,7 +614,7 @@ dataset |>
 ```
 
 ``` fansi
-✔ [12ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [10ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
@@ -653,7 +653,7 @@ dataset |> ir_get_metadata()
 ```
 
 ``` fansi
-✔ [6ms] ir_get_data() retrieved 2 records from metadata
+✔ [4ms] ir_get_data() retrieved 2 records from metadata
 ```
 
 ``` fansi
@@ -677,7 +677,7 @@ dataset |> ir_get_traces()
 ```
 
 ``` fansi
-✔ [11ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [9ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
@@ -718,7 +718,7 @@ dataset_ext <- isofiles |> ir_aggregate_isofiles(aggregator = "extended")
 ```
 
 ``` fansi
-✔ [642ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
+✔ [591ms] ir_aggregate_isofiles() aggregated metadata (2), traces (24.5k,
 intensity in mV), resistors (8), and vendor_data_table (25) from 2 files using
 the extended aggregator
 ```
@@ -774,7 +774,7 @@ dataset |>
 ```
 
 ``` fansi
-✔ [5ms] ir_get_data() retrieved 2 records from metadata
+✔ [4ms] ir_get_data() retrieved 2 records from metadata
 ```
 
 ``` fansi
@@ -805,7 +805,7 @@ dataset |>
 ```
 
 ``` fansi
-✔ [5ms] ir_get_data() retrieved 2 records from metadata
+✔ [4ms] ir_get_data() retrieved 2 records from metadata
 ```
 
 ``` fansi
@@ -839,12 +839,12 @@ dataset |>
 ```
 
 ``` fansi
-✔ [32ms] ir_filter_masses() kept masses 44, 45, and 46 and removed 20.5k of
+✔ [28ms] ir_filter_masses() kept masses 44, 45, and 46 and removed 20.5k of
 24.5k data rows together with 1 record left without data
 ```
 
 ``` fansi
-✔ [10ms] ir_get_data() retrieved 4.01k records from the combination of metadata
+✔ [8ms] ir_get_data() retrieved 4.01k records from the combination of metadata
 (1) and traces (4.01k) via uidx and analysis
 ```
 
@@ -871,12 +871,12 @@ dataset |>
 ```
 
 ``` fansi
-✔ [17ms] ir_filter_masses() kept masses 28, 29, 30, 44, 46, 2, and 3 and
+✔ [14ms] ir_filter_masses() kept masses 28, 29, 30, 44, 46, 2, and 3 and
 removed 1.34k of 24.5k data rows
 ```
 
 ``` fansi
-✔ [11ms] ir_get_data() retrieved 23.2k records from the combination of metadata
+✔ [10ms] ir_get_data() retrieved 23.2k records from the combination of metadata
 (2) and traces (23.2k) via uidx and analysis
 ```
 
@@ -923,7 +923,7 @@ dataset_ratios <- dataset |> ir_calculate_ratios()
 ```
 
 ``` fansi
-✔ [25ms] ir_calculate_ratios() calculated 13.5k ratios with additive offsets
+✔ [23ms] ir_calculate_ratios() calculated 13.5k ratios with additive offsets
 num_add.V = 100 and denom_add.V = 100 and added ratio_name and ratio columns to
 the traces
 ```
@@ -938,7 +938,7 @@ dataset_ratios |>
 ```
 
 ``` fansi
-✔ [12ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [10ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
@@ -982,13 +982,13 @@ dataset |>
 ```
 
 ``` fansi
-✔ [28ms] ir_calculate_ratios() calculated 13.5k ratios with additive offsets
+✔ [24ms] ir_calculate_ratios() calculated 13.5k ratios with additive offsets
 num_add.V = 100 and denom_add.V = 100 normalized by `median()` and added
 ratio_name and ratio columns to the traces
 ```
 
 ``` fansi
-✔ [11ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [10ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
@@ -1086,7 +1086,7 @@ dataset |>
 ```
 
 ``` fansi
-✔ [23ms] ir_calculate_ratios() calculated 13.5k ratios with additive offsets
+✔ [21ms] ir_calculate_ratios() calculated 13.5k ratios with additive offsets
 num_add.V = 100 and denom_add.V = 100 and added ratio_name and ratio columns to
 the traces
 ```
@@ -1198,16 +1198,16 @@ di_dataset <-
 ```
 
 ``` fansi
-✔ [402ms] ir_read_isofiles() finished reading 1 isotope data file/archive
+✔ [403ms] ir_read_isofiles() finished reading 1 isotope data file/archive
 ```
 
 ``` fansi
-✔ [148ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
+✔ [136ms] ir_aggregate_isofiles() aggregated metadata (1) and cycles (102,
 intensity in V) from 1 file using the standard aggregator
 ```
 
 ``` fansi
-✔ [12ms] ir_calculate_ratios() calculated 85 ratios and added ratio_name and
+✔ [10ms] ir_calculate_ratios() calculated 85 ratios and added ratio_name and
 ratio columns to the cycles
 ```
 
@@ -1254,11 +1254,11 @@ data_folder |>
 ```
 
 ``` fansi
-✔ [191ms] ir_read_isofiles() finished reading 4 isotope data files/archives
+✔ [178ms] ir_read_isofiles() finished reading 4 isotope data files/archives
 ```
 
 ``` fansi
-✔ [370ms] ir_aggregate_isofiles() aggregated metadata (4) and scans (17.8k,
+✔ [342ms] ir_aggregate_isofiles() aggregated metadata (4) and scans (17.8k,
 intensity in V) from 4 files using the standard aggregator
 ```
 
@@ -1283,11 +1283,11 @@ ir_export_to_excel(
 ```
 
 ``` fansi
-✔ [6ms] ir_get_data() retrieved 2 records from metadata
+✔ [5ms] ir_get_data() retrieved 2 records from metadata
 ```
 
 ``` fansi
-✔ [10ms] ir_get_data() retrieved 24.5k records from the combination of metadata
+✔ [9ms] ir_get_data() retrieved 24.5k records from the combination of metadata
 (2) and traces (24.5k) via uidx and analysis
 ```
 
