@@ -57,6 +57,7 @@ reference:
   - ir_convert_intensity
   - ir_start_aggregator
   - ir_add_to_aggregator
+  - ir_remove_from_aggregator
   - ir_register_aggregator
   - ir_get_aggregator
   - ir_get_data

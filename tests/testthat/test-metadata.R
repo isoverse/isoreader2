@@ -62,6 +62,28 @@ test_that("ir_filter_metadata() on ir_aggregated_data cascades once", {
   expect_equal(nrow(out$resistors), 1L) # cascaded by uidx
 })
 
+test_that("ir_filter_metadata() cascades to the vendor_data_table", {
+  # aggregated data (vendor_data_table only exists with the extended aggregator)
+  agg <- make_agg()
+  agg$vendor_data_table <- tibble(
+    uidx = c(1L, 1L, 2L),
+    analysis = c("A1", "A1", "A2"),
+    `Rt [s]` = c(100, 200, 300)
+  )
+  out <- agg |> ir_filter_metadata(grp == "x") |> suppressMessages()
+  expect_equal(out$vendor_data_table$`Rt [s]`, c(100, 200))
+
+  # ir_isofiles (per row, linked by analysis)
+  isofiles <- make_isofiles()
+  isofiles$vendor_data_table <- list(
+    tibble(analysis = c("A1", "A9"), `Rt [s]` = c(100, 200)),
+    tibble(analysis = "A2", `Rt [s]` = 300)
+  )
+  out <- isofiles |> ir_filter_metadata(grp == "x") |> suppressMessages()
+  expect_equal(nrow(out), 1L)
+  expect_equal(out$vendor_data_table[[1]]$`Rt [s]`, 100)
+})
+
 test_that("ir_mutate_metadata() / ir_join_metadata() on ir_aggregated_data", {
   m <- make_agg() |>
     ir_mutate_metadata(doubled = uidx * 2) |>

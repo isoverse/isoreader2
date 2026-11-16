@@ -3,6 +3,7 @@
 \name{ir_start_aggregator}
 \alias{ir_start_aggregator}
 \alias{ir_add_to_aggregator}
+\alias{ir_remove_from_aggregator}
 \alias{ir_register_aggregator}
 \alias{ir_get_aggregator}
 \title{Dynamic data aggregator}
@@ -21,6 +22,12 @@ ir_add_to_aggregator(
   args = NULL
 )
 
+ir_remove_from_aggregator(
+  aggregator,
+  dataset = c("metadata", "traces", "cycles", "scans", "resistors", "vendor_data_table"),
+  column = NULL
+)
+
 ir_register_aggregator(aggregator, name = attr(aggregator, "name"))
 
 ir_get_aggregator(name)
@@ -32,7 +39,7 @@ ir_get_aggregator(name)
 
 \item{dataset}{the name of the dataset to aggregate from, by default "metadata" which is by far the most common aggregator to work with}
 
-\item{column}{the name of the column in which data should be stored}
+\item{column}{the name of the column in which data should be stored. For \code{ir_remove_from_aggregator()}, the (optional) name of the column whose aggregator entry should be removed from the \code{dataset} - if not provided, all entries for the \code{dataset} are removed.}
 
 \item{source}{single character column name or vector of column names (if alternatives could be the source) where in the \code{dataset} to find data for the \code{column}. If a vector of multiple column names is provided (e.g. \code{source = c("a1", "a2")}), the first column name that's found during processing of a dataset will be used and passed to the function defined in \code{func} (if any) and then the one defined in \code{cast}. To provide multiple parameters from the data to \code{func}, define a list instead of a vector \code{source = list("a", "b", "c")} or if multiple alternative columns can be the source for any of the arguments, define as \code{source = list(c("a1", "a2"), "b", c("c1", "c2", "c3"))}}
 
@@ -57,6 +64,8 @@ These functions allow definition of custom data aggregators for processing data 
 \item \code{ir_start_aggregator()}: starts the aggregator
 
 \item \code{ir_add_to_aggregator()}: add additional column to aggregate data for. Overwrites an existing aggregator entry for the same dataset and column if it already exists.
+
+\item \code{ir_remove_from_aggregator()}: remove an entry (\code{dataset} + \code{column}) or all entries of a \code{dataset} from the aggregator. Warns if there is nothing to remove.
 
 \item \code{ir_register_aggregator()}: register an aggregator in the isoreader2 options so it can be retrieved with \code{\link[=ir_get_aggregator]{ir_get_aggregator()}}
 

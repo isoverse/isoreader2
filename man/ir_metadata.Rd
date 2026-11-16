@@ -35,8 +35,8 @@ result (\code{ir_aggregated_data}) or a collection of isofiles read with
 \details{
 For \code{ir_aggregated_data}, the operation is applied once to the combined
 \verb{$metadata} data frame. For \code{ir_filter_metadata()}, the filter then cascades
-to all other datasets: \code{traces}, \code{cycles}, and \code{scans} are filtered by the
-remaining \code{uidx} + \code{analysis} combinations; \code{resistors} and \code{problems} are
+to all other datasets: \code{traces}, \code{cycles}, \code{scans}, and \code{vendor_data_table} (if aggregated)
+are filtered by the remaining \code{uidx} + \code{analysis} combinations; \code{resistors} and \code{problems} are
 filtered by the remaining \code{uidx} values.
 
 For \code{ir_isofiles}, the same operation is instead applied \strong{individually to

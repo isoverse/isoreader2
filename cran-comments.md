@@ -1,18 +1,18 @@
 ## Submission
 
-This is a minor update of an existing package (0.6.1 -> 0.7.0).
+This is a patch update of an existing package (0.7.0 -> 0.7.1).
 
-It adds a new filtering function (`ir_filter_masses()`), gives the `mass` and
-`ratio` arguments of the plotting functions full tidyselect support, renames
-`ir_plot_continuous_flow()` to `ir_plot_traces()` (the old name is kept as a
-soft-deprecated alias), and fixes a few bugs. The changes are summarized at the top of NEWS.md.
+It makes all metadata timestamps consistently UTC across file formats and fixes
+a few bugs (reading and printing files from aborted acquisitions that contain no
+data, and printing aggregated data with problems in narrow consoles). There are
+no user-facing API changes. The changes are summarized at the top of NEWS.md.
 
 ## Test environments
 
 * Local MacOS, R 4.5.2 (R CMD check --as-cran)
-* Mac OS X 26.4 (on GitHub), R 4.6.0 (release)
-* Ubuntu 24.04 (on GitHub), R 4.6.0 (release)
-* Windows Server 2025 (on GitHub), R 4.6.0 (release)
+* Mac OS X 26.4 (on GitHub), R 4.6.1 (release)
+* Ubuntu 24.04 (on GitHub), R 4.6.1 (release, devel, and oldrelease)
+* Windows Server 2025 (on GitHub), R 4.6.1 (release)
 * Win-builder (release, devel, and oldrelease)
 
 ## R CMD check results

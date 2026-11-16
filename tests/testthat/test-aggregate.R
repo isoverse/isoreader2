@@ -113,6 +113,57 @@ test_that("ir_add_to_aggregator()", {
   })
 })
 
+test_that("ir_remove_from_aggregator()", {
+  agg <- ir_start_aggregator("test") |>
+    ir_add_to_aggregator("metadata", "a") |>
+    ir_add_to_aggregator("metadata", "b") |>
+    ir_add_to_aggregator("traces", "a", cast = "as.numeric")
+
+  # errors
+  ir_remove_from_aggregator(42) |>
+    expect_error("must be.*ir_aggregator.*tibble")
+  agg |>
+    ir_remove_from_aggregator() |>
+    expect_error("dataset.*must be a string")
+  agg |>
+    ir_remove_from_aggregator("DNE") |>
+    expect_error("must be one of")
+  agg |>
+    ir_remove_from_aggregator("metadata", 42) |>
+    expect_error("column.*must be a string")
+
+  # remove a single dataset + column entry
+  out <- agg |> ir_remove_from_aggregator("metadata", "a")
+  expect_s3_class(out, "ir_aggregator")
+  expect_equal(attr(out, "name"), "test")
+  expect_equal(out$dataset, c("metadata", "traces"))
+  expect_equal(out$column, c("b", "a"))
+
+  # remove all entries of a dataset
+  out <- agg |> ir_remove_from_aggregator("metadata")
+  expect_s3_class(out, "ir_aggregator")
+  expect_equal(out$dataset, "traces")
+  expect_equal(
+    agg |>
+      ir_remove_from_aggregator("metadata") |>
+      ir_remove_from_aggregator("traces") |>
+      nrow(),
+    0L
+  )
+
+  # nothing to remove
+  expect_warning(
+    out <- agg |> ir_remove_from_aggregator("metadata", "DNE"),
+    "no entry for column.*DNE"
+  )
+  expect_equal(out, agg)
+  expect_warning(
+    out <- agg |> ir_remove_from_aggregator("scans"),
+    "no entries for dataset.*scans"
+  )
+  expect_equal(out, agg)
+})
+
 test_that("ir_register_aggregator() and ir_get_aggregator()", {
   # errors
   ir_register_aggregator(42) |>
