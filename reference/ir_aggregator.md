@@ -24,6 +24,12 @@ ir_add_to_aggregator(
   args = NULL
 )
 
+ir_remove_from_aggregator(
+  aggregator,
+  dataset = c("metadata", "traces", "cycles", "scans", "resistors", "vendor_data_table"),
+  column = NULL
+)
+
 ir_register_aggregator(aggregator, name = attr(aggregator, "name"))
 
 ir_get_aggregator(name)
@@ -50,7 +56,10 @@ ir_get_aggregator(name)
 
 - column:
 
-  the name of the column in which data should be stored
+  the name of the column in which data should be stored. For
+  `ir_remove_from_aggregator()`, the (optional) name of the column whose
+  aggregator entry should be removed from the `dataset` - if not
+  provided, all entries for the `dataset` are removed.
 
 - source:
 
@@ -113,6 +122,10 @@ an aggregator tibble
 - `ir_add_to_aggregator()`: add additional column to aggregate data for.
   Overwrites an existing aggregator entry for the same dataset and
   column if it already exists.
+
+- `ir_remove_from_aggregator()`: remove an entry (`dataset` + `column`)
+  or all entries of a `dataset` from the aggregator. Warns if there is
+  nothing to remove.
 
 - `ir_register_aggregator()`: register an aggregator in the isoreader2
   options so it can be retrieved with `ir_get_aggregator()`

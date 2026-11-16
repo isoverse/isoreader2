@@ -53,9 +53,10 @@ metadata
 
 For `ir_aggregated_data`, the operation is applied once to the combined
 `$metadata` data frame. For `ir_filter_metadata()`, the filter then
-cascades to all other datasets: `traces`, `cycles`, and `scans` are
-filtered by the remaining `uidx` + `analysis` combinations; `resistors`
-and `problems` are filtered by the remaining `uidx` values.
+cascades to all other datasets: `traces`, `cycles`, `scans`, and
+`vendor_data_table` (if aggregated) are filtered by the remaining
+`uidx` + `analysis` combinations; `resistors` and `problems` are
+filtered by the remaining `uidx` values.
 
 For `ir_isofiles`, the same operation is instead applied **individually
 to each row** (i.e. to each file's own nested datasets), since an

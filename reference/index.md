@@ -43,6 +43,7 @@ These functions combine the data from multiple isofiles for combined use
   : Convert intensity between units
 - [`ir_start_aggregator()`](https://isoreader2.isoverse.org/reference/ir_aggregator.md)
   [`ir_add_to_aggregator()`](https://isoreader2.isoverse.org/reference/ir_aggregator.md)
+  [`ir_remove_from_aggregator()`](https://isoreader2.isoverse.org/reference/ir_aggregator.md)
   [`ir_register_aggregator()`](https://isoreader2.isoverse.org/reference/ir_aggregator.md)
   [`ir_get_aggregator()`](https://isoreader2.isoverse.org/reference/ir_aggregator.md)
   : Dynamic data aggregator
